@@ -5,12 +5,13 @@ import { Overrides } from '../overrides.js'
 // _session is never written to the save file.
 export const GameState = {
   player: {
-    name:          'Player',
+    name:          '',
+    title:         'Intern',
     level:         1,
     xp:            0,
     hp:            100,
     maxHp:         100,
-    budget:        1000,
+    budget:        500,
     reputation:    50,    // 0–100, rebuildable
     shamePoints:   0,     // 0+, permanent, never decremented
     technicalDebt: 0,     // 0–10 stacks; each stack reduces maxHp by 2
@@ -18,9 +19,9 @@ export const GameState = {
     playtime:      0,     // seconds elapsed
   },
   skills: {
-    active:  [],  // up to 4 skill IDs equipped for battle
+    active:  [],  // max 6 skill IDs — player's current battle deck
     learned: [],  // all skill IDs the player has learned
-    cursed:  [],  // cursed/nuclear skill IDs (shown separately in UI)
+    cursed:  [],  // unlocked cursed technique IDs (subset of learned)
   },
   inventory: {
     tools:       [],
@@ -30,9 +31,14 @@ export const GameState = {
     junk:        [],
   },
   emblems: {
-    // Populated as the player earns them.
-    // Shape per emblem: { earned: true, shine: 0–100 }
-    // shine is a percentage: 0 = tarnished, 100 = fully polished
+    tux:       { earned: false, shine: 0, grime: 0 },
+    pipeline:  { earned: false, shine: 0, grime: 0 },
+    container: { earned: false, shine: 0, grime: 0 },
+    cloud:     { earned: false, shine: 0, grime: 0 },
+    vault:     { earned: false, shine: 0, grime: 0 },
+    helm:      { earned: false, shine: 0, grime: 0 },
+    finops:    { earned: false, shine: 0, grime: 0 },
+    sre:       { earned: false, shine: 0, grime: 0 },
   },
   story: {
     act:             1,
@@ -40,13 +46,12 @@ export const GameState = {
     flags:           {},
   },
   stats: {
-    battlesWon:            0,
-    battlesLost:           0,
-    incidentsResolved:     0,
-    slaBreaches:           0,
-    cursedTechniquesUsed:  0,
-    nuclearTechniquesUsed: 0,
-    optimalSolutions:      0,
+    battlesWon:           0,
+    battlesLost:          0,
+    incidentsResolved:    0,
+    cursedTechniquesUsed: 0,
+    totalDeployments:     0,
+    longestUptime:        0,
   },
   _session: {
     isDirty:     false,  // true when there are unsaved changes
