@@ -1,27 +1,60 @@
-// Display and rendering constants
 export const CONFIG = {
-  WIDTH:     160,
-  HEIGHT:    144,
-  SCALE:     4,
-  TILE_SIZE: 16,
-  FONT:      '"Press Start 2P"',
+  WIDTH:             1920,
+  HEIGHT:            1080,
+  TILE_SIZE:         48,
+  FONT:              '"Press Start 2P"',
+  MAX_ACTIVE_SKILLS: 6,
 }
 
-// Domain matchup cycle: linux → security → serverless → cloud → iac → containers → kubernetes → linux
-// Each domain deals ×2 to the domain it beats, ×0.5 to the domain that beats it.
 export const DOMAIN_MATCHUPS = {
-  linux:        { strong: 'security',   weak: 'kubernetes'  },
-  security:     { strong: 'serverless', weak: 'linux'       },
-  serverless:   { strong: 'cloud',      weak: 'security'    },
-  cloud:        { strong: 'iac',        weak: 'serverless'  },
-  iac:          { strong: 'containers', weak: 'cloud'       },
-  containers:   { strong: 'kubernetes', weak: 'iac'         },
-  kubernetes:   { strong: 'linux',      weak: 'containers'  },
-  observability: { strong: null,        weak: null          }, // support domain — no damage
+  linux:         { strong: 'security',   weak: 'kubernetes'  },
+  security:      { strong: 'serverless', weak: 'linux'       },
+  serverless:    { strong: 'cloud',      weak: 'security'    },
+  cloud:         { strong: 'iac',        weak: 'serverless'  },
+  iac:           { strong: 'containers', weak: 'cloud'       },
+  containers:    { strong: 'kubernetes', weak: 'iac'         },
+  kubernetes:    { strong: 'linux',      weak: 'containers'  },
+  observability: { strong: null,         weak: null          },
 }
 
 export const STRONG_MULTIPLIER = 2.0
 export const WEAK_MULTIPLIER   = 0.5
+
+export const COLORS = {
+  BACKGROUND: '#0b1020',
+  TITLE:      '#f8f8f8',
+  SUBTITLE:   '#9bc5ff',
+  PROMPT:     '#f8f8f8',
+  MENU_TEXT:  '#f8f8f8',
+  MENU_ARROW: '#ffe066',
+}
+
+export const TITLE_SCREEN = {
+  TITLE_Y:            300,
+  SUBTITLE_Y:         410,
+  PROMPT_Y:           560,
+  MENU_START_Y:       700,
+  MENU_LINE_HEIGHT:   86,
+  ARROW_X_OFFSET:     320,
+  BLINK_INTERVAL_MS:  500,
+  TITLE_FONT_SIZE:    '108px',
+  SUBTITLE_FONT_SIZE: '36px',
+  PROMPT_FONT_SIZE:   '30px',
+  MENU_FONT_SIZE:     '46px',
+  MENU_ITEMS:         ['NEW GAME', 'LOAD SAVE'],
+  CENTER_DIVISOR:     2,
+  ORIGIN_CENTER:      0.5,
+  MENU_UP_DELTA:      -1,
+  MENU_DOWN_DELTA:    1,
+  DEFAULT_SELECTION:  0,
+}
+
+export const WORLD_SCENE = {
+  MESSAGE:           'WORLD SCENE STUB',
+  MESSAGE_FONT_SIZE: '54px',
+  CENTER_DIVISOR:    2,
+  ORIGIN_CENTER:     0.5,
+}
 
 // Status effects applied during battle
 export const STATUSES = {
