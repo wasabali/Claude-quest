@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
+import path from 'node:path'
 
 import { DOMAIN_MATCHUPS } from '../src/config.js'
 import { getById as getSkillById, getAll as getAllSkills, getBy as getSkillsBy } from '../src/data/skills.js'
@@ -11,13 +12,13 @@ import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encount
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
 const DATA_FILES = [
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/skills.js',
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/items.js',
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/trainers.js',
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/emblems.js',
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/quests.js',
-  '/home/runner/work/Claudeomon/Claudeomon/src/data/encounters.js',
-]
+  'skills.js',
+  'items.js',
+  'trainers.js',
+  'emblems.js',
+  'quests.js',
+  'encounters.js',
+].map(file => path.join(process.cwd(), 'src', 'data', file))
 
 describe('skills registry', () => {
   it("getById('kubectl_rollout_restart') returns the correct skill", () => {

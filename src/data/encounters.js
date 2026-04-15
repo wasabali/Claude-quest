@@ -270,3 +270,7 @@ const ENCOUNTERS = {
 export const getById = (id)           => ENCOUNTERS[id]
 export const getAll  = ()             => Object.values(ENCOUNTERS)
 export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
+
+export const getPoolById = (id)           => ENCOUNTER_POOLS[id]
+export const getAllPools  = ()            => Object.values(ENCOUNTER_POOLS)
+export const getPoolsBy   = (field, value) => getAllPools().filter(x => x[field] === value)

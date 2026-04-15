@@ -77,7 +77,7 @@ const TRAINERS = {
   force_pusher: {
     id: 'force_pusher',
     name: 'The Force Pusher',
-    vibe: "Rules are for people who didn't write the code.",
+    vibe: 'Rules are for people who didn\'t write the code.',
     domain: 'iac',
     cursedSkill: 'force_push',
     isCursed: true,
@@ -109,7 +109,7 @@ const TRAINERS = {
   kubectl_karen: {
     id: 'kubectl_karen',
     name: 'kubectl Karen',
-    vibe: "I don't have time for manifests.",
+    vibe: 'I don\'t have time for manifests.',
     domain: 'kubernetes',
     cursedSkill: 'delete_all_pods',
     isCursed: true,
