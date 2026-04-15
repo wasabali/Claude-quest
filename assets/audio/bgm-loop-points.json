@@ -1,0 +1,25 @@
+{
+  "_note": "Loop points for seamless BGM looping. Values are in seconds. Set start/end to 0 for tracks that loop from the beginning.",
+
+  "title":              { "start": 0, "end": 0 },
+
+  "localhost_town":     { "start": 0, "end": 0 },
+  "pipeline_pass":      { "start": 0, "end": 0 },
+  "container_port":     { "start": 0, "end": 0 },
+  "cloud_citadel":      { "start": 0, "end": 0 },
+  "kernel_caves":       { "start": 0, "end": 0 },
+  "serverless_steppes": { "start": 0, "end": 0 },
+
+  "three_am_tavern":    { "start": 0, "end": 0 },
+  "legacy_codebase":    { "start": 0, "end": 0 },
+  "outcast_network":    { "start": 0, "end": 0 },
+  "shadow_registry":    { "start": 0, "end": 0 },
+
+  "battle_incident":    { "start": 0, "end": 0 },
+  "battle_engineer":    { "start": 0, "end": 0 },
+  "battle_cursed":      { "start": 0, "end": 0 },
+  "battle_throttlemaster": { "start": 0, "end": 0 },
+
+  "victory":            { "start": 0, "end": 0 },
+  "game_over":          { "start": 0, "end": 0 }
+}
