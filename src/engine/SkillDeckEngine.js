@@ -1,3 +1,5 @@
+import { getById as getSkillById } from '#data/skills.js'
+
 const MIN_ACTIVE_SLOTS = 4
 const MAX_ACTIVE_SLOTS = 6
 
@@ -18,7 +20,7 @@ export function normalizeActiveDeck(activeSkills = [], slotCount = MIN_ACTIVE_SL
 export function swapActiveSlots(activeSkills = [], slotA, slotB, slotCount = MIN_ACTIVE_SLOTS) {
   const deck = normalizeActiveDeck(activeSkills, slotCount)
   if (slotA === slotB) return deck
-  if (deck[slotA] === undefined || deck[slotB] === undefined) return deck
+  if (slotA < 0 || slotA >= deck.length || slotB < 0 || slotB >= deck.length) return deck
   const temp = deck[slotA]
   deck[slotA] = deck[slotB]
   deck[slotB] = temp
@@ -27,14 +29,14 @@ export function swapActiveSlots(activeSkills = [], slotA, slotB, slotCount = MIN
 
 export function removeSkillFromSlot(activeSkills = [], slotIndex, slotCount = MIN_ACTIVE_SLOTS) {
   const deck = normalizeActiveDeck(activeSkills, slotCount)
-  if (deck[slotIndex] === undefined) return deck
+  if (slotIndex < 0 || slotIndex >= deck.length) return deck
   deck[slotIndex] = null
   return deck
 }
 
 export function assignSkillToSlot(activeSkills = [], slotIndex, skillId, slotCount = MIN_ACTIVE_SLOTS) {
   const deck = normalizeActiveDeck(activeSkills, slotCount)
-  if (!skillId || deck[slotIndex] === undefined) return deck
+  if (!skillId || slotIndex < 0 || slotIndex >= deck.length) return deck
 
   const sourceIndex = deck.findIndex(id => id === skillId)
   const displaced = deck[slotIndex]
@@ -45,4 +47,24 @@ export function assignSkillToSlot(activeSkills = [], slotIndex, skillId, slotCou
 
   deck[slotIndex] = skillId
   return deck
+}
+
+export function isCursedSkillId(skillId, cursedSkillIds = []) {
+  if (!skillId) return false
+  const skill = getSkillById(skillId)
+  return Boolean(skill?.isCursed || cursedSkillIds.includes(skillId))
+}
+
+export function buildSkillStateAfterDeckCommit(skillsState, nextDeck) {
+  const learned = [...skillsState.learned]
+  const cursed = [...skillsState.cursed]
+  const active = [...nextDeck]
+
+  active.forEach((skillId) => {
+    if (!skillId) return
+    if (!learned.includes(skillId)) learned.push(skillId)
+    if (isCursedSkillId(skillId, cursed) && !cursed.includes(skillId)) cursed.push(skillId)
+  })
+
+  return { active, learned, cursed }
 }

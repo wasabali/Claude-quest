@@ -4,7 +4,9 @@ import { CONFIG } from '../config.js'
 import { getById as getSkillById } from '#data/skills.js'
 import {
   assignSkillToSlot,
+  buildSkillStateAfterDeckCommit,
   getActiveSlotCount,
+  isCursedSkillId,
   normalizeActiveDeck,
   removeSkillFromSlot,
   swapActiveSlots,
@@ -75,7 +77,7 @@ export class SkillManagementScene extends BaseScene {
     this.add.nineslice(114, 66, PANEL_KEY, 0, 74, 88, 2, 2, 2, 2)
     this.add.nineslice(80, 130, PANEL_KEY, 0, 156, 20, 2, 2, 2, 2)
 
-    this.titleText = this.add.text(8, 8, this.replaceSkillId ? 'REPLACE A SKILL?' : 'AZURE TERMINAL', {
+    this.add.text(8, 8, this.replaceSkillId ? 'REPLACE A SKILL?' : 'AZURE TERMINAL', {
       fontFamily: CONFIG.FONT,
       fontSize: '6px',
       color: '#0f380f',
@@ -118,17 +120,11 @@ export class SkillManagementScene extends BaseScene {
     return known[this.rightIndex] ?? null
   }
 
-  isCursedSkill(skillId) {
-    if (!skillId) return false
-    const skill = getSkillById(skillId)
-    return Boolean(skill?.isCursed || GameState.skills.cursed.includes(skillId))
-  }
-
   formatSkillName(skillId) {
     if (!skillId) return '[empty]'
     const skill = getSkillById(skillId)
     const base = skill?.displayName ?? skillId.replaceAll('_', ' ')
-    return this.isCursedSkill(skillId) ? `[!] ${base}` : base
+    return isCursedSkillId(skillId, GameState.skills.cursed) ? `[!] ${base}` : base
   }
 
   refresh() {
@@ -219,10 +215,10 @@ export class SkillManagementScene extends BaseScene {
   }
 
   commitDeck(nextDeck) {
-    GameState.skills.active = [...nextDeck]
-    nextDeck.forEach((skillId) => {
-      if (skillId && !GameState.skills.learned.includes(skillId)) GameState.skills.learned.push(skillId)
-    })
+    const nextState = buildSkillStateAfterDeckCommit(GameState.skills, nextDeck)
+    GameState.skills.active = nextState.active
+    GameState.skills.learned = nextState.learned
+    GameState.skills.cursed = nextState.cursed
     markDirty()
   }
 
@@ -242,16 +238,12 @@ export class SkillManagementScene extends BaseScene {
     if (this.replaceSkillId) {
       const nextDeck = assignSkillToSlot(GameState.skills.active, this.leftIndex, this.replaceSkillId, this.getSlotCount())
       this.commitDeck(nextDeck)
-      if (!GameState.skills.learned.includes(this.replaceSkillId)) GameState.skills.learned.push(this.replaceSkillId)
-      if (this.isCursedSkill(this.replaceSkillId) && !GameState.skills.cursed.includes(this.replaceSkillId)) {
-        GameState.skills.cursed.push(this.replaceSkillId)
-      }
       this.closeWithResult({ learned: true, skillId: this.replaceSkillId, replacedSlot: this.leftIndex })
       return
     }
 
     if (this.focus === 'left') {
-      if (this.selectedSlot == null) {
+      if (this.selectedSlot === null) {
         this.selectedSlot = this.leftIndex
       } else if (this.selectedSlot === this.leftIndex) {
         this.selectedSlot = null
@@ -264,7 +256,7 @@ export class SkillManagementScene extends BaseScene {
       return
     }
 
-    if (this.focus === 'right' && this.selectedSlot != null) {
+    if (this.focus === 'right' && this.selectedSlot !== null) {
       const known = this.getKnownSkills()
       const skillId = known[this.rightIndex]
       if (!skillId) return
@@ -289,7 +281,7 @@ export class SkillManagementScene extends BaseScene {
       return
     }
 
-    if (this.selectedSlot != null) {
+    if (this.selectedSlot !== null) {
       const selectedSkill = this.getActiveDeck()[this.selectedSlot]
       if (selectedSkill && this.focus === 'left') {
         this.confirmRemove = true

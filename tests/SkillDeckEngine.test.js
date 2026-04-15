@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   assignSkillToSlot,
+  buildSkillStateAfterDeckCommit,
   getActiveSlotCount,
+  isCursedSkillId,
   normalizeActiveDeck,
   removeSkillFromSlot,
   swapActiveSlots,
@@ -33,5 +35,18 @@ describe('SkillDeckEngine', () => {
   it('removes skill from slot', () => {
     const result = removeSkillFromSlot(['a', 'b', 'c', null], 1, 4)
     expect(result).toEqual(['a', null, 'c', null])
+  })
+
+  it('detects cursed skills from learned cursed list', () => {
+    expect(isCursedSkillId('nonexistent', ['nonexistent'])).toBe(true)
+  })
+
+  it('builds next skill state from committed deck', () => {
+    const next = buildSkillStateAfterDeckCommit(
+      { active: ['a', null, null, null], learned: ['a'], cursed: [] },
+      ['a', 'new_skill', null, null],
+    )
+    expect(next.active).toEqual(['a', 'new_skill', null, null])
+    expect(next.learned).toContain('new_skill')
   })
 })
