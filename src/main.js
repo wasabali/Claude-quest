@@ -1,8 +1,10 @@
 import Phaser from 'phaser'
 import { CONFIG } from './config.js'
+import { GameState } from '#state/GameState.js'
 import { BootScene } from '#scenes/BootScene.js'
 import { TitleScene } from '#scenes/TitleScene.js'
 import { WorldScene } from '#scenes/WorldScene.js'
+import { SaveScene } from '#scenes/SaveScene.js'
 
 new Phaser.Game({
   type:   Phaser.AUTO,
@@ -13,5 +15,12 @@ new Phaser.Game({
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ BootScene, TitleScene, WorldScene ],
+  scene: [ BootScene, TitleScene, WorldScene, SaveScene ],
+})
+
+window.addEventListener('beforeunload', e => {
+  if (GameState._session.isDirty) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
 })
