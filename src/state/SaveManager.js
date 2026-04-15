@@ -5,6 +5,7 @@ import { GameState } from '#state/GameState.js'
 const SAVE_EXTENSION = '.cloudquest'
 const SAVE_VERSION = '1.0'
 const CHECKSUM_WARNING = "Save file checksum mismatch. Someone's been poking around the config. Load anyway? [Y/N]"
+const LEGACY_SAVE_VERSION = 1
 
 const deepCopy = value => {
   if (typeof structuredClone === 'function') return structuredClone(value)
@@ -46,13 +47,16 @@ export const SaveManager = {
     const parsed = JSON.parse(raw)
     const { checksum, ...payloadWithoutChecksum } = parsed
 
-    if (!checksum || !payloadWithoutChecksum.version) {
+    if (!checksum || payloadWithoutChecksum.version == null) {
       throw new Error('Malformed save file: missing required fields.')
+    }
+    if (payloadWithoutChecksum.version !== SAVE_VERSION && payloadWithoutChecksum.version !== LEGACY_SAVE_VERSION) {
+      throw new Error(`Unsupported save version: ${payloadWithoutChecksum.version}`)
     }
 
     const computedChecksum = await this.computeChecksum(JSON.stringify(payloadWithoutChecksum))
     if (computedChecksum !== checksum) {
-      const confirmFn = globalThis.window?.confirm ?? globalThis.confirm
+      const confirmFn = globalThis.confirm
       const shouldLoad = typeof confirmFn === 'function' ? confirmFn(CHECKSUM_WARNING) : false
       if (!shouldLoad) return null
     }

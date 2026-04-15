@@ -1,29 +1,30 @@
 import { GameState } from '#state/GameState.js'
+import { CONFIG } from '../config.js'
 
 export class HUD {
   constructor(scene) {
     this.scene = scene
 
     this.hpText = scene.add.text(4, 4, '', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '8px',
       color: '#7CFC00',
     }).setScrollFactor(0)
 
     this.budgetText = scene.add.text(4, 14, '', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '8px',
       color: '#7CFC00',
     }).setScrollFactor(0)
 
     this.saveIcon = scene.add.text(136, 4, '💾', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '10px',
       color: '#7CFC00',
     }).setScrollFactor(0).setVisible(false)
 
     this.tooltip = scene.add.text(58, 18, 'You have uncommitted changes.', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '7px',
       color: '#7CFC00',
       backgroundColor: '#000000',

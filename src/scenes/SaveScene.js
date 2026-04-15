@@ -1,6 +1,7 @@
 import { BaseScene } from '#scenes/BaseScene.js'
 import { SaveManager } from '#state/SaveManager.js'
 import { GameState } from '#state/GameState.js'
+import { CONFIG } from '../config.js'
 
 export class SaveScene extends BaseScene {
   constructor() {
@@ -13,19 +14,19 @@ export class SaveScene extends BaseScene {
     this.cameras.main.setBackgroundColor('#061b11')
 
     this.add.text(8, 12, 'Cloud Quest Save Terminal', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '10px',
       color: '#78ff9d',
     })
 
     this.promptText = this.add.text(8, 32, '$ git commit -m "', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '10px',
       color: '#58ff8a',
     })
 
     this.messageText = this.add.text(8, 48, '', {
-      fontFamily: 'monospace',
+      fontFamily: `${CONFIG.FONT}, monospace`,
       fontSize: '10px',
       color: '#58ff8a',
       wordWrap: { width: 144 },
@@ -63,7 +64,7 @@ export class SaveScene extends BaseScene {
       return
     }
 
-    if (event.key.toLowerCase() === 'l') {
+    if (event.key.toLowerCase() === 'l' && event.ctrlKey) {
       await SaveManager.import()
       this.messageText.setText('Progress loaded.')
       this.renderPrompt()

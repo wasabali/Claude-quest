@@ -60,6 +60,16 @@ describe('SaveManager', () => {
     expect(GameState._session.isDirty).toBe(false)
   })
 
+  it('import accepts legacy numeric save versions', async () => {
+    const exported = await SaveManager.export(GameState, 'legacy')
+    const { checksum: _checksum, version: _version, ...rest } = exported
+    const legacyPayload = { version: 1, ...rest }
+    legacyPayload.checksum = await SaveManager.computeChecksum(JSON.stringify(legacyPayload))
+
+    const loaded = await SaveManager.import({ text: async () => JSON.stringify(legacyPayload) })
+    expect(loaded).not.toBeNull()
+  })
+
   it('import prompts on checksum mismatch and can load anyway', async () => {
     const exported = await SaveManager.export(GameState, 'tamper')
     const tampered = { ...exported, player: { ...exported.player, budget: 999 } }
