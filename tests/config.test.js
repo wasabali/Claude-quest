@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
   CONFIG,
+  COLORS,
   DOMAIN_MATCHUPS,
   STRONG_MULTIPLIER,
+  TITLE_SCREEN,
   WEAK_MULTIPLIER,
+  WORLD_SCENE,
   XP_TABLE,
 } from '../src/config.js'
 
@@ -69,6 +72,22 @@ describe('Damage multipliers', () => {
 
   it('strong × weak === 1 (symmetric)', () => {
     expect(STRONG_MULTIPLIER * WEAK_MULTIPLIER).toBe(1.0)
+  })
+})
+
+describe('scene presentation constants', () => {
+  it('defines core title screen copy and menu options', () => {
+    expect(TITLE_SCREEN.MENU_ITEMS).toEqual(['NEW GAME', 'LOAD SAVE'])
+    expect(TITLE_SCREEN.BLINK_INTERVAL_MS).toBe(500)
+  })
+
+  it('defines world scene placeholder message', () => {
+    expect(WORLD_SCENE.MESSAGE).toBe('WORLD SCENE STUB')
+  })
+
+  it('defines title scene colors', () => {
+    expect(COLORS.BACKGROUND).toBe('#0b1020')
+    expect(COLORS.MENU_ARROW).toBe('#ffe066')
   })
 })
 
