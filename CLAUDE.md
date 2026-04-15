@@ -15,7 +15,7 @@ See `docs/sessions/2026-04-15-game-design.md` for the full design record and all
 | Tool | Purpose |
 |---|---|
 | **Phaser 3** | Game engine (HTML5 Canvas/WebGL) |
-| **Vite** | Dev server + bundler |
+| **Vite** | Dev server + bundler (with path aliases — see `vite.config.js`) |
 | **Vanilla JavaScript (ES modules)** | No framework |
 | **Azure Static Web Apps** | Hosting — free tier, custom headers |
 | **GitHub Actions** | CI/CD — build and deploy to Azure |
@@ -40,10 +40,12 @@ npm run preview   # Preview production build locally
 cloud-quest/
 ├── index.html                  # GameBoy Color shell (CSS border, buttons)
 ├── package.json                # vite + phaser
+├── vite.config.js              # Path aliases, dev server headers, build config
 ├── staticwebapp.config.json    # COOP/COEP headers for Azure Static Web Apps
 ├── src/
 │   ├── main.js                 # Phaser config + scene registry — nothing else
 │   ├── config.js               # Constants: resolution, palette, tile size, XP table
+│   ├── overrides.js            # Dev-only test overrides (shame, location, SLA, deck)
 │   │
 │   ├── state/
 │   │   ├── GameState.js        # Single mutable object — the only mutable state
@@ -55,14 +57,14 @@ cloud-quest/
 │   │   ├── trainers.js         # Good trainers + cursed trainers
 │   │   ├── quests.js           # Quest stages, rewards, flags
 │   │   ├── emblems.js          # Emblem metadata
-│   │   ├── encounters.js       # Encounter tables per region
+│   │   ├── encounters.js       # Pool-based encounter tables per region (common/rare/cursed)
 │   │   └── story.js            # Act definitions, flags, dialog trees
 │   │
 │   ├── engine/                 # Pure logic — no Phaser, fully unit-testable
-│   │   ├── BattleEngine.js     # Turn resolution, win condition, event log
+│   │   ├── BattleEngine.js     # Turn resolution, phase queue, win condition, event log
 │   │   ├── SkillEngine.js      # Skill effects, domain matchups, solution quality, XP
 │   │   ├── StatusEngine.js     # Status effect application + decay per turn
-│   │   └── EncounterEngine.js  # Encounter probability + selection per region
+│   │   └── EncounterEngine.js  # Encounter probability + pool selection per region
 │   │
 │   ├── scenes/                 # Phaser scenes — rendering only, delegate logic to engines
 │   │   ├── BaseScene.js        # Abstract base: showDialog(), fadeIn/Out(), playSound()
@@ -89,6 +91,7 @@ cloud-quest/
     ├── sprites/
     ├── maps/                   # Tiled .tmj exports
     └── audio/
+        └── bgm-loop-points.json  # Loop start/end times per track (seconds)
 ```
 
 ---
@@ -148,6 +151,85 @@ import Phaser from 'phaser'
 
 Scenes delegate all logic to engines. They receive events from engines and render them.
 
+### Path Aliases
+
+Import from these aliases — never use deep relative paths (`../../engine/...`).
+
+```js
+import { BattleEngine }  from '#engine/BattleEngine.js'
+import { getById }       from '#data/skills.js'
+import { GameState }     from '#state/GameState.js'
+import { DialogBox }     from '#ui/DialogBox.js'
+import { seededRandom }  from '#utils/random.js'
+```
+
+Aliases are defined in `vite.config.js` and map to `src/{name}/`.
+
+### Phase-Based Turn System
+
+Battle turns are not one monolithic function. Each discrete step is a **phase** — a function that returns a `BattleEvent[]` and optionally enqueues the next phase. `BattleEngine` owns a phase queue and iterates it.
+
+```js
+// Phases in a single player turn (order matters):
+// 1. StatusTickPhase   — tick/expire active status effects
+// 2. SkillPhase        — resolve the selected skill, calculate damage
+// 3. SlaTickPhase      — decrement SLA timer, fire breach event if 0
+// 4. EnemyPhase        — resolve enemy move (Engineer mode only)
+// 5. TurnEndPhase      — check win/lose conditions, award XP
+
+// Each phase returns BattleEvent[] — BattleScene renders them in order.
+// Never resolve two phases in one step. Never skip phases.
+```
+
+This makes turn logic testable in isolation: test `SlaTickPhase` without running `SkillPhase`.
+
+### Pool-Based Encounter Tables
+
+`encounters.js` organises enemies by rarity pool per region — not a flat list.
+
+```js
+localhost_town: {
+  common: ['503_error', 'npm_install_hang'],
+  rare:   ['infinite_loop', 'port_conflict'],
+  cursed: [],   // no cursed encounters in starting town
+},
+three_am_tavern: {
+  common: ['merge_conflict', 'missing_semicolon'],
+  rare:   ['prod_incident', 'runaway_process'],
+  cursed: ['sev1_at_3am'],
+},
+```
+
+`EncounterEngine` rolls against pool weights: common = 70%, rare = 25%, cursed = 5% (when available). The seeded RNG in `random.js` makes rolls reproducible from a given seed.
+
+### Audio — BGM Loop Points
+
+`assets/audio/bgm-loop-points.json` maps each track ID to `{ start, end }` in seconds. `BaseScene.playBgm(trackId)` reads this file to loop tracks seamlessly (avoiding the silent gap at the end of a file).
+
+```js
+// In BaseScene.js
+playBgm(trackId) {
+  const loop = BGM_LOOP_POINTS[trackId] ?? { start: 0, end: 0 }
+  // configure Phaser audio source with loop markers
+}
+```
+
+Fill in `start`/`end` values once tracks are finalized.
+
+### Dev Overrides
+
+`src/overrides.js` lets you bypass grinding during development. Values are null by default (no effect). Uncomment what you need; never commit uncommented overrides.
+
+```js
+// Test the evil path without accumulating 7 shame manually:
+SHAME_OVERRIDE: 7,
+
+// Test cursed area without navigating there:
+LOCATION_OVERRIDE: 'three_am_tavern',
+```
+
+`GameState.js` reads `Overrides` at startup in dev mode (`import.meta.env.DEV`).
+
 ---
 
 ## Key Design Decisions
@@ -170,6 +252,7 @@ Design issues: #41 (domain matchups) · #42 (solution tiers) · #43 (incidents) 
 
 - **Resolution**: 160×144px native, scaled 4× to 640×576px display
 - **Pixel scaling**: CSS `image-rendering: pixelated` on the canvas; no browser smoothing
+- **`antialias: false`** in the Phaser game config — non-negotiable, prevents WebGL blurring sprites
 - **Palette**: Max 56 colors total on screen; max 4 colors per sprite
 - **Font**: Press Start 2P (Google Fonts, free)
 - **No smooth tweening** — all animations are 2–4 frame sprite flips
@@ -183,6 +266,20 @@ export const CONFIG = {
   TILE_SIZE: 16,
   FONT: '"Press Start 2P"',
 }
+
+// src/main.js — Phaser game config (pixel-perfect enforcement)
+new Phaser.Game({
+  type: Phaser.AUTO,
+  width: CONFIG.WIDTH,
+  height: CONFIG.HEIGHT,
+  antialias: false,           // REQUIRED — never remove; prevents WebGL sprite blurring
+  pixelArt: true,             // Sets antialias false + roundPixels true
+  scale: {
+    mode: Phaser.Scale.FIT,   // Scales to window while preserving aspect ratio
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  scene: [ BootScene, TitleScene, WorldScene, BattleScene, /* ... */ ],
+})
 ```
 
 ---
