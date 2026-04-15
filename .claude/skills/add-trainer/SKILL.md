@@ -27,9 +27,10 @@ Read `src/data/trainers.js` and `src/data/skills.js` before writing anything. Yo
 
 ### Valid domains
 
-`linux` | `containers` | `kubernetes` | `cloud` | `security` | `iac` | `serverless`
+`linux` | `containers` | `kubernetes` | `cloud` | `security` | `iac` | `serverless` | `observability`
 
 Cursed trainers use `domain: null`.
+`observability` is outside the normal damage matchup cycle (deals 0 damage, only reveals). Only use it when the trainer concept is explicitly observability-focused (e.g. an SRE who only queries metrics).
 
 ### Domain matchup cycle (for picking the right deck)
 

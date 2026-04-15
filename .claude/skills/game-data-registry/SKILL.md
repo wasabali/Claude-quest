@@ -7,7 +7,7 @@ description: Reference for adding new skills, items, trainers, and emblems to Cl
 
 ## The Registry Pattern
 
-Every data module in `src/data/` must export these four functions. No exceptions.
+Every data module in `src/data/` must export these three functions. No exceptions.
 
 ```js
 const SKILLS = {

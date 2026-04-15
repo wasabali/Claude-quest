@@ -115,21 +115,29 @@ Resolving before breach gives an XP speed bonus. Resolving after breach still wi
 All engine functions return `BattleEvent[]`. BattleScene iterates and renders each.
 
 ```js
+// BattleEvent is a union. Not every event carries target/value.
+
+// Numeric events that affect one side directly.
 {
-  type: 'damage'         // hp loss
-      | 'heal'           // hp gain
-      | 'status_apply'   // status effect added
-      | 'status_remove'  // status effect expired
-      | 'budget_drain'   // budget loss
-      | 'shame'          // shame point added
-      | 'dialog'         // show text in battle log
-      | 'sla_tick'       // SLA countdown updated
-      | 'reveal'         // enemy domain revealed
-      | 'win'            // battle won
-      | 'lose',          // battle lost
+  type: 'damage'             // hp loss
+      | 'heal'               // hp gain
+      | 'status_apply'       // status effect added
+      | 'status_remove'      // status effect expired
+      | 'budget_drain'       // budget loss
+      | 'shame'              // shame point added
+      | 'reputation_damage'  // reputation loss
+      | 'sla_tick'           // SLA countdown updated
+      | 'reveal'             // enemy domain revealed
+      | 'win'                // battle won
+      | 'lose',              // battle lost
   target: 'player' | 'opponent',
   value: Number,
-  text: String,          // for 'dialog' events only
+}
+
+// Text-only log event.
+{
+  type: 'dialog',
+  text: String,
 }
 ```
 

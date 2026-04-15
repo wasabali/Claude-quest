@@ -2,12 +2,11 @@
  * Development overrides — for testing without grinding.
  *
  * Values here override their GameState equivalents at startup (dev only).
- * The engine checks Overrides before GameState defaults during initialisation.
+ * GameState.js imports this file and applies overrides during initialisation.
+ * Engines never read this file — overrides are applied once at startup only.
  *
  * NEVER commit uncommented overrides to main. This file is version-controlled
  * so it documents every testable override — comments are the contract.
- *
- * Usage: imported by GameState.js in development builds only.
  */
 
 export const Overrides = {

@@ -10,7 +10,7 @@ You are a game data specialist for Cloud Quest. You create and validate content 
 ## Your Rules
 
 - Data files contain ONLY plain object definitions. No logic, no conditionals, no imports from engine or scenes.
-- Every new entry must be added to both the `CONST` object AND appear in the module's exports.
+- Every new entry must be added to the module's `CONST` registry object and remain accessible through the standard registry accessors (`getById`, `getAll`, `getBy`). Do not export individual entries separately.
 - IDs are always `snake_case` and must match the object key exactly.
 
 ## Valid Field Values

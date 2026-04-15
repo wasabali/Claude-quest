@@ -10,9 +10,9 @@ description: Reference for correctly structuring Phaser 3 scenes in Cloud Quest.
 Every scene in Cloud Quest follows this structure:
 
 ```js
-import { BaseScene } from './BaseScene.js'
-import { BattleEngine } from '../engine/BattleEngine.js'
-import { GameState } from '../state/GameState.js'
+import { BaseScene } from '#scenes/BaseScene.js'
+import { BattleEngine } from '#engine/BattleEngine.js'
+import { GameState } from '#state/GameState.js'
 
 export class BattleScene extends BaseScene {
   constructor() {
@@ -61,7 +61,7 @@ renderEvents(events) {
     switch (event.type) {
       case 'damage':   this.showDamageNumber(event.target, event.value); break
       case 'dialog':   this.dialogBox.show(event.text); break
-      case 'win':      this.scene.start('WorldScene'); break
+      case 'win':      this.fadeToScene('WorldScene'); break
     }
   })
 }
@@ -80,7 +80,7 @@ onSkillSelected(skillId) {
 Never create raw Phaser text objects for in-game dialogue. Always use `DialogBox`:
 
 ```js
-import { DialogBox } from '../ui/DialogBox.js'
+import { DialogBox } from '#ui/DialogBox.js'
 
 create() {
   this.dialog = new DialogBox(this)  // pass scene reference

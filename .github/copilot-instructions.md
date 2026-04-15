@@ -107,7 +107,8 @@ export const GameState = {
 
 ## Naming Conventions
 
-- Files: `camelCase.js`
+- Files exporting a class: `PascalCase.js` — scenes, engines, UI components, state managers (e.g. `BattleEngine.js`, `BaseScene.js`, `DialogBox.js`, `GameState.js`)
+- Files exporting functions or data: `camelCase.js` — utils, data modules, config (e.g. `skills.js`, `random.js`, `config.js`)
 - Classes / scenes: `PascalCase`
 - Constants: `SCREAMING_SNAKE_CASE` defined in `src/config.js`
 - Data IDs: `snake_case` strings that match their object key

@@ -21,7 +21,7 @@ This guide explains how to add yourself to the game.
 You need five things:
 
 1. **Your name** — what the NPC is called (can be a handle)
-2. **Your domain** — your primary tech type: `linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless`
+2. **Your domain** — your primary tech type: `linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless` `observability` (support/reveal only — deals 0 damage, used by SRE/monitoring-focused engineers)
 3. **3–5 real CLI commands you actually use** (flags included)
 4. **Your personality in one sentence** — how a colleague would describe you in a code review
 5. **Your location** — where in the world the player finds you:
@@ -172,7 +172,8 @@ Strong match = ×2 damage. Weak match = ×0.5. Pick your domain honestly — it 
 ## Checklist before opening a PR
 
 - [ ] Skill IDs match their object keys exactly (`id: 'foo'` inside `foo: { ... }`)
-- [ ] All `domain` values are valid (not `observability` — that's a support type, not a combat type)
+- [ ] All incident `domain` values are one of the 7 combat types (`linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless`) — `observability` is not valid for incidents
+- [ ] Skill and trainer `domain` values may also include `observability` (support/reveal — no damage)
 - [ ] `signatureSkill` is one of the IDs in `deck`
 - [ ] `slaTimer` matches severity (1/3/6/10 for sev0/1/2/3)
 - [ ] No imports from `engine/` or `scenes/` in data files

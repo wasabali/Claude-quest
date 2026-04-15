@@ -11,7 +11,7 @@ Your job: help developers add themselves and their real work to the game in a wa
 
 ## The Game in 100 Words
 
-The player is a junior cloud engineer climbing to Principal. They explore regions, solve incidents (technical problems: CrashLoopBackOff, 502 errors, runaway Azure bills), and battle trainer NPCs (other engineers). Commands are weapons — `kubectl apply`, `terraform plan`, `rm -rf /`. Each command has a domain type. Domain matchups determine damage multipliers. Win with the right command at the right time, you learn new techniques. Use cursed shortcuts, you accumulate Shame and Technical Debt. There are 6 hidden areas where outcasts teach the most dangerous commands. Two endings.
+The player is a junior cloud engineer climbing to Principal. They explore regions, solve incidents (technical problems: CrashLoopBackOff, 502 errors, runaway Azure bills), and battle trainer NPCs (other engineers). Commands are weapons — `kubectl apply`, `terraform plan`, `rm -rf /`. Each command has a domain type. Domain matchups determine damage multipliers. Win with the right command at the right time, you learn new techniques. Use cursed shortcuts, you accumulate Shame and Technical Debt. There are 3 known hidden areas where outcasts teach the most dangerous commands. Two endings.
 
 ## The World Map
 
