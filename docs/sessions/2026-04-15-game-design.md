@@ -1,7 +1,8 @@
 # Session Memory — Game Design Decisions
 **Date:** 2026-04-15
 **Branch:** claude/resolve-game-design-lFNI3
-**Issues created:** #41–#48
+**Issues created:** #41–#48, #50
+**Issues superseded and closed:** #51–#56 (Godot variants — engine decision reversed, see Tech Stack section)
 
 ---
 
@@ -13,7 +14,7 @@ This session resolved the core game design contradictions from issue #10 and des
 
 ## What the Game Is
 
-**Cloud Quest** — a browser-based GameBoy Color-style RPG where you play as a junior cloud engineer progressing to Principal Engineer. Turn-based combat using real cloud CLI commands. Funny, educational, satirical. Built with Phaser 3, Vite, GitHub Pages. No backend, file-based saves (`.cloudquest`).
+**Cloud Quest** — a browser-based GameBoy Color-style RPG where you play as a junior cloud engineer progressing to Principal Engineer. Turn-based combat using real cloud CLI commands. Funny, educational, satirical. Built with Phaser 3, Vite, hosted on Azure Static Web Apps. No backend, file-based saves (`.cloudquest`).
 
 ---
 
@@ -128,6 +129,23 @@ These appear as open questions in the relevant issues:
 - Is there a redemption arc for high-Shame players?
 - Should there be a Shame-gated black market for cursed technique upgrades?
 - Does THROTTLEMASTER's recruitment message arrive as dialogue, an item, or a fake system notification?
+
+---
+
+## Finalised Tech Stack
+
+| Tool | Purpose |
+|---|---|
+| **Phaser 3** | Game engine — HTML5 Canvas/WebGL, browser-native, no export step |
+| **Vite** | Dev server + bundler |
+| **Vanilla JavaScript (ES modules)** | No framework |
+| **Azure Static Web Apps** | Hosting — free tier, COOP/COEP headers via `staticwebapp.config.json` |
+| **GitHub Actions** | CI/CD — build and deploy to Azure |
+| **Tiled Map Editor** | Tile map authoring |
+
+**Engine decision note:** Godot 4 was evaluated and rejected. Phaser 3 was retained as the original choice. Reasons: browser-native (no export step), lighter weight, existing architecture in the GDD already designed for it, JavaScript familiarity. Godot issues #51–#56 were created briefly then closed as not_planned.
+
+**Hosting decision:** GitHub Pages → Azure Static Web Apps. Azure supports COOP/COEP headers natively (needed for some browser APIs and good security practice). `staticwebapp.config.json` added to repo root.
 
 ---
 
