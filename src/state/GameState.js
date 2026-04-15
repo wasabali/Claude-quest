@@ -63,22 +63,22 @@ export const markDirty = () => {
   GameState._session.isDirty = true
 }
 
-const normalizeEntry = (entry) => (
+export const normalizeInventoryEntry = (entry) => (
   typeof entry === 'string'
     ? { id: entry, qty: 1 }
-    : entry
+    : { id: entry.id, qty: entry.qty ?? 1 }
 )
 
 const getTabItems = (tab) => GameState.inventory[tab]
 
 export const addItem = (tab, id, qty = 1) => {
   const items = getTabItems(tab)
-  const index = items.findIndex((entry) => normalizeEntry(entry).id === id)
+  const index = items.findIndex((entry) => normalizeInventoryEntry(entry).id === id)
 
   if (index === -1) {
     items.push({ id, qty })
   } else {
-    const existing = normalizeEntry(items[index])
+    const existing = normalizeInventoryEntry(items[index])
     items[index] = { id: existing.id, qty: existing.qty + qty }
   }
 
@@ -87,10 +87,10 @@ export const addItem = (tab, id, qty = 1) => {
 
 export const removeItem = (tab, id, qty = 1) => {
   const items = getTabItems(tab)
-  const index = items.findIndex((entry) => normalizeEntry(entry).id === id)
+  const index = items.findIndex((entry) => normalizeInventoryEntry(entry).id === id)
   if (index === -1) return false
 
-  const existing = normalizeEntry(items[index])
+  const existing = normalizeInventoryEntry(items[index])
   const nextQty  = existing.qty - qty
 
   if (nextQty > 0) {
@@ -105,8 +105,9 @@ export const removeItem = (tab, id, qty = 1) => {
 
 export const hasItem = (tab, id) => {
   const items = getTabItems(tab)
-  const item  = items.find((entry) => normalizeEntry(entry).id === id)
-  return Boolean(item && normalizeEntry(item).qty > 0)
+  const item = items.find((entry) => normalizeInventoryEntry(entry).id === id)
+  if (!item) return false
+  return normalizeInventoryEntry(item).qty > 0
 }
 
 // Apply dev overrides at startup (dev mode only)

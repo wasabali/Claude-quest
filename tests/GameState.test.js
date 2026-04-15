@@ -57,4 +57,14 @@ describe('GameState inventory helpers', () => {
     expect(removeItem('junk', 'missing_item', 1)).toBe(false)
     expect(GameState._session.isDirty).toBe(false)
   })
+
+  it('adds new item alongside existing object entries', () => {
+    GameState.inventory.tools = [{ id: 'red_bull', qty: 1 }]
+    addItem('tools', 'rollback_potion', 1)
+
+    expect(GameState.inventory.tools).toEqual([
+      { id: 'red_bull', qty: 1 },
+      { id: 'rollback_potion', qty: 1 },
+    ])
+  })
 })

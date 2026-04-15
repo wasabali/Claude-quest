@@ -2,7 +2,12 @@ import Phaser from 'phaser'
 import { CONFIG } from '../config.js'
 import { getById } from '#data/items.js'
 import { BaseScene } from '#scenes/BaseScene.js'
-import { GameState, markDirty, removeItem } from '#state/GameState.js'
+import {
+  GameState,
+  markDirty,
+  normalizeInventoryEntry,
+  removeItem,
+} from '#state/GameState.js'
 
 const TABS = [
   { key: 'tools',       label: 'TOOLS', allowInBattle: true  },
@@ -13,6 +18,9 @@ const TABS = [
 ]
 
 const MAX_VISIBLE_ITEMS = 4
+const TOP_PANEL_HEIGHT = 20
+const LIST_PANEL_HEIGHT = 92
+const DESCRIPTION_PANEL_Y = TOP_PANEL_HEIGHT + LIST_PANEL_HEIGHT
 
 export class InventoryScene extends BaseScene {
   constructor() {
@@ -37,9 +45,9 @@ export class InventoryScene extends BaseScene {
   }
 
   createChrome() {
-    this.createPanel(0, 0, CONFIG.WIDTH, 20)
-    this.createPanel(0, 20, CONFIG.WIDTH, 92)
-    this.createPanel(0, 112, CONFIG.WIDTH, 32)
+    this.createPanel(0, 0, CONFIG.WIDTH, TOP_PANEL_HEIGHT)
+    this.createPanel(0, TOP_PANEL_HEIGHT, CONFIG.WIDTH, LIST_PANEL_HEIGHT)
+    this.createPanel(0, DESCRIPTION_PANEL_Y, CONFIG.WIDTH, CONFIG.HEIGHT - DESCRIPTION_PANEL_Y)
 
     this.tabText = this.add.text(4, 6, '', {
       fontFamily: CONFIG.FONT,
@@ -54,7 +62,7 @@ export class InventoryScene extends BaseScene {
       lineSpacing: 4,
     })
 
-    this.descriptionText = this.add.text(4, 118, '', {
+    this.descriptionText = this.add.text(4, DESCRIPTION_PANEL_Y + 6, '', {
       fontFamily: CONFIG.FONT,
       fontSize:   '8px',
       color:      '#ffffff',
@@ -153,7 +161,7 @@ export class InventoryScene extends BaseScene {
 
       if (result.consume) {
         removeItem(this.getActiveTab().key, item.id, 1)
-        this.selectedItem = Math.max(0, this.selectedItem - 1)
+        this.selectedItem = Math.min(this.selectedItem, Math.max(0, this.getVisibleItems().length - 1))
       }
 
       if (this.mode === 'battle' && action === 'use') {
@@ -173,7 +181,8 @@ export class InventoryScene extends BaseScene {
     if (!effect) return { message: item.description, consume: false }
 
     if (effect.type === 'heal_hp') {
-      GameState.player.hp = Math.min(GameState.player.maxHp, GameState.player.hp + effect.value)
+      const nextHp = GameState.player.hp + effect.value
+      GameState.player.hp = Math.max(0, Math.min(GameState.player.maxHp, nextHp))
       markDirty()
       return { message: `${item.displayName} restored ${effect.value} HP.`, consume: true }
     }
@@ -185,10 +194,10 @@ export class InventoryScene extends BaseScene {
     }
 
     if (effect.type === 'read_xp_if_last_battle_lost') {
-      const alreadyRead = GameState.story.flags[effect.onceFlag]
-      const lostLast    = GameState.story.flags.lastBattleResult === 'loss' || GameState.stats.battlesLost > 0
+      const alreadyRead   = GameState.story.flags[effect.onceFlag]
+      const hasLostBattle = GameState.story.flags.lastBattleResult === 'loss'
 
-      if (!alreadyRead && lostLast) {
+      if (!alreadyRead && hasLostBattle) {
         GameState.player.xp += effect.value
         GameState.story.flags[effect.onceFlag] = true
         markDirty()
@@ -208,11 +217,7 @@ export class InventoryScene extends BaseScene {
     const tab = this.getActiveTab()
     const raw = GameState.inventory[tab.key] ?? []
 
-    const normalized = raw.map((entry) => (
-      typeof entry === 'string'
-        ? { id: entry, qty: 1 }
-        : entry
-    ))
+    const normalized = raw.map((entry) => normalizeInventoryEntry(entry))
 
     return normalized
       .map(({ id, qty }) => ({ ...getById(id), qty }))
