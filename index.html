@@ -23,6 +23,12 @@
       width: 100vw;
       height: 100vh;
     }
+
+    /* Prevent browser bilinear interpolation when the canvas is CSS-scaled */
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
   </style>
 </head>
 <body>
