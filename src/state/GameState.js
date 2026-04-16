@@ -55,6 +55,8 @@ export const GameState = {
     cursedTechniquesUsed: 0,
     totalDeployments:     0,
     longestUptime:        0,
+    clockManipulated:     false,
+    devNullUseCount:      0,
     skillUseCounts:       {},
   },
   _session: {
@@ -173,6 +175,8 @@ export function initNewGame(name, mascot) {
     cursedTechniquesUsed:  0,
     nuclearTechniquesUsed: 0,
     optimalSolutions:      0,
+    clockManipulated:      false,
+    devNullUseCount:       0,
     skillUseCounts:        {},
   }
   GameState._session = {
