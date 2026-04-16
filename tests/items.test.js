@@ -35,18 +35,16 @@ describe('items registry', () => {
     expect(docs).toContain('incident_postmortem')
   })
 
-  it('defines cross_origin_opener_policy as a hidden key item', () => {
+  it('defines cross_origin_opener_policy as a non-battle key item', () => {
     const item = getById('cross_origin_opener_policy')
     expect(item.tab).toBe('keyItems')
-    expect(item.hidden).toBe(true)
     expect(item.usableInBattle).toBe(false)
     expect(item.description).toBe('Value: same-origin. You found this in a config file. It looked important.')
   })
 
-  it('defines cross_origin_embedder_policy as a hidden key item', () => {
+  it('defines cross_origin_embedder_policy as a non-battle key item', () => {
     const item = getById('cross_origin_embedder_policy')
     expect(item.tab).toBe('keyItems')
-    expect(item.hidden).toBe(true)
     expect(item.usableInBattle).toBe(false)
     expect(item.description).toBe("Value: require-corp. Nobody knows why this is needed. It just is.")
   })
