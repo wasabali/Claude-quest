@@ -136,7 +136,7 @@ Use the appropriate template:
 When doing a full audit, check these systematically:
 
 ### Data integrity
-- Every skill `domain` is valid (linux, containers, kubernetes, cloud, security, iac, serverless, observability, or null for cursed)
+- Every skill `domain` is valid (linux, containers, kubernetes, cloud, security, iac, serverless, observability, or `null` for cursed/nuclear techniques)
 - Every skill `tier` is valid (optimal, standard, shortcut, cursed, nuclear)
 - Cursed skills have `isCursed: true`, `domain: null`, `sideEffect` set, `warningText` set
 - Trainer deck skill IDs exist in `skills.js`

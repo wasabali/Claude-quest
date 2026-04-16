@@ -62,7 +62,7 @@ Gather evidence from the project's own knowledge base to write a well-informed i
 | Config | `src/config.js` | Domain matchups, constants, multipliers — the single source of truth for game mechanics |
 | Data files | `src/data/*.js` | Skill, trainer, item, encounter definitions — what's actually implemented |
 | Engine files | `src/engine/*.js` | Game logic — how mechanics actually work |
-| Existing issues | GitHub Issues | Prior decisions, open debates, known problems |
+| Existing issues | GitHub issues | Prior decisions, open debates, known problems |
 
 ### What to look for
 
