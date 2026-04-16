@@ -18,7 +18,11 @@ const DEFAULT_SLA_TIMER = 10
 
 // Penalty applied on SLA breach
 const SLA_BREACH_HP_PENALTY  = 20
-const SLA_BREACH_REP_PENALTY = 15
+const SLA_BREACH_REP_PENALTY = 10
+
+// Reputation change on engineer battle outcomes
+const ENGINEER_WIN_REP_OPTIMAL = 8
+const ENGINEER_LOSE_REP_PENALTY = 5
 
 // Approximate enemy base attack power (used in enemyPhase)
 const ENEMY_BASE_POWER = 15
@@ -196,6 +200,13 @@ export function turnEndPhase(state) {
     const tier       = state.winningTier ?? 'standard'
     const xp         = calculateXP(state.opponent.difficulty ?? 1, tier)
     const hasTeach   = state.mode === BATTLE_MODES.ENGINEER && state.opponent.teachSkillId
+
+    // Bonus reputation for winning an engineer battle with an optimal solution
+    if (state.mode === BATTLE_MODES.ENGINEER && tier === 'optimal') {
+      state.player.reputation = Math.min(100, state.player.reputation + ENGINEER_WIN_REP_OPTIMAL)
+      events.push({ type: 'reputation', target: 'player', value: ENGINEER_WIN_REP_OPTIMAL, shameDelta: 0 })
+    }
+
     events.push({ type: 'xp_gain',    target: 'player', value: xp })
     if (hasTeach) {
       events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
@@ -205,6 +216,11 @@ export function turnEndPhase(state) {
   }
 
   if (playerDefeated || slaLoss) {
+    // Reputation penalty for losing an engineer battle (not SLA — that is penalised in slaTickPhase)
+    if (playerDefeated && state.mode === BATTLE_MODES.ENGINEER) {
+      state.player.reputation = Math.max(0, state.player.reputation - ENGINEER_LOSE_REP_PENALTY)
+      events.push({ type: 'reputation', target: 'player', value: -ENGINEER_LOSE_REP_PENALTY, shameDelta: 0 })
+    }
     events.push({ type: 'battle_end', target: 'player', value: 'lose' })
     return events
   }

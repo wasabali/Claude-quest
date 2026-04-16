@@ -407,6 +407,66 @@ describe('turnEndPhase', () => {
     )
   })
 
+  it('emits reputation event on ENGINEER win with optimal tier', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ reputation: 50 }),
+      makeOpponent({ hp: 0 }))
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'reputation', target: 'player', value: 8 })
+    )
+  })
+
+  it('does not emit reputation event on ENGINEER win with non-optimal tier', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ reputation: 50 }),
+      makeOpponent({ hp: 0 }))
+    state.winningTier = 'standard'
+    const events = turnEndPhase(state)
+    const repEvent = events.find(e => e.type === 'reputation')
+    expect(repEvent).toBeUndefined()
+  })
+
+  it('does not emit reputation event on INCIDENT win (no battle-end rep bonus in incident mode)', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }),
+      makeOpponent({ hp: 0 }))
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    const repEvent = events.find(e => e.type === 'reputation')
+    expect(repEvent).toBeUndefined()
+  })
+
+  it('applies engineer win reputation bonus to battle state', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ reputation: 50 }),
+      makeOpponent({ hp: 0 }))
+    state.winningTier = 'optimal'
+    turnEndPhase(state)
+    expect(state.player.reputation).toBe(58)
+  })
+
+  it('emits reputation penalty event on ENGINEER loss (player HP 0)', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ hp: 0, reputation: 50 }),
+      makeOpponent({ hp: 30 }))
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'reputation', target: 'player', value: -5 })
+    )
+  })
+
+  it('applies engineer loss reputation penalty to battle state', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ hp: 0, reputation: 50 }),
+      makeOpponent({ hp: 30 }))
+    turnEndPhase(state)
+    expect(state.player.reputation).toBe(45)
+  })
+
+  it('does not emit reputation penalty on INCIDENT loss', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 0, reputation: 50 }),
+      makeOpponent({ hp: 30 }))
+    const events = turnEndPhase(state)
+    const repEvent = events.find(e => e.type === 'reputation')
+    expect(repEvent).toBeUndefined()
+  })
+
   it('returns empty event array when battle is still ongoing', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 80 }), makeOpponent({ hp: 40 }))
     const events = turnEndPhase(state)
