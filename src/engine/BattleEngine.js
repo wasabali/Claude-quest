@@ -98,13 +98,35 @@ export function skillPhase(state, skill) {
     events.push({ type: 'damage', target: 'opponent', value: dmg })
   }
 
+  if (effect.type === 'instant_win_vs_legacy') {
+    if (state.opponent.isLegacy) {
+      state.opponent.hp = 0
+      events.push({ type: 'damage', target: 'opponent', value: state.opponent.maxHp ?? state.opponent.hp })
+    } else {
+      const backfire = Math.abs(effect.fallbackDamage ?? 40)
+      state.player.hp = Math.max(0, state.player.hp - backfire)
+      events.push({ type: 'damage', target: 'player', value: backfire })
+    }
+  }
+
+  if (effect.type === 'instant_win_vs_containers') {
+    if (state.opponent.domain === 'containers') {
+      state.opponent.hp = 0
+      events.push({ type: 'damage', target: 'opponent', value: state.opponent.maxHp ?? state.opponent.hp })
+    } else {
+      const dmg = calculateDamage(skill, state.opponent.domain)
+      state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
+      events.push({ type: 'damage', target: 'opponent', value: dmg })
+    }
+  }
+
   if (effect.type === 'heal') {
     const healed = Math.min(effect.value, state.player.maxHp - state.player.hp)
     state.player.hp = Math.min(state.player.maxHp, state.player.hp + effect.value)
     events.push({ type: 'heal', target: 'player', value: healed })
   }
 
-  if (effect.type === 'reveal_domain' || effect.type === 'reveal_and_tag_weakness') {
+  if (effect.type === 'reveal_domain' || effect.type === 'reveal_and_tag_weakness' || effect.type === 'reveal') {
     state.domainRevealed = true
     events.push({ type: 'domain_reveal', target: 'opponent', value: state.opponent.domain })
   }
