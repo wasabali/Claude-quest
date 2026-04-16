@@ -340,6 +340,39 @@ describe('enemyPhase', () => {
       expect.objectContaining({ type: 'skill_used' })
     )
   })
+
+  it('advances deck and emits telegraph event after enemy move', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale', 'kubectl_drain'] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    const events = enemyPhase(state)
+    expect(events.length).toBeGreaterThan(0)
+    expect(state.opponentDeckIndex).toBe(1)
+    expect(state.telegraphedMove).toBe('kubectl_scale')
+  })
+
+  it('telegraph event value is the next deck move', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale'] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    const events = enemyPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'telegraph', value: 'kubectl_scale' })
+    )
+  })
+
+  it('deck wraps around after last move', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale'] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    enemyPhase(state) // index 0 → 1
+    enemyPhase(state) // index 1 → 0
+    expect(state.opponentDeckIndex).toBe(0)
+    expect(state.telegraphedMove).toBe('kubectl_apply')
+  })
+
+  it('sets initial telegraphedMove to first deck entry by default', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale'] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    expect(state.telegraphedMove).toBe('kubectl_apply')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -397,13 +430,43 @@ describe('turnEndPhase', () => {
     )
   })
 
-  it('emits teach_skill event on ENGINEER win if opponent has a teach skill', () => {
+  it('emits teach_skill event on ENGINEER win with optimal tier', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'teach_skill', value: 'helm_upgrade' })
+    )
+  })
+
+  it('does NOT emit teach_skill on ENGINEER win with standard tier', () => {
     const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
       makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
     state.winningTier = 'standard'
     const events = turnEndPhase(state)
+    expect(events).not.toContainEqual(
+      expect.objectContaining({ type: 'teach_skill' })
+    )
+  })
+
+  it('emits dialog hint on ENGINEER win with standard tier', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade', winDialog: 'Nice work. Try helm next time.' }))
+    state.winningTier = 'standard'
+    const events = turnEndPhase(state)
     expect(events).toContainEqual(
-      expect.objectContaining({ type: 'teach_skill', value: 'helm_upgrade' })
+      expect.objectContaining({ type: 'dialog', text: 'Nice work. Try helm next time.' })
+    )
+  })
+
+  it('does NOT emit teach_skill on shortcut win in ENGINEER mode', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'shortcut'
+    const events = turnEndPhase(state)
+    expect(events).not.toContainEqual(
+      expect.objectContaining({ type: 'teach_skill' })
     )
   })
 
@@ -489,6 +552,7 @@ describe('BattleEvent shape', () => {
     'skill_used', 'damage', 'heal', 'domain_reveal',
     'sla_tick', 'sla_breach', 'status_tick', 'status_remove',
     'status_apply', 'reputation', 'xp_gain', 'teach_skill', 'battle_end',
+    'telegraph', 'dialog',
   ]
 
   it('all emitted events have recognised type strings', () => {

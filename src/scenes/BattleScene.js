@@ -106,11 +106,16 @@ export class BattleScene extends BaseScene {
       ...textStyle, color: '#9bc5ff',
     })
 
-    // In ENGINEER mode, show telegraphed move
-    if (mode === BATTLE_MODES.ENGINEER && this._battleState.telegraphedMove) {
-      this.add.text(4, 22, `Preparing: ${this._battleState.telegraphedMove}`, {
+    // In ENGINEER mode, show telegraphed move (stored as instance var for live updates)
+    if (mode === BATTLE_MODES.ENGINEER) {
+      const telegraphLabel = this._battleState.telegraphedMove
+        ? `Preparing: ${this._battleState.telegraphedMove}`
+        : ''
+      this._telegraphText = this.add.text(4, 22, telegraphLabel, {
         ...textStyle, color: '#ffe066',
       })
+    } else {
+      this._telegraphText = null
     }
 
     // Player HP
@@ -334,6 +339,21 @@ export class BattleScene extends BaseScene {
 
       case 'battle_end':
         this._onBattleEnd(event.value)
+        break
+
+      case 'telegraph':
+        if (this._battleState.mode === BATTLE_MODES.ENGINEER) {
+          this._showLog(`Preparing: ${event.value}`)
+          if (this._telegraphText) {
+            this._telegraphText.setText(`Preparing: ${event.value}`)
+          }
+        }
+        callback()
+        break
+
+      case 'dialog':
+        this._showLog(event.text ?? '')
+        this.time.delayedCall(800, callback)
         break
 
       default:
