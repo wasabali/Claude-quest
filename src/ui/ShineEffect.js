@@ -25,8 +25,6 @@ export class ShineEffect {
     this._emitter = null
     this._createEmitter()
 
-    // Sparkle stars rendered via tweens (2–4 frame flips)
-    this._stars = []
   }
 
   // ---------------------------------------------------------------------------
@@ -83,8 +81,6 @@ export class ShineEffect {
   destroy() {
     this._grimeOverlay?.destroy()
     this._emitter?.destroy()
-    this._stars.forEach((s) => s?.destroy())
-    this._stars = []
   }
 
   // ---------------------------------------------------------------------------

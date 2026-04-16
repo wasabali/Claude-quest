@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { BaseScene }           from '#scenes/BaseScene.js'
 import { GameState, markDirty } from '#state/GameState.js'
-import { getById, getAll }      from '#data/emblems.js'
+import { getById }              from '#data/emblems.js'
 import { ShineEffect }          from '#ui/ShineEffect.js'
 import { CONFIG }               from '../config.js'
 
@@ -146,34 +146,38 @@ export class EmblemScene extends BaseScene {
 
   _onUp() {
     if (this._mode !== 'grid') return
-    if (this._cursorIndex >= GRID_COLS) {
-      this._cursorIndex -= GRID_COLS
-      this._refreshGrid()
-    }
+    const row = Math.floor(this._cursorIndex / GRID_COLS)
+    const col = this._cursorIndex % GRID_COLS
+    const newRow = (row - 1 + GRID_ROWS) % GRID_ROWS
+    const next   = newRow * GRID_COLS + col
+    if (next < EMBLEM_COUNT) { this._cursorIndex = next; this._refreshGrid() }
   }
 
   _onDown() {
     if (this._mode !== 'grid') return
-    if (this._cursorIndex + GRID_COLS < EMBLEM_COUNT) {
-      this._cursorIndex += GRID_COLS
-      this._refreshGrid()
-    }
+    const row = Math.floor(this._cursorIndex / GRID_COLS)
+    const col = this._cursorIndex % GRID_COLS
+    const newRow = (row + 1) % GRID_ROWS
+    const next   = newRow * GRID_COLS + col
+    if (next < EMBLEM_COUNT) { this._cursorIndex = next; this._refreshGrid() }
   }
 
   _onLeft() {
     if (this._mode !== 'grid') return
-    if (this._cursorIndex % GRID_COLS > 0) {
-      this._cursorIndex -= 1
-      this._refreshGrid()
-    }
+    const col    = this._cursorIndex % GRID_COLS
+    const row    = Math.floor(this._cursorIndex / GRID_COLS)
+    const newCol = (col - 1 + GRID_COLS) % GRID_COLS
+    this._cursorIndex = row * GRID_COLS + newCol
+    this._refreshGrid()
   }
 
   _onRight() {
     if (this._mode !== 'grid') return
-    if (this._cursorIndex % GRID_COLS < GRID_COLS - 1 && this._cursorIndex + 1 < EMBLEM_COUNT) {
-      this._cursorIndex += 1
-      this._refreshGrid()
-    }
+    const col    = this._cursorIndex % GRID_COLS
+    const row    = Math.floor(this._cursorIndex / GRID_COLS)
+    const newCol = (col + 1) % GRID_COLS
+    const next   = row * GRID_COLS + newCol
+    if (next < EMBLEM_COUNT) { this._cursorIndex = next; this._refreshGrid() }
   }
 
   _onConfirm() {
@@ -230,11 +234,12 @@ export class EmblemScene extends BaseScene {
 
     let changed = false
 
-    // Phase 1 — reduce grime
+    // Phase 1 — reduce grime (only consume px for ticks actually applied)
     if (entry.grime > 0 && this._dragAccum >= DRAG_REDUCTION_PX) {
-      const ticks = Math.floor(this._dragAccum / DRAG_REDUCTION_PX)
-      entry.grime = Math.max(0, entry.grime - ticks)
-      this._dragAccum %= DRAG_REDUCTION_PX
+      const ticks        = Math.floor(this._dragAccum / DRAG_REDUCTION_PX)
+      const appliedTicks = Math.min(ticks, entry.grime)
+      entry.grime       -= appliedTicks
+      this._dragAccum   -= appliedTicks * DRAG_REDUCTION_PX
       changed = true
     }
 
@@ -269,8 +274,6 @@ export class EmblemScene extends BaseScene {
   // ─── Grid rendering ─────────────────────────────────────────────────────────
 
   _renderGrid() {
-    this._clearGridObjects()
-    this._destroyAllShineEffects()
 
     const cw = CONFIG.WIDTH
     const ch = CONFIG.HEIGHT
@@ -628,6 +631,7 @@ export class EmblemScene extends BaseScene {
   _close() {
     if (this._returnSceneKey && this.scene.isPaused(this._returnSceneKey)) {
       this.scene.resume(this._returnSceneKey)
+      this.scene.stop('EmblemScene')
     } else if (this._returnSceneKey) {
       this.fadeToScene(this._returnSceneKey)
     } else {
