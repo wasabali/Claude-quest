@@ -22,9 +22,9 @@ Cloud Quest uses a classic D-pad + two-button layout, just like a GameBoy:
 | Key | Action |
 |---|---|
 | **Arrow keys** | Move / Navigate menus |
-| **Z** or **Enter** | Confirm / Interact / Advance dialog |
-| **X** or **Backspace** | Cancel / Back |
-| **Start** (Escape) | Open menu |
+| **Z** | Confirm / Advance dialog |
+| **X** | Cancel / Back |
+| **Enter** | Interact in the world |
 
 ---
 
@@ -35,11 +35,10 @@ Cloud Quest uses a classic D-pad + two-button layout, just like a GameBoy:
 You start in **Professor Pedersen's Lab** in Localhost Town. The professor gives you your **starter skill deck** — a small set of CLI commands across a few domains. Your first decision matters: which domain focus to start with.
 
 **Your starter skills include:**
-- `az webapp deploy` — Your first cloud attack (30 damage)
 - `kubectl rollout restart` — Clears enemy buffs, Kubernetes domain
 - `read the docs` — Reveals enemy weaknesses (Observability)
 - `blame DNS` — A shortcut move that confuses everyone, including you
-- `open a ticket` — Freezes battle for 1 turn (the coward's option)
+- `az webapp deploy` — Your first cloud attack (30 damage)
 
 ### First Quest — Old Margaret's Bakery
 

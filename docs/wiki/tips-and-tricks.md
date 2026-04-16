@@ -10,7 +10,7 @@ Stuck? Not sure what to do next? Here's a spoiler-light guide to help you throug
 
 In incident battles, spend your first turn using an Observability skill (`read the docs`, `grep "ERROR" /var/log/*`, `az monitor alert create`). Revealing the enemy domain lets you hit with ×2 damage — that one turn investment pays for itself immediately.
 
-The only exception: **SEV0 incidents** with 1-turn SLA. There you have to guess or already know the domain.
+With the current encounter data, incident SLAs give you at least 2 turns, so diagnosing first is almost always the right call.
 
 ### 2. Build a Balanced Deck
 
@@ -105,8 +105,8 @@ Kubernetes→ beats → Linux
 
 Shame is permanent — you can't reduce it. But you can:
 - Embrace it. The evil path has great content.
-- Get the **Vault Emblem** to reduce future Shame gain by 1.
 - Lean into it — at Shame 7, THROTTLEMASTER makes contact and opens new storyline options.
+- Focus on keeping Reputation high — a high-Rep, high-Shame character sees unique content.
 
 ---
 

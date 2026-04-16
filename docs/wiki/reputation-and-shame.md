@@ -16,12 +16,10 @@ Reputation represents how other engineers and NPCs perceive you. It goes up when
 
 | Action | Rep Change |
 |---|---|
-| Optimal battle win | +10 |
-| Standard battle win | +3 |
-| Shortcut battle win | −5 |
-| Cursed technique use | −8 to −20 (varies) |
-| Nuclear technique use | −13 to −30 (varies) |
-| Quest completion | +5 to +20 |
+| Cursed technique use | Variable penalty per skill (typically −8 to −20) |
+| Nuclear technique use | Variable penalty per skill (typically −13 to −30) |
+| SLA breach | −15 |
+| Quest completion | Varies by quest |
 
 ### Reputation Effects
 
@@ -58,7 +56,7 @@ Shame Points are **permanent**. They only go up. Every cursed technique adds +1 
 | Cursed technique use | +1 |
 | Nuclear technique use | +2 |
 
-**Only exception:** The **Vault Emblem** passive reduces Shame gain by 1 (minimum 0). This is the only mitigation in the game.
+There is currently no gameplay mitigation for Shame gain.
 
 ### Shame Thresholds
 
@@ -118,10 +116,10 @@ At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "For
 ## Strategy: To Curse or Not to Curse?
 
 **Arguments for staying clean:**
-- Trainers teach you signature skills (Optimal wins only)
+- Better XP multipliers from Optimal solutions (×2 XP)
 - No Technical Debt means full HP
-- Higher reputation opens more side quests and NPC content
-- Better XP multipliers from Optimal solutions
+- Better story outcomes and NPC interactions
+- Avoid permanent Shame accumulation
 
 **Arguments for the dark side:**
 - Cursed techniques bypass domain matchups entirely

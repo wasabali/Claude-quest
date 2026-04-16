@@ -42,18 +42,21 @@ Incidents are technical problems — the player version of "the app is down." Th
 **How they work:**
 1. You see **symptoms** — error messages, alerts, weird behavior
 2. The enemy domain is **hidden** until you use a reveal skill
-3. An **SLA timer** counts down each turn
-4. If the timer hits 0 → **SLA breach** → HP and reputation damage
+3. An **SLA timer** counts down each turn — set per encounter
+4. If the timer hits 0 → **SLA breach** → HP and reputation damage (−15 reputation)
 5. Fix it before the timer expires for full rewards
 
-| Severity | SLA Turns | Description |
-|---|---|---|
-| SEV3 | 10 | Low priority — annoying but not on fire |
-| SEV2 | 6 | Significant — affecting users |
-| SEV1 | 3 | Production down |
-| SEV0 | 1 | You were paged at 3am. Good luck. |
+Incident timers are set per encounter using that encounter's SLA value:
 
-**Tip:** SEV0 incidents give you only 1 turn. Either you know the domain already, or you're guessing. Observability skills that reveal domain are your best friend for anything SEV2 and above.
+| Encounter SLA | What It Means |
+|---|---|
+| 2 turns | Very tight — you need to know the domain already or guess |
+| 3 turns | Tight — one turn to diagnose, two to resolve |
+| 4 turns | Comfortable — standard difficulty |
+| 5 turns | Plenty of time — diagnose, plan, execute |
+| 10 turns | Default when unspecified — no rush |
+
+**Tip:** Short-SLA incidents leave very little room to scout. Reveal skills are most valuable when you expect a tight timer.
 
 ### Engineer Battles (Trainer Battles)
 

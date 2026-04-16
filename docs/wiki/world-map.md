@@ -52,7 +52,7 @@ Your first real challenge area. CI/CD encounters and build failures are common. 
 | Rare | Merge Conflict, Port Conflict |
 | Cursed | *(none)* |
 
-**Key trainers:** Bjørn the Build Breaker (IaC, Gym 1), Fatima the Function Witch (Serverless)
+**Key trainers:** Fatima the Function Witch (Serverless)
 
 ---
 
@@ -74,6 +74,8 @@ Wide open and dangerous. High-traffic encounters. The second gym challenges your
 *"Where tasks go to die."*
 
 An underground maze themed around project management gone wrong. Tickets, sprints, and acceptance criteria are your enemies here.
+
+**Key trainers:** Bjørn the Build Breaker (IaC, Gym 1)
 
 **Encounter pool:**
 | Rarity | Encounters |

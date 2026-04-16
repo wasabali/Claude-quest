@@ -1,9 +1,6 @@
----
-name: update-wiki
-description: Update the Cloud Quest game wiki. Regenerates docs/wiki/ pages from the current game data files and design docs. Invoke when game content changes (e.g. /update-wiki or /update-wiki "added new kubernetes skills").
----
+# Update Wiki
 
-You are updating the Cloud Quest game wiki — a set of markdown pages in `docs/wiki/` that serve as the player-facing knowledge base. The wiki should always reflect the current state of the game data.
+Update the Cloud Quest game wiki. Regenerates `docs/wiki/` pages from the current game data files and design docs. Run this after game content changes (e.g., new skills, trainers, encounters, items).
 
 ## When to run
 
@@ -29,7 +26,6 @@ Read these files to build the wiki. **Always read them fresh** — never use cac
 | `src/config.js` | Domain matchups, status effects, XP table, constants |
 | `docs/sessions/2026-04-15-game-design.md` | Core design decisions |
 | `docs/issues/content-bible.md` | Full content bible — world, characters, story |
-| `docs/issues/stackoverflow-wiki.md` | In-game StackOverflow design |
 
 ## Wiki structure
 
@@ -75,6 +71,7 @@ For each page in the wiki structure table:
 - If the file exists, overwrite it with updated content
 - If it doesn't exist, create it
 - Follow the writing rules exactly
+- Clearly label any design-doc content not yet in `src/data/` as *Planned*
 
 ### Step 3 — Update the README
 
@@ -91,35 +88,5 @@ The `docs/wiki/README.md` must list all wiki pages with descriptions and links. 
 - [ ] All wiki pages are linked from `README.md`
 - [ ] No broken relative links between wiki pages
 - [ ] Spoiler content is properly marked
-- [ ] Design/proposal content clearly labelled as *Planned*
+- [ ] Design/proposal content clearly labelled as not yet implemented
 - [ ] Tone is consistent — friendly, funny, helpful
-
-## Example: skills-reference.md entry
-
-```markdown
-### 🐧 Linux
-
-| Skill | Tier | Effect | Where to Learn |
-|---|---|---|---|
-| `systemctl restart` | Standard | Heals 20 HP. "Have you tried turning it off and on again?" | Ola the Ops Guy, Localhost Town |
-| `grep "ERROR" /var/log/*` | Standard | Reveals enemy domain. 10,000 lines of INFO for one ERROR. | Tux the Terminal Wizard, Shell Cavern |
-| `kill -9` | Standard | 35 damage, no questions asked. | Ola the Ops Guy, Localhost Town |
-```
-
-## Example: hidden areas entry (with spoiler tag)
-
-```markdown
-### 🔒 Hidden Areas
-
-The world has secret locations that reward curiosity and disobedience. Finding all of them unlocks something special.
-
-<details>
-<summary>⚠️ Spoilers — Click to reveal hidden area locations</summary>
-
-| Area | How to Find It |
-|---|---|
-| The Server Graveyard | SSH into a terminal that looks "dead" |
-| The node_modules Maze | Don't discard the junk item — use it instead |
-
-</details>
-```

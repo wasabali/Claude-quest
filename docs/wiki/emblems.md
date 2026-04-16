@@ -48,7 +48,7 @@ Polishing is a simple drag/swipe minigame that cleans the grime and triggers a s
 
 ## Notable Passive Bonuses
 
-**Vault Emblem** is particularly valuable for players who dabble in cursed techniques — it reduces Shame gain by 1 (minimum 0), which means your first cursed technique per incident is "free" of Shame. This is the only way in the game to mitigate Shame accumulation.
+**Vault Emblem** has a passive described as "Shame Point gain −1 (minimum 0)" in the emblem data, but this mechanic is not yet implemented in battle logic. It will be valuable for players who dabble in cursed techniques once active.
 
 **SRE Emblem** (+10 Max HP) is universally useful and makes late-game encounters significantly more forgiving.
 

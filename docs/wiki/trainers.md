@@ -1,6 +1,6 @@
 # Trainers
 
-Trainers are engineer NPCs scattered across the world. Beat them in battle and they may teach you their **signature skill** — but only if you win with an Optimal or Standard solution.
+Trainers are engineer NPCs scattered across the world. Beat them in battle and they may teach you their **signature skill**.
 
 ---
 
@@ -21,11 +21,12 @@ These are the engineers who fight fair and teach you real skills.
 
 ### Beating Trainers
 
-- **Optimal win** → Trainer teaches you their **signature skill** + full XP
-- **Standard win** → You win, reduced XP, no signature skill
-- **Shortcut/Cursed/Nuclear win** → You win, minimal XP, reputation damage, no skill learned
+- **Win** → Trainer teaches you their **signature skill** + XP reward
+- **Optimal win** → Full XP (×2 multiplier)
+- **Standard win** → Normal XP (×1 multiplier)
+- **Shortcut/Cursed/Nuclear win** → Reduced XP, reputation damage
 
-**Tip:** Save before challenging a tough trainer. Getting an Optimal win on your first try is worth the restart.
+**Tip:** Aim for Optimal solutions — they give double XP even if the signature skill is taught on any win.
 
 ---
 
@@ -56,20 +57,20 @@ These engineers have gone to the dark side. They hang out in shady corners of th
 
 ---
 
-## Gym Leaders
+## Gym Leaders *(Planned)*
 
-Eight gym leaders guard the path to Principal Engineer. Each controls a region and specializes in a domain.
+Eight gym leaders are planned to guard the path to Principal Engineer. These are design proposals from the content bible — not all are implemented in the current game data yet.
 
-| # | Gym | Leader | Domain | Signature Skill | Gimmick |
+| # | Gym | Leader | Domain | Gimmick | Status |
 |---|---|---|---|---|---|
-| 1 | The Pipeline Dojo | Bjørn the Build Breaker | 🏗️ IaC | `az pipelines run` | Build queue — boss queues 3 moves ahead |
-| 2 | The Uptime Arena | Captain Nines | ☁️ Cloud | `blue-green deploy` | SLA timer — must win within turns |
-| 3 | The Sprint Sanctum | Scrum Siri | 📊 Observability | `az monitor alert create` | Kanban tracker — boss gains power each idle turn |
-| 4 | The Container Yard | Docker Dag | 🐳 Containers | `docker build` | Layered defence — strip image layers |
-| 5 | The Cluster Ring | The Kube-rnetes Master | ☸️ Kubernetes | `kubectl apply -f` | Respawn — pods come back 3× |
-| 6 | The Vault Chamber | Ingrid the IAM Inspector | 🔒 Security | `ssh-keygen` | Auth challenge — mini-puzzle each turn |
-| 7 | The Whiteboard Summit | The Solutions Oracle | 📊 Observability | `az monitor alert create` | Review board — answer design questions |
-| 8 | The Executive Suite | The CTO | All domains | *(varies by phase)* | Three phases, adapts to your Shame level |
+| 1 | The Pipeline Dojo | Bjørn the Build Breaker | 🏗️ IaC | Build queue — boss queues 3 moves ahead | ✅ In trainers.js |
+| 2 | The Uptime Arena | Captain Nines | ☁️ Cloud | SLA timer — must win within turns | *Planned* |
+| 3 | The Sprint Sanctum | Scrum Siri | 📊 Observability | Kanban tracker — boss gains power each idle turn | *Planned* |
+| 4 | The Container Yard | Docker Dag | 🐳 Containers | Layered defence — strip image layers | *Planned* |
+| 5 | The Cluster Ring | The Kube-rnetes Master | ☸️ Kubernetes | Respawn — pods come back 3× | ✅ In trainers.js |
+| 6 | The Vault Chamber | Ingrid the IAM Inspector | 🔒 Security | Auth challenge — mini-puzzle each turn | ✅ In trainers.js |
+| 7 | The Whiteboard Summit | The Solutions Oracle | 📊 Observability | Review board — answer design questions | ✅ In trainers.js |
+| 8 | The Executive Suite | The CTO | All domains | Three phases, adapts to your Shame level | *Planned* |
 
 ---
 

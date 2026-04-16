@@ -13,13 +13,13 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 <details>
 <summary>⚠️ SPOILERS — Click to reveal hidden area locations and how to find them</summary>
 
-### Hidden Area 1: The Server Graveyard
+### Hidden Area 1: The Server Graveyard *(Planned)*
 
 | Detail | Info |
 |---|---|
 | **How to find** | SSH into a terminal that looks "dead" or decommissioned |
-| **Outcast trainer** | Deprecated Dagfinn |
-| **Teaches** | `terraform destroy` |
+| **Outcast trainer** | *Planned:* Deprecated Dagfinn |
+| **Teaches** | *Planned:* `terraform destroy` |
 | **Vibe** | Rows of powered-down servers. Blinking lights in the dark. The ghosts of infrastructure past. |
 
 ---
@@ -37,13 +37,13 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 
 ---
 
-### Hidden Area 3: The /dev/null Void
+### Hidden Area 3: The /dev/null Void *(Planned)*
 
 | Detail | Info |
 |---|---|
 | **How to find** | Pipe output to `/dev/null` three times in a single battle |
-| **Outcast trainer** | The Null Pointer |
-| **Teaches** | `history -c` |
+| **Outcast trainer** | *Planned:* The Null Pointer |
+| **Teaches** | *Planned:* `history -c` |
 | **Vibe** | Absolute emptiness. Sound disappears. Your actions have no visible effect. |
 
 ---
@@ -61,24 +61,24 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 
 ---
 
-### Hidden Area 5: Deprecated Azure Region (West-EU-2)
+### Hidden Area 5: Deprecated Azure Region (West-EU-2) *(Planned)*
 
 | Detail | Info |
 |---|---|
 | **How to find** | Select the greyed-out `West-EU-2` region from an Azure Terminal |
-| **Outcast trainer** | West-EU-2 Wilhelm |
-| **Teaches** | `az feature register --namespace Microsoft.Legacy` |
+| **Outcast trainer** | *Planned:* West-EU-2 Wilhelm |
+| **Teaches** | *Planned:* `az feature register --namespace Microsoft.Legacy` |
 | **Vibe** | A forgotten data centre that shouldn't exist anymore. Cobwebs on the racks. Still running 2018 workloads. |
 
 ---
 
-### Hidden Area 6: DO_NOT_TOUCH.exe
+### Hidden Area 6: DO_NOT_TOUCH.exe *(Planned)*
 
 | Detail | Info |
 |---|---|
 | **How to find** | Open the file despite every NPC warning you not to |
 | **Outcast trainer** | *(none — contains notes and lore only)* |
-| **Teaches** | `EXEC xp_cmdshell` |
+| **Teaches** | *Planned:* `EXEC xp_cmdshell` |
 | **Vibe** | OldCorp basement. Legacy VB6 systems. Flickering fluorescent lights. The smell of 2003. |
 
 **Note:** Every NPC in Act 3 will tell you not to open `DO_NOT_TOUCH.exe`. Open it anyway.
