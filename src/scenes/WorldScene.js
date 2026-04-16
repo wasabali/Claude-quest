@@ -243,10 +243,10 @@ export class WorldScene extends BaseScene {
     if (Array.isArray(entry?.variants)) {
       for (const variant of entry.variants) {
         const c = variant.condition ?? {}
-        if (c.reputationMin !== undefined && reputation  < c.reputationMin) continue
-        if (c.reputationMax !== undefined && reputation  > c.reputationMax) continue
-        if (c.shameMin      !== undefined && shamePoints < c.shameMin)      continue
-        if (c.shameMax      !== undefined && shamePoints > c.shameMax)      continue
+        if (c.reputationMin !== undefined && reputation < c.reputationMin) continue
+        if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
+        if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
+        if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
         return variant.pages
       }
     }
