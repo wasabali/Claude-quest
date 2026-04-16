@@ -93,7 +93,6 @@ export function skillPhase(state, skill) {
   const effect = skill.effect
 
   if (effect.type === 'damage') {
-    const opponentDomain = state.domainRevealed ? state.opponent.domain : null
     const dmg = calculateDamage(skill, state.opponent.domain) // always use true domain for calculation
     state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
     events.push({ type: 'damage', target: 'opponent', value: dmg })

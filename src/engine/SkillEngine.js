@@ -24,11 +24,12 @@ const REP_GAIN_STANDARD = 1
 //
 // Rules:
 //   - observability always returns 0 (support domain, no damage)
-//   - null skillDomain → cursed/nuclear bypass → 1.0 (flat)
 //   - null opponentDomain → unknown/hidden domain → 1.0 (neutral)
 //   - strong matchup → STRONG_MULTIPLIER (2.0)
 //   - weak matchup   → WEAK_MULTIPLIER   (0.5)
 //   - otherwise      → 1.0 (neutral)
+//
+// Note: cursed/nuclear bypass is handled in calculateDamage, not here.
 // ---------------------------------------------------------------------------
 export function getDomainMultiplier(skillDomain, opponentDomain) {
   if (skillDomain === 'observability') return 0
@@ -53,8 +54,10 @@ export function getDomainMultiplier(skillDomain, opponentDomain) {
 // ---------------------------------------------------------------------------
 export function calculateDamage(skill, opponentDomain) {
   if (!skill?.effect || skill.effect.type !== 'damage') return 0
-  const base       = skill.effect.value ?? 0
-  const multiplier = getDomainMultiplier(skill.domain, opponentDomain)
+  const base = skill.effect.value ?? 0
+  // Cursed/nuclear skills bypass domain matchups — always deal flat ×1.0 damage.
+  const isBypass = skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear'
+  const multiplier = isBypass ? 1.0 : getDomainMultiplier(skill.domain, opponentDomain)
   return Math.floor(base * multiplier)
 }
 

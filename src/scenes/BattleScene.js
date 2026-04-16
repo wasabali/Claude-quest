@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { BaseScene } from '#scenes/BaseScene.js'
-import { CONFIG, COLORS } from '../config.js'
+import { CONFIG } from '../config.js'
 import { GameState, markDirty } from '#state/GameState.js'
 import { getById as getSkillById } from '#data/skills.js'
 import {
@@ -8,28 +8,28 @@ import {
   createBattleState,
   resolveTurn,
 } from '#engine/BattleEngine.js'
-import { assessQuality } from '#engine/SkillEngine.js'
+import { assessQuality, calculateXP } from '#engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
-// Layout constants (all in logical pixels at the game's native resolution)
+// Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (160×144 native)
 // ---------------------------------------------------------------------------
-const ENEMY_HP_BAR_X   = 80
+const ENEMY_HP_BAR_X   = Math.floor(CONFIG.WIDTH / 2)
 const ENEMY_HP_BAR_Y   = 10
 const PLAYER_HP_BAR_X  = 4
-const PLAYER_HP_BAR_Y  = 100
+const PLAYER_HP_BAR_Y  = CONFIG.HEIGHT - 44
 const BUDGET_METER_X   = 4
-const BUDGET_METER_Y   = 112
-const SLA_TIMER_X      = 120
+const BUDGET_METER_Y   = CONFIG.HEIGHT - 32
+const SLA_TIMER_X      = CONFIG.WIDTH - 40
 const SLA_TIMER_Y      = 6
 const SKILL_MENU_X     = 4
-const SKILL_MENU_Y     = 82
+const SKILL_MENU_Y     = CONFIG.HEIGHT - 62
 const SKILL_MENU_H     = 14
-const HP_BAR_W         = 76
+const HP_BAR_W         = Math.floor(CONFIG.WIDTH * 0.475)
 const HP_BAR_H         = 4
-const BUDGET_BAR_W     = 60
+const BUDGET_BAR_W     = Math.floor(CONFIG.WIDTH * 0.375)
 const BUDGET_BAR_H     = 4
 const LOG_X            = 4
-const LOG_Y            = 68
+const LOG_Y            = CONFIG.HEIGHT - 76
 
 // ---------------------------------------------------------------------------
 // BattleScene
@@ -221,7 +221,8 @@ export class BattleScene extends BaseScene {
       this._refreshMenuHighlight()
     }
     if (Phaser.Input.Keyboard.JustDown(keys.down)) {
-      this._skillIndex = Math.min(this._activeSkills.length - 1, this._skillIndex + 1)
+      const lastIndex  = Math.max(0, this._activeSkills.length - 1)
+      this._skillIndex = Math.min(lastIndex, this._skillIndex + 1)
       this._refreshMenuCursor()
       this._refreshMenuHighlight()
     }
@@ -236,11 +237,13 @@ export class BattleScene extends BaseScene {
   _useSkill(skill) {
     if (!skill || this._animating) return
 
-    // Assess quality before the turn (opponent HP check after)
+    const events = resolveTurn(this._battleState, skill)
+
+    // Post-turn quality assessment — opponent.hp now reflects the actual outcome,
+    // enabling correct shortcut detection (wrong domain but incident resolved).
     const quality = assessQuality(skill, this._battleState.opponent, this._battleState.domainRevealed)
     this._battleState.winningTier = quality
 
-    const events = resolveTurn(this._battleState, skill)
     this._animateEvents(events)
   }
 
@@ -342,20 +345,30 @@ export class BattleScene extends BaseScene {
   // _onBattleEnd — sync GameState then return to world
   // -------------------------------------------------------------------------
   _onBattleEnd(result) {
-    const { player } = this._battleState
+    const { player, opponent } = this._battleState
 
     // Write engine state back to GameState
-    GameState.player.hp         = player.hp
-    GameState.player.reputation = player.reputation
+    GameState.player.hp          = player.hp
+    GameState.player.reputation  = player.reputation
     GameState.player.shamePoints = player.shamePoints
-    markDirty()
 
     if (result === 'win') {
       GameState.stats.battlesWon++
+
+      // Apply XP using the post-turn quality tier
+      const xp = calculateXP(opponent.difficulty ?? 1, this._battleState.winningTier ?? 'standard')
+      GameState.player.xp = (GameState.player.xp ?? 0) + xp
+
+      // Apply any skill taught by an engineer opponent
+      const teachEvent = this._battleState.log.slice().reverse().find(e => e.type === 'teach_skill')
+      if (teachEvent?.value && !GameState.skills.learned.includes(teachEvent.value)) {
+        GameState.skills.learned.push(teachEvent.value)
+      }
     } else {
       GameState.stats.battlesLost++
     }
 
+    markDirty()
     this._showLog(result === 'win' ? 'Victory!' : 'Defeated...')
     this.time.delayedCall(1200, () => {
       this.fadeToScene(this._returnScene ?? 'WorldScene')
