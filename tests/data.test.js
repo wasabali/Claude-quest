@@ -36,8 +36,12 @@ describe('skills registry', () => {
       'helm_install',
       'helm_upgrade',
       'kubectl_apply',
+      'kubectl_delete_ns',
+      'kubectl_drain',
       'kubectl_exec',
+      'kubectl_logs',
       'kubectl_rollout_restart',
+      'kubectl_scale',
     ].sort())
   })
 
