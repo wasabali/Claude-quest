@@ -152,6 +152,26 @@ const ITEMS = {
     worldActions:   ['examine', 'drop'],
     effect:         null,
   },
+  cross_origin_opener_policy: {
+    id:             'cross_origin_opener_policy',
+    displayName:    'Cross-Origin-Opener-Policy',
+    tab:            'keyItems',
+    description:    'Value: same-origin. You found this in a config file. It looked important.',
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['examine'],
+    effect:         null,
+  },
+  cross_origin_embedder_policy: {
+    id:             'cross_origin_embedder_policy',
+    displayName:    'Cross-Origin-Embedder-Policy',
+    tab:            'keyItems',
+    description:    "Value: require-corp. Nobody knows why this is needed. It just is.",
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['examine'],
+    effect:         null,
+  },
 }
 
 export const getById = (id)           => ITEMS[id]
