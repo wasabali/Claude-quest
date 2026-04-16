@@ -31,10 +31,10 @@ const TRAINERS = {
   bjorn_breaker: {
     id: 'bjorn_breaker',
     name: 'Bjørn the Build Breaker',
-    domain: 'iac',
+    domain: 'cloud',
     location: 'jira_dungeon',
     difficulty: 2,
-    signatureSkill: 'az_pipelines_run',
+    signatureSkill: 'az_webapp_deploy',
     isCursed: false,
   },
   ingrid_iam: {
@@ -58,19 +58,19 @@ const TRAINERS = {
   helm_hansen: {
     id: 'helm_hansen',
     name: 'Helm Hansen',
-    domain: 'kubernetes',
+    domain: 'containers',
     location: 'helm_repository',
     difficulty: 4,
-    signatureSkill: 'helm_install',
+    signatureSkill: 'docker_build',
     isCursed: false,
   },
   oracle_alice: {
     id: 'oracle_alice',
     name: 'The Solutions Oracle',
-    domain: 'observability',
+    domain: 'iac',
     location: 'architecture_district',
     difficulty: 4,
-    signatureSkill: 'az_monitor_alert',
+    signatureSkill: 'terraform_plan',
     isCursed: false,
   },
 
