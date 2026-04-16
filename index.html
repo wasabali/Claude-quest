@@ -24,10 +24,10 @@
       height: 100vh;
     }
 
-    /* Prevent browser from blurring the canvas on HiDPI screens */
+    /* Prevent browser bilinear interpolation when the canvas is CSS-scaled */
     canvas {
-      -webkit-font-smoothing: none;
-      font-smooth: never;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
     }
   </style>
 </head>

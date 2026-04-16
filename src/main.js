@@ -10,11 +10,10 @@ import { ServiceCatalogScene } from '#scenes/ServiceCatalogScene.js'
 import { SkillManagementScene } from '#scenes/SkillManagementScene.js'
 
 new Phaser.Game({
-  type:       Phaser.AUTO,
-  width:      CONFIG.WIDTH,
-  height:     CONFIG.HEIGHT,
-  resolution: window.devicePixelRatio || 1,
-  parent:     'app',
+  type:   Phaser.AUTO,
+  width:  CONFIG.WIDTH,
+  height: CONFIG.HEIGHT,
+  parent: 'app',
   scale: {
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
