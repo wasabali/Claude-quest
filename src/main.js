@@ -8,6 +8,7 @@ import { SaveScene } from '#scenes/SaveScene.js'
 import { NewGameScene } from '#scenes/NewGameScene.js'
 import { ServiceCatalogScene } from '#scenes/ServiceCatalogScene.js'
 import { SkillManagementScene } from '#scenes/SkillManagementScene.js'
+import { EmblemScene }          from '#scenes/EmblemScene.js'
 
 new Phaser.Game({
   type:   Phaser.AUTO,
@@ -18,7 +19,7 @@ new Phaser.Game({
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene ],
+  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene ],
 })
 
 window.addEventListener('beforeunload', e => {
