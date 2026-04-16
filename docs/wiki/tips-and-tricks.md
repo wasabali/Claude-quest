@@ -91,7 +91,7 @@ Kubernetes→ beats → Linux
 
 - Use `PagerDuty acknowledge` to pause the SLA timer for 2 turns
 - Diagnose ASAP — knowing the domain means ×2 damage, which ends fights faster
-- For SEV1/SEV0, memorize common encounter domains per region (see [Encounters](encounters.md))
+- For short-SLA encounters (2–3 turns), memorize common encounter domains per region (see [Encounters](encounters.md))
 - Bring high-damage skills. Sometimes raw power is better than being clever.
 
 ### "My HP is too low"

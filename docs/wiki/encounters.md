@@ -115,7 +115,6 @@ No random encounters — Localhost Town is a safe zone. Enjoy it while it lasts.
 - **SLA 4:** Comfortable. One turn to diagnose, three to resolve.
 - **SLA 3:** Tight. Diagnose fast or guess the domain.
 - **SLA 2:** Dangerous. You basically need to know the domain already.
-- **SLA 1:** SEV0. One shot. Good luck.
 
 Use `PagerDuty acknowledge` to pause the SLA timer for 2 turns — it can save you in tight situations.
 
