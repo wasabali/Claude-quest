@@ -373,6 +373,22 @@ describe('enemyPhase', () => {
     const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
     expect(state.telegraphedMove).toBe('kubectl_apply')
   })
+
+  it('does not emit telegraph event for wild encounters', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale'], isWildEncounter: true })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    const events = enemyPhase(state)
+    expect(events).not.toContainEqual(
+      expect.objectContaining({ type: 'telegraph' })
+    )
+  })
+
+  it('does not advance deck index for wild encounters', () => {
+    const opponent = makeOpponent({ deck: ['kubectl_apply', 'kubectl_scale'], isWildEncounter: true })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    enemyPhase(state)
+    expect(state.opponentDeckIndex).toBe(0)
+  })
 })
 
 // ---------------------------------------------------------------------------

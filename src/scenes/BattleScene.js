@@ -343,12 +343,11 @@ export class BattleScene extends BaseScene {
 
       case 'telegraph':
         if (this._battleState.mode === BATTLE_MODES.ENGINEER) {
-          this._showLog(`Preparing: ${event.value}`)
           if (this._telegraphText) {
             this._telegraphText.setText(`Preparing: ${event.value}`)
           }
         }
-        callback()
+        this.time.delayedCall(400, callback)
         break
 
       case 'dialog':

@@ -179,8 +179,9 @@ export function enemyPhase(state) {
   events.push({ type: 'damage', target: 'player', value: dmg })
 
   // Advance to the next move in the opponent's deck and telegraph it.
+  // Wild encounters do not telegraph — they attack unpredictably.
   const deck = state.opponent.deck
-  if (deck && deck.length > 0) {
+  if (deck && deck.length > 0 && !state.opponent.isWildEncounter) {
     state.opponentDeckIndex = (state.opponentDeckIndex + 1) % deck.length
     const nextMoveId = deck[state.opponentDeckIndex]
     state.telegraphedMove = nextMoveId
