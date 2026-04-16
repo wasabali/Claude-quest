@@ -12,7 +12,7 @@ import {
   checkShameGate,
   isPathBlocked,
 } from '../src/engine/GateEngine.js'
-import { getById as getGateById, getAll as getAllGates } from '../src/data/gates.js'
+import { getById as getGateById } from '../src/data/gates.js'
 
 // ---------------------------------------------------------------------------
 // Gate type constants
@@ -134,6 +134,12 @@ describe('canAttemptGate — reputation gates', () => {
     const result = canAttemptGate('helm_hansen_gate', player)
     expect(result.canAttempt).toBe(true)
   })
+  it('defaults missing reputation to 0 and denies attempt', () => {
+    const player = { learnedSkills: [] }
+    const result = canAttemptGate('helm_hansen_gate', player)
+    expect(result.canAttempt).toBe(false)
+    expect(result.reason).toContain('have 0')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -151,6 +157,13 @@ describe('canAttemptGate — shame gates', () => {
     const result = canAttemptGate('three_am_tavern_gate', player)
     expect(result.canAttempt).toBe(false)
     expect(result.reason).toContain('Shame too low')
+  })
+
+  it('defaults missing shamePoints to 0 and denies attempt', () => {
+    const player = { reputation: 50, learnedSkills: [] }
+    const result = canAttemptGate('three_am_tavern_gate', player)
+    expect(result.canAttempt).toBe(false)
+    expect(result.reason).toContain('have 0')
   })
 })
 

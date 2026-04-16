@@ -10,7 +10,6 @@
 //   shame      — requires minimum shame points
 
 import { getById as getGateById, getAll as getAllGates } from '#data/gates.js'
-import { getById as getSkillById } from '#data/skills.js'
 
 // ---------------------------------------------------------------------------
 // Gate type constants
@@ -57,8 +56,10 @@ export function getGateBetween(fromRegion, toRegion) {
 // Returns { canAttempt, reason } describing whether the player can try
 // to solve the gate right now.
 //
-// For hard/soft gates:    checks if the player has at least one solution
+// For hard gates:         checks if the player has at least one solution
 //                         command in their learned skills
+// For soft gates:         always attemptable; consequences for lacking the
+//                         right skill are handled elsewhere
 // For reputation gates:   checks reputation >= threshold
 // For shame gates:        checks shamePoints >= threshold
 // For knowledge gates:    always attemptable (resolved by NPC quiz)
@@ -70,10 +71,11 @@ export function canAttemptGate(gateId, playerState) {
   // Reputation gate — check threshold
   if (gate.type === GATE_TYPES.REPUTATION) {
     const threshold = gate.reputationThreshold ?? 0
-    if (playerState.reputation < threshold) {
+    const reputation = playerState.reputation ?? 0
+    if (reputation < threshold) {
       return {
         canAttempt: false,
-        reason: `Reputation too low. Need ${threshold}, have ${playerState.reputation}.`,
+        reason: `Reputation too low. Need ${threshold}, have ${reputation}.`,
       }
     }
     return { canAttempt: true, reason: null }
@@ -82,10 +84,11 @@ export function canAttemptGate(gateId, playerState) {
   // Shame gate — check threshold
   if (gate.type === GATE_TYPES.SHAME) {
     const threshold = gate.shameThreshold ?? 0
-    if (playerState.shamePoints < threshold) {
+    const shamePoints = playerState.shamePoints ?? 0
+    if (shamePoints < threshold) {
       return {
         canAttempt: false,
-        reason: `Shame too low. Need ${threshold}, have ${playerState.shamePoints}.`,
+        reason: `Shame too low. Need ${threshold}, have ${shamePoints}.`,
       }
     }
     return { canAttempt: true, reason: null }
@@ -102,12 +105,16 @@ export function canAttemptGate(gateId, playerState) {
   }
 
   // Hard gate — check if player has at least one solution command
-  if (gate.solutions.length === 0) {
-    return { canAttempt: true, reason: null }
+  const solutions = Array.isArray(gate.solutions) ? gate.solutions : []
+  if (solutions.length === 0) {
+    return {
+      canAttempt: false,
+      reason: 'Gate is misconfigured: no solutions are defined.',
+    }
   }
 
   const learnedSkills = playerState.learnedSkills ?? []
-  const hasSolution = gate.solutions.some(
+  const hasSolution = solutions.some(
     sol => learnedSkills.includes(sol.commandId),
   )
 
@@ -126,7 +133,7 @@ export function canAttemptGate(gateId, playerState) {
 // Returns the subset of gate solutions whose commandId the player has
 // in their learned skills.
 // ---------------------------------------------------------------------------
-export function getAvailableSolutions(gateId, learnedSkills) {
+export function getAvailableSolutions(gateId, learnedSkills = []) {
   const gate = getGateById(gateId)
   if (!gate) return []
 
@@ -197,11 +204,11 @@ export function evaluateMultiStepGate(gateId, commandIds) {
       return { completed: true, matchedSteps, tier: 'optimal' }
     }
 
-    // Partial match — check if any individual command is a valid solution
+    // Partial match — check if any individual command actually resolves the gate
     for (const cmdId of commandIds) {
-      const solution = gate.solutions.find(s => s.commandId === cmdId)
-      if (solution) {
-        return { completed: true, matchedSteps, tier: solution.tier }
+      const result = evaluateSolution(gateId, cmdId)
+      if (result.resolved) {
+        return { completed: true, matchedSteps, tier: result.tier }
       }
     }
 

@@ -9,7 +9,7 @@ import { getAll as getAllTrainers } from '../src/data/trainers.js'
 import { getAll as getAllEmblems } from '../src/data/emblems.js'
 import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
-import { getById as getGateById, getAll as getAllGates } from '../src/data/gates.js'
+import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
 const VALID_GATE_TYPES = ['hard', 'soft', 'knowledge', 'reputation', 'shame']
@@ -131,6 +131,11 @@ describe('gates registry', () => {
 
     const allGates = getAllGates()
     expect(allGates.length).toBeGreaterThanOrEqual(1)
+
+    expect(typeof getGatesBy).toBe('function')
+    const hardGates = getGatesBy('type', 'hard')
+    expect(hardGates.length).toBeGreaterThanOrEqual(1)
+    hardGates.forEach(g => expect(g.type).toBe('hard'))
   })
 
   it('all gates have required fields', () => {
