@@ -1,0 +1,129 @@
+// SkillEngine.js — pure skill resolution logic, zero Phaser imports.
+// Handles domain matchups, damage calculation, XP, quality assessment,
+// and shame/reputation side effects.
+
+import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER } from '../config.js'
+
+// XP multipliers per solution quality tier.
+const XP_MULTIPLIERS = {
+  optimal:  2,
+  standard: 1,
+  shortcut: 0.5,
+  cursed:   0.25,
+  nuclear:  0,
+}
+
+// Reputation gain for non-cursed skill use (per turn).
+const REP_GAIN_OPTIMAL  = 3
+const REP_GAIN_STANDARD = 1
+
+// ---------------------------------------------------------------------------
+// getDomainMultiplier
+// Returns the damage multiplier when a skill of `skillDomain` is used
+// against an opponent with `opponentDomain`.
+//
+// Rules:
+//   - observability always returns 0 (support domain, no damage)
+//   - null skillDomain → cursed/nuclear bypass → 1.0 (flat)
+//   - null opponentDomain → unknown/hidden domain → 1.0 (neutral)
+//   - strong matchup → STRONG_MULTIPLIER (2.0)
+//   - weak matchup   → WEAK_MULTIPLIER   (0.5)
+//   - otherwise      → 1.0 (neutral)
+// ---------------------------------------------------------------------------
+export function getDomainMultiplier(skillDomain, opponentDomain) {
+  if (skillDomain === 'observability') return 0
+  if (skillDomain === null || skillDomain === undefined) return 1.0
+  if (opponentDomain === null || opponentDomain === undefined) return 1.0
+
+  const matchup = DOMAIN_MATCHUPS[skillDomain]
+  if (!matchup) return 1.0
+
+  if (matchup.strong === opponentDomain) return STRONG_MULTIPLIER
+  if (matchup.weak   === opponentDomain) return WEAK_MULTIPLIER
+
+  return 1.0
+}
+
+// ---------------------------------------------------------------------------
+// calculateDamage
+// Returns the final integer damage dealt by `skill` against an opponent
+// whose domain is `opponentDomain`.
+//
+// Only skills with effect.type === 'damage' deal damage; all others return 0.
+// ---------------------------------------------------------------------------
+export function calculateDamage(skill, opponentDomain) {
+  if (!skill?.effect || skill.effect.type !== 'damage') return 0
+  const base       = skill.effect.value ?? 0
+  const multiplier = getDomainMultiplier(skill.domain, opponentDomain)
+  return Math.floor(base * multiplier)
+}
+
+// ---------------------------------------------------------------------------
+// calculateXP
+// Returns XP awarded after a battle win.
+// Formula: Math.floor(difficulty * 30 * MULTIPLIERS[tier])
+// Returns 0 for unknown tiers.
+// ---------------------------------------------------------------------------
+export function calculateXP(opponentDifficulty, winningTier) {
+  const multiplier = XP_MULTIPLIERS[winningTier]
+  if (multiplier === undefined) return 0
+  return Math.floor(opponentDifficulty * 30 * multiplier)
+}
+
+// ---------------------------------------------------------------------------
+// assessQuality
+// Determines solution quality: 'optimal' | 'standard' | 'shortcut' | 'cursed' | 'nuclear'
+//
+// Priority order (highest first):
+//   1. nuclear tier  → 'nuclear'
+//   2. cursed tier   → 'cursed'
+//   3. correct domain + domain was revealed first  → 'optimal'
+//   4. correct domain, domain NOT revealed          → 'standard'
+//   5. wrong domain, incident resolved (hp <= 0)   → 'shortcut'
+//   6. otherwise → 'standard'
+// ---------------------------------------------------------------------------
+export function assessQuality(skill, opponent, domainRevealed) {
+  if (skill.tier === 'nuclear') return 'nuclear'
+  if (skill.tier === 'cursed')  return 'cursed'
+
+  const multiplier = getDomainMultiplier(skill.domain, opponent.domain)
+  const isCorrectDomain = multiplier >= STRONG_MULTIPLIER
+
+  if (isCorrectDomain && domainRevealed) return 'optimal'
+  if (isCorrectDomain && !domainRevealed) return 'standard'
+
+  // Wrong domain but incident still resolved
+  if (opponent.hp !== undefined && opponent.hp <= 0) return 'shortcut'
+
+  return 'standard'
+}
+
+// ---------------------------------------------------------------------------
+// applyShameAndReputation
+// Returns a new player snapshot with updated shamePoints and reputation.
+// Does NOT mutate the original player object.
+//
+// Rules:
+//   - cursed/nuclear: apply sideEffect.shame and sideEffect.reputation
+//   - optimal: +REP_GAIN_OPTIMAL reputation (no shame)
+//   - standard/shortcut: +REP_GAIN_STANDARD reputation (no shame)
+//   - reputation is clamped to [0, 100]
+//   - shamePoints only increases, never decrements
+// ---------------------------------------------------------------------------
+export function applyShameAndReputation(player, skill) {
+  let { shamePoints, reputation } = player
+
+  if ((skill.tier === 'cursed' || skill.tier === 'nuclear') && skill.sideEffect) {
+    shamePoints += skill.sideEffect.shame ?? 0
+    reputation  += skill.sideEffect.reputation ?? 0
+  } else if (skill.tier === 'optimal') {
+    reputation += REP_GAIN_OPTIMAL
+  } else {
+    reputation += REP_GAIN_STANDARD
+  }
+
+  // Clamp reputation to [0, 100]
+  reputation = Math.max(0, Math.min(100, reputation))
+
+  return { ...player, shamePoints, reputation }
+}
