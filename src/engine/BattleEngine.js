@@ -137,6 +137,7 @@ export function skillPhase(state, skill) {
     if (state.player.technicalDebt < MAX_TECHNICAL_DEBT) {
       state.player.technicalDebt += 1
       state.player.maxHp = Math.max(1, state.player.maxHp - TECHNICAL_DEBT_HP_PENALTY)
+      state.player.hp = Math.min(state.player.hp, state.player.maxHp)
     }
     events.push({ type: 'technical_debt', target: 'player', value: state.player.technicalDebt })
   }

@@ -270,6 +270,17 @@ describe('skillPhase', () => {
     )
   })
 
+  it('clamps player hp to new maxHp when technical debt reduces it below current hp', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 100, maxHp: 100, technicalDebt: 0 }), makeOpponent())
+    const skill = {
+      id: 'force_push', domain: null, tier: 'cursed', isCursed: true,
+      effect: { type: 'damage', value: 1 }, // minimal damage so hp stays near 100
+      sideEffect: { shame: 1, reputation: -8 },
+    }
+    skillPhase(state, skill)
+    expect(state.player.hp).toBeLessThanOrEqual(state.player.maxHp)
+  })
+
   it('sets winningTier to shortcut when wrong domain defeats opponent', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ domain: 'cloud', hp: 5 }))
     // linux is NOT strong against cloud — wrong domain

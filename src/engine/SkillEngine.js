@@ -13,7 +13,8 @@ const XP_MULTIPLIERS = {
   nuclear:  0,
 }
 
-// Reputation change at win resolution, per solution quality tier.
+// Reputation change applied during per-skill-use side effects, per solution quality tier.
+// Battle win-resolution reputation is handled separately in BattleEngine.
 const REP_GAIN_OPTIMAL   = 3
 const REP_GAIN_STANDARD  = 1
 const REP_CHANGE_SHORTCUT = -5
@@ -110,7 +111,8 @@ export function assessQuality(skill, opponent, domainRevealed) {
 // Rules:
 //   - cursed/nuclear: apply sideEffect.shame and sideEffect.reputation
 //   - optimal: +REP_GAIN_OPTIMAL reputation (no shame)
-//   - standard/shortcut: +REP_GAIN_STANDARD reputation (no shame)
+//   - shortcut: +REP_CHANGE_SHORTCUT reputation (no shame)
+//   - standard: +REP_GAIN_STANDARD reputation (no shame)
 //   - reputation is clamped to [0, 100]
 //   - shamePoints only increases, never decrements
 // ---------------------------------------------------------------------------

@@ -334,7 +334,7 @@ export class BattleScene extends BaseScene {
         break
 
       case 'technical_debt':
-        this._showLog(`Technical debt: ${event.value} stack${event.value !== 1 ? 's' : ''}. Max HP reduced.`)
+        this._showLog(`Technical debt: ${event.value} stack${event.value !== 1 ? 's' : ''}.`)
         this._refreshHUD()
         this.time.delayedCall(500, callback)
         break

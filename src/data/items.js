@@ -165,11 +165,11 @@ const ITEMS = {
     id:             'scorched_server',
     displayName:    'Scorched Server',
     tab:            'junk',
-    description:    'Still smoking. A monument to your choices. Has cursed uses.',
+    description:    'Still smoking. A monument to your choices. A cursed salvage that restores 20 HP.',
     usableInBattle: true,
     battleAction:   'use',
     worldActions:   ['examine', 'drop'],
-    effect:         { type: 'damage_all', value: 20 },
+    effect:         { type: 'heal_hp', value: 20 },
     isCursed:       true,
   },
 }
