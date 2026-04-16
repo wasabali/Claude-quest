@@ -241,6 +241,14 @@ describe('applyShameAndReputation', () => {
     expect(result.reputation).toBe(35)
   })
 
+  it('shortcut skill reduces reputation by 5 and does not add shame', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'shortcut', isCursed: false, sideEffect: null }
+    const result = applyShameAndReputation(player, skill)
+    expect(result.shamePoints).toBe(0)
+    expect(result.reputation).toBe(45)
+  })
+
   it('optimal skill does not add shame and increases reputation', () => {
     const player = { shamePoints: 0, reputation: 50 }
     const skill = { tier: 'optimal', isCursed: false, sideEffect: null }

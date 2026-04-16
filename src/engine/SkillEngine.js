@@ -13,9 +13,10 @@ const XP_MULTIPLIERS = {
   nuclear:  0,
 }
 
-// Reputation gain for non-cursed skill use (per turn).
-const REP_GAIN_OPTIMAL  = 3
-const REP_GAIN_STANDARD = 1
+// Reputation change at win resolution, per solution quality tier.
+const REP_GAIN_OPTIMAL   = 3
+const REP_GAIN_STANDARD  = 1
+const REP_CHANGE_SHORTCUT = -5
 
 // ---------------------------------------------------------------------------
 // getDomainMultiplier
@@ -121,6 +122,8 @@ export function applyShameAndReputation(player, skill) {
     reputation  += skill.sideEffect.reputation ?? 0
   } else if (skill.tier === 'optimal') {
     reputation += REP_GAIN_OPTIMAL
+  } else if (skill.tier === 'shortcut') {
+    reputation += REP_CHANGE_SHORTCUT
   } else {
     reputation += REP_GAIN_STANDARD
   }

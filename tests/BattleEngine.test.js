@@ -16,14 +16,15 @@ import {
 
 function makePlayer(overrides = {}) {
   return {
-    hp:           100,
-    maxHp:        100,
-    budget:       500,
-    reputation:   50,
-    shamePoints:  0,
-    level:        1,
-    xp:           0,
-    activeSlots:  4,
+    hp:            100,
+    maxHp:         100,
+    budget:        500,
+    reputation:    50,
+    shamePoints:   0,
+    technicalDebt: 0,
+    level:         1,
+    xp:            0,
+    activeSlots:   4,
     ...overrides,
   }
 }
@@ -89,6 +90,17 @@ describe('createBattleState', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent())
     expect(state.playerStatuses).toEqual([])
     expect(state.opponentStatuses).toEqual([])
+  })
+
+  it('copies player technicalDebt into battle state from player object', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 3 }), makeOpponent())
+    expect(state.player.technicalDebt).toBe(3)
+  })
+
+  it('initialises player technicalDebt to 0 when not provided', () => {
+    const playerWithoutDebt = { hp: 100, maxHp: 100, budget: 500, reputation: 50, shamePoints: 0, level: 1, xp: 0, activeSlots: 4 }
+    const state = createBattleState(BATTLE_MODES.INCIDENT, playerWithoutDebt, makeOpponent())
+    expect(state.player.technicalDebt).toBe(0) // createBattleState normalises missing field to 0
   })
 })
 
@@ -215,6 +227,75 @@ describe('skillPhase', () => {
     expect(events).toContainEqual(
       expect.objectContaining({ type: 'reputation' })
     )
+  })
+
+  it('emits technical_debt event for cursed skill', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 0 }), makeOpponent())
+    const skill = {
+      id: 'force_push', domain: null, tier: 'cursed', isCursed: true,
+      effect: { type: 'damage', value: 30 },
+      sideEffect: { shame: 1, reputation: -8 },
+    }
+    const events = skillPhase(state, skill)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'technical_debt', target: 'player', value: 1 })
+    )
+  })
+
+  it('increments player technicalDebt and reduces maxHp for cursed skill', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 2, maxHp: 100 }), makeOpponent())
+    const skill = {
+      id: 'force_push', domain: null, tier: 'cursed', isCursed: true,
+      effect: { type: 'damage', value: 30 },
+      sideEffect: { shame: 1, reputation: -8 },
+    }
+    skillPhase(state, skill)
+    expect(state.player.technicalDebt).toBe(3)
+    expect(state.player.maxHp).toBe(98)
+  })
+
+  it('does not exceed MAX_TECHNICAL_DEBT (10) stacks', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 10, maxHp: 80 }), makeOpponent())
+    const skill = {
+      id: 'force_push', domain: null, tier: 'cursed', isCursed: true,
+      effect: { type: 'damage', value: 30 },
+      sideEffect: { shame: 1, reputation: -8 },
+    }
+    const events = skillPhase(state, skill)
+    expect(state.player.technicalDebt).toBe(10) // capped, not incremented
+    expect(state.player.maxHp).toBe(80)         // no further reduction
+    // event is still emitted so the UI can display the current debt level
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'technical_debt', target: 'player', value: 10 })
+    )
+  })
+
+  it('sets winningTier to shortcut when wrong domain defeats opponent', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ domain: 'cloud', hp: 5 }))
+    // linux is NOT strong against cloud — wrong domain
+    const skill = makeDamageSkill({ domain: 'linux', effect: { type: 'damage', value: 100 } })
+    skillPhase(state, skill)
+    expect(state.winningTier).toBe('shortcut')
+  })
+
+  it('sets winningTier to optimal when correct domain defeats opponent with domain revealed', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ domain: 'iac', hp: 5 }))
+    state.domainRevealed = true
+    // cloud is strong against iac
+    const skill = makeDamageSkill({ domain: 'cloud', effect: { type: 'damage', value: 100 } })
+    skillPhase(state, skill)
+    expect(state.winningTier).toBe('optimal')
+  })
+
+  it('sets winningTier to cursed when cursed skill is used', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 5 }))
+    const skill = {
+      id: 'force_push', domain: null, tier: 'cursed', isCursed: true,
+      effect: { type: 'damage', value: 100 },
+      sideEffect: { shame: 1, reputation: -8 },
+    }
+    skillPhase(state, skill)
+    expect(state.winningTier).toBe('cursed')
   })
 
   it('does not emit damage event for heal skill', () => {
@@ -397,14 +478,81 @@ describe('turnEndPhase', () => {
     )
   })
 
-  it('emits teach_skill event on ENGINEER win if opponent has a teach skill', () => {
+  it('emits teach_skill event on ENGINEER win when tier is optimal and opponent has a teach skill', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'teach_skill', value: 'helm_upgrade' })
+    )
+  })
+
+  it('emits teach_hint event on ENGINEER win when tier is standard and opponent has a teach skill', () => {
     const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
       makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
     state.winningTier = 'standard'
     const events = turnEndPhase(state)
     expect(events).toContainEqual(
-      expect.objectContaining({ type: 'teach_skill', value: 'helm_upgrade' })
+      expect.objectContaining({ type: 'teach_hint', value: 'helm_upgrade' })
     )
+    expect(events.find(e => e.type === 'teach_skill')).toBeUndefined()
+  })
+
+  it('does NOT emit teach_skill when tier is shortcut in ENGINEER win', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'shortcut'
+    const events = turnEndPhase(state)
+    expect(events.find(e => e.type === 'teach_skill')).toBeUndefined()
+    expect(events.find(e => e.type === 'teach_hint')).toBeUndefined()
+  })
+
+  it('emits trainer_disgusted on ENGINEER win when tier is cursed', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'cursed'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'trainer_disgusted' })
+    )
+    expect(events.find(e => e.type === 'teach_skill')).toBeUndefined()
+  })
+
+  it('emits warn_npcs on ENGINEER win when tier is nuclear', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(),
+      makeOpponent({ hp: 0, teachSkillId: 'helm_upgrade' }))
+    state.winningTier = 'nuclear'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'warn_npcs' })
+    )
+    expect(events.find(e => e.type === 'teach_skill')).toBeUndefined()
+  })
+
+  it('emits reputation event on win with positive delta for optimal tier', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent({ hp: 0 }))
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    const repEvent = events.find(e => e.type === 'reputation')
+    expect(repEvent).toBeDefined()
+    expect(repEvent.value).toBeGreaterThan(0)
+  })
+
+  it('emits reputation event on win with negative delta for shortcut tier', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent({ hp: 0 }))
+    state.winningTier = 'shortcut'
+    const events = turnEndPhase(state)
+    const repEvent = events.find(e => e.type === 'reputation')
+    expect(repEvent).toBeDefined()
+    expect(repEvent.value).toBeLessThan(0)
+  })
+
+  it('updates player reputation in state on win', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent({ hp: 0 }))
+    state.winningTier = 'optimal'
+    turnEndPhase(state)
+    expect(state.player.reputation).toBe(60)
   })
 
   it('returns empty event array when battle is still ongoing', () => {
@@ -488,7 +636,8 @@ describe('BattleEvent shape', () => {
   const VALID_TYPES = [
     'skill_used', 'damage', 'heal', 'domain_reveal',
     'sla_tick', 'sla_breach', 'status_tick', 'status_remove',
-    'status_apply', 'reputation', 'xp_gain', 'teach_skill', 'battle_end',
+    'status_apply', 'reputation', 'xp_gain', 'teach_skill', 'teach_hint',
+    'technical_debt', 'trainer_disgusted', 'warn_npcs', 'battle_end',
   ]
 
   it('all emitted events have recognised type strings', () => {

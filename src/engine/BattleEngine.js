@@ -2,7 +2,7 @@
 // Owns the battle state and phase queue. Returns BattleEvent[] arrays.
 // Scenes delegate all logic here; they only render the returned events.
 
-import { calculateDamage, calculateXP, applyShameAndReputation } from './SkillEngine.js'
+import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation } from './SkillEngine.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -13,7 +13,21 @@ export const BATTLE_MODES = {
   ENGINEER: 'ENGINEER', // Trainer battle — enemy telegraphs next move
 }
 
-// Default SLA timer when none specified
+// Maximum stacks of technical debt a player can accumulate
+const MAX_TECHNICAL_DEBT = 10
+
+// Max HP penalty per technical debt stack
+const TECHNICAL_DEBT_HP_PENALTY = 2
+
+// Reputation deltas applied at win resolution, per solution quality tier.
+const QUALITY_REP_DELTAS = {
+  optimal:  10,
+  standard: 3,
+  shortcut: -5,
+  cursed:   -15,
+  nuclear:  -30,
+}
+
 const DEFAULT_SLA_TIMER = 10
 
 // Penalty applied on SLA breach
@@ -32,7 +46,7 @@ export function createBattleState(mode, player, opponent, options = {}) {
   return {
     mode,
     turn:             1,
-    player:           { ...player },
+    player:           { ...player, technicalDebt: player.technicalDebt ?? 0 },
     opponent:         { ...opponent },
     playerStatuses:   [],
     opponentStatuses: [],
@@ -83,7 +97,8 @@ export function statusTickPhase(state) {
 // ---------------------------------------------------------------------------
 // Phase 2: SkillPhase
 // Resolves the player's chosen skill.
-// Emits skill_used, damage/heal/domain_reveal, and reputation events.
+// Emits skill_used, damage/heal/domain_reveal, reputation, and
+// technical_debt events. Also updates state.winningTier.
 // ---------------------------------------------------------------------------
 export function skillPhase(state, skill) {
   const events = []
@@ -109,7 +124,7 @@ export function skillPhase(state, skill) {
     events.push({ type: 'domain_reveal', target: 'opponent', value: state.opponent.domain })
   }
 
-  // Cursed/nuclear side effects — shame and reputation
+  // Cursed/nuclear side effects — shame, reputation, and technical debt
   if (skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear') {
     const updated = applyShameAndReputation(state.player, skill)
     const shameDelta = updated.shamePoints - state.player.shamePoints
@@ -117,7 +132,17 @@ export function skillPhase(state, skill) {
     state.player.shamePoints = updated.shamePoints
     state.player.reputation  = updated.reputation
     events.push({ type: 'reputation', target: 'player', value: repDelta, shameDelta })
+
+    // Accumulate technical debt (capped at MAX_TECHNICAL_DEBT)
+    if (state.player.technicalDebt < MAX_TECHNICAL_DEBT) {
+      state.player.technicalDebt += 1
+      state.player.maxHp = Math.max(1, state.player.maxHp - TECHNICAL_DEBT_HP_PENALTY)
+    }
+    events.push({ type: 'technical_debt', target: 'player', value: state.player.technicalDebt })
   }
+
+  // Update winning tier based on the outcome of this skill
+  state.winningTier = assessQuality(skill, state.opponent, state.domainRevealed)
 
   return events
 }
@@ -193,13 +218,32 @@ export function turnEndPhase(state) {
   const slaLoss          = state.slaBreach && !opponentDefeated
 
   if (opponentDefeated) {
-    const tier       = state.winningTier ?? 'standard'
-    const xp         = calculateXP(state.opponent.difficulty ?? 1, tier)
-    const hasTeach   = state.mode === BATTLE_MODES.ENGINEER && state.opponent.teachSkillId
-    events.push({ type: 'xp_gain',    target: 'player', value: xp })
-    if (hasTeach) {
-      events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
+    const tier = state.winningTier ?? 'standard'
+    const xp   = calculateXP(state.opponent.difficulty ?? 1, tier)
+    events.push({ type: 'xp_gain', target: 'player', value: xp })
+
+    // Apply quality-based reputation delta at win resolution
+    const repDelta    = QUALITY_REP_DELTAS[tier] ?? 0
+    const newRep      = Math.max(0, Math.min(100, state.player.reputation + repDelta))
+    const actualDelta = newRep - state.player.reputation
+    state.player.reputation = newRep
+    if (actualDelta !== 0) {
+      events.push({ type: 'reputation', target: 'player', value: actualDelta })
     }
+
+    // ENGINEER mode: tier-based teacher reactions
+    if (state.mode === BATTLE_MODES.ENGINEER) {
+      if (tier === 'optimal' && state.opponent.teachSkillId) {
+        events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
+      } else if (tier === 'standard' && state.opponent.teachSkillId) {
+        events.push({ type: 'teach_hint', target: 'player', value: state.opponent.teachSkillId })
+      } else if (tier === 'cursed') {
+        events.push({ type: 'trainer_disgusted', target: 'player' })
+      } else if (tier === 'nuclear') {
+        events.push({ type: 'warn_npcs', target: 'player' })
+      }
+    }
+
     events.push({ type: 'battle_end', target: 'player', value: 'win' })
     return events
   }

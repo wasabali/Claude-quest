@@ -8,7 +8,7 @@ import {
   createBattleState,
   resolveTurn,
 } from '#engine/BattleEngine.js'
-import { assessQuality, calculateXP } from '#engine/SkillEngine.js'
+import { calculateXP } from '#engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
 // Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (160×144 native)
@@ -239,11 +239,7 @@ export class BattleScene extends BaseScene {
 
     const events = resolveTurn(this._battleState, skill)
 
-    // Post-turn quality assessment — opponent.hp now reflects the actual outcome,
-    // enabling correct shortcut detection (wrong domain but incident resolved).
-    const quality = assessQuality(skill, this._battleState.opponent, this._battleState.domainRevealed)
-    this._battleState.winningTier = quality
-
+    // winningTier is now set inside skillPhase via assessQuality in the engine
     this._animateEvents(events)
   }
 
@@ -332,6 +328,27 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(800, callback)
         break
 
+      case 'teach_hint':
+        this._showLog(`Hint: study ${event.value} next.`)
+        this.time.delayedCall(600, callback)
+        break
+
+      case 'technical_debt':
+        this._showLog(`Technical debt: ${event.value} stack${event.value !== 1 ? 's' : ''}. Max HP reduced.`)
+        this._refreshHUD()
+        this.time.delayedCall(500, callback)
+        break
+
+      case 'trainer_disgusted':
+        this._showLog('Trainer leaves in disgust. No teaching.')
+        this.time.delayedCall(600, callback)
+        break
+
+      case 'warn_npcs':
+        this._showLog('Trainer warns all NPCs about you.')
+        this.time.delayedCall(600, callback)
+        break
+
       case 'battle_end':
         this._onBattleEnd(event.value)
         break
@@ -348,9 +365,11 @@ export class BattleScene extends BaseScene {
     const { player, opponent } = this._battleState
 
     // Write engine state back to GameState
-    GameState.player.hp          = player.hp
-    GameState.player.reputation  = player.reputation
-    GameState.player.shamePoints = player.shamePoints
+    GameState.player.hp            = player.hp
+    GameState.player.maxHp         = player.maxHp
+    GameState.player.reputation    = player.reputation
+    GameState.player.shamePoints   = player.shamePoints
+    GameState.player.technicalDebt = player.technicalDebt
 
     if (result === 'win') {
       GameState.stats.battlesWon++

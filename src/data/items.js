@@ -151,6 +151,27 @@ const ITEMS = {
     worldActions:   ['examine', 'drop'],
     effect:         null,
   },
+  cold_coffee: {
+    id:             'cold_coffee',
+    displayName:    'Cold Coffee',
+    tab:            'junk',
+    description:    "Margaret's thanks. It was warm when she made it. You took too long.",
+    usableInBattle: true,
+    battleAction:   'use',
+    worldActions:   ['examine', 'drop'],
+    effect:         { type: 'heal_hp', value: 5 },
+  },
+  scorched_server: {
+    id:             'scorched_server',
+    displayName:    'Scorched Server',
+    tab:            'junk',
+    description:    'Still smoking. A monument to your choices. Has cursed uses.',
+    usableInBattle: true,
+    battleAction:   'use',
+    worldActions:   ['examine', 'drop'],
+    effect:         { type: 'damage_all', value: 20 },
+    isCursed:       true,
+  },
 }
 
 export const getById = (id)           => ITEMS[id]
