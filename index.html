@@ -23,6 +23,12 @@
       width: 100vw;
       height: 100vh;
     }
+
+    /* Prevent browser from blurring the canvas on HiDPI screens */
+    canvas {
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
   </style>
 </head>
 <body>
