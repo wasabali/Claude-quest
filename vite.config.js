@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: process.env.GITHUB_PAGES ? '/Claudeomon/' : '/',
   resolve: {
     alias: {
       '#engine': resolve('./src/engine'),
