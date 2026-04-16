@@ -113,15 +113,14 @@ export function skillPhase(state, skill) {
     events.push({ type: 'domain_reveal', target: 'opponent', value: state.opponent.domain })
   }
 
-  // Cursed/nuclear side effects — shame and reputation
-  if (skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear') {
-    const updated = applyShameAndReputation(state.player, skill)
-    const shameDelta = updated.shamePoints - state.player.shamePoints
-    const repDelta   = updated.reputation  - state.player.reputation
-    state.player.shamePoints = updated.shamePoints
-    state.player.reputation  = updated.reputation
-    events.push({ type: 'reputation', target: 'player', value: repDelta, shameDelta })
-  }
+  // Apply shame and reputation changes for this skill use (all tiers).
+  // Non-cursed skills always have shameDelta=0; reputation delta varies by tier.
+  const updated    = applyShameAndReputation(state.player, skill)
+  const shameDelta = updated.shamePoints - state.player.shamePoints
+  const repDelta   = updated.reputation  - state.player.reputation
+  state.player.shamePoints = updated.shamePoints
+  state.player.reputation  = updated.reputation
+  events.push({ type: 'reputation', target: 'player', value: repDelta, shameDelta })
 
   return events
 }

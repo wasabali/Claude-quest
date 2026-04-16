@@ -150,8 +150,8 @@ export function getReputationStatus(reputation) {
 
 // ---------------------------------------------------------------------------
 // getShameTitle
-// Returns the highest-shame title the player has earned, or null if none.
-// Titles are granted at Shame 10 (Shadow Engineer) and Shame 5 (Person of Interest).
+// Returns the title from the highest matching configured shame threshold,
+// or null if no threshold with a non-null title has been reached.
 // ---------------------------------------------------------------------------
 export function getShameTitle(shamePoints) {
   for (const threshold of SHAME_THRESHOLDS) {

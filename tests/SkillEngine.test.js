@@ -293,6 +293,14 @@ describe('applyShameAndReputation', () => {
     expect(result.reputation).toBe(53)
   })
 
+  it('does not mutate the original player object', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'cursed', isCursed: true, sideEffect: { shame: 1, reputation: -8 } }
+    applyShameAndReputation(player, skill)
+    expect(player.shamePoints).toBe(0)
+    expect(player.reputation).toBe(50)
+  })
+
 })
 
 // ---------------------------------------------------------------------------

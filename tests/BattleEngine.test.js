@@ -217,6 +217,26 @@ describe('skillPhase', () => {
     )
   })
 
+  it('emits reputation event for standard skill (all tiers apply rep changes)', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent())
+    const skill = makeDamageSkill({ tier: 'standard' })
+    const events = skillPhase(state, skill)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'reputation', value: 3, shameDelta: 0 })
+    )
+    expect(state.player.reputation).toBe(53)
+  })
+
+  it('emits reputation event for optimal skill with correct delta', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent())
+    const skill = makeDamageSkill({ tier: 'optimal' })
+    const events = skillPhase(state, skill)
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'reputation', value: 10, shameDelta: 0 })
+    )
+    expect(state.player.reputation).toBe(60)
+  })
+
   it('does not emit damage event for heal skill', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 80 }), makeOpponent())
     const skill = { id: 'systemctl_restart', domain: 'linux', tier: 'standard', isCursed: false,
