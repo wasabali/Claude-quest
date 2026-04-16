@@ -12,14 +12,27 @@ const BASE_CURSED_WEIGHT  = 5
 // Select an encounter from the pool for the given regionId.
 // Uses seeded RNG — never Math.random() — so same args always return same result.
 //
+// options.isOnCallHours — when true, restricts all pools to encounters flagged
+//   onCall: true (real clock 02:00–04:00 rule from the design spec).
+//
 // Returns { encounterType, enemyId, domain } or null when:
 //  - the regionId does not exist in ENCOUNTER_POOLS
-//  - all pools for the region are empty
-export function selectFromPool(regionId, seed, stepCount) {
+//  - all pools for the region are empty (or empty after on-call filter)
+export function selectFromPool(regionId, seed, stepCount, options = {}) {
   const pool = ENCOUNTER_POOLS[regionId]
   if (!pool) return null
 
-  const { common, rare, cursed } = pool
+  let common = pool.common
+  let rare   = pool.rare
+  let cursed = pool.cursed
+
+  // On-call hours: restrict all pools to encounters flagged onCall: true
+  if (options.isOnCallHours) {
+    const isOnCall = (id) => getEncounterById(id)?.onCall === true
+    common = common.filter(isOnCall)
+    rare   = rare.filter(isOnCall)
+    cursed = cursed.filter(isOnCall)
+  }
 
   const allEmpty = common.length === 0 && rare.length === 0 && cursed.length === 0
   if (allEmpty) return null
@@ -89,7 +102,11 @@ export function selectFromPool(regionId, seed, stepCount) {
 // Starts low, increases with stepCount, caps at a maximum.
 // Pure function — same inputs always return same value.
 // Returns 0 on step 0 (no encounter immediately on entering a region).
-export function encounterChance(stepCount, seed) {
+//
+// modifiers:
+//   cursedRecentlyUsed — player used a cursed technique recently (+30% additive)
+//   hasMonitorSkill    — player has Azure Monitor skill equipped (−20% additive)
+export function encounterChance(stepCount, seed, modifiers = {}) {
   if (stepCount === 0) return 0
 
   // Simple ramp: base 5% + 1% per step, cap at 25%
@@ -98,5 +115,10 @@ export function encounterChance(stepCount, seed) {
   const MAX_CHANCE    = 0.25
 
   const rawChance = BASE_CHANCE + STEP_INCREASE * (stepCount - 1)
-  return Math.min(rawChance, MAX_CHANCE)
+  let chance = Math.min(rawChance, MAX_CHANCE)
+
+  if (modifiers.cursedRecentlyUsed) chance += 0.30
+  if (modifiers.hasMonitorSkill)    chance -= 0.20
+
+  return Math.min(1, Math.max(0, chance))
 }

@@ -146,3 +146,82 @@ describe('encounterChance', () => {
     expect(encounterChance(0, 1)).toBe(0)
   })
 })
+
+describe('encounterChance — modifiers', () => {
+  it('cursedRecentlyUsed adds 0.30 to the capped chance', () => {
+    const base     = encounterChance(50, 1)                                   // hits MAX_CHANCE = 0.25
+    const modified = encounterChance(50, 1, { cursedRecentlyUsed: true })
+    expect(modified).toBeCloseTo(base + 0.30, 5)
+  })
+
+  it('hasMonitorSkill subtracts 0.20 from the capped chance', () => {
+    const base     = encounterChance(50, 1)                                   // hits MAX_CHANCE = 0.25
+    const modified = encounterChance(50, 1, { hasMonitorSkill: true })
+    expect(modified).toBeCloseTo(base - 0.20, 5)
+  })
+
+  it('both modifiers can be active simultaneously', () => {
+    const base     = encounterChance(50, 1)
+    const modified = encounterChance(50, 1, { cursedRecentlyUsed: true, hasMonitorSkill: true })
+    expect(modified).toBeCloseTo(base + 0.10, 5)
+  })
+
+  it('chance never exceeds 1.0', () => {
+    const chance = encounterChance(50, 1, { cursedRecentlyUsed: true })
+    expect(chance).toBeLessThanOrEqual(1)
+  })
+
+  it('chance never goes below 0', () => {
+    const chance = encounterChance(1, 1, { hasMonitorSkill: true })
+    expect(chance).toBeGreaterThanOrEqual(0)
+  })
+
+  it('empty modifiers object does not change the result', () => {
+    expect(encounterChance(10, 42, {})).toBe(encounterChance(10, 42))
+  })
+
+  it('is deterministic — same inputs always give same result', () => {
+    const a = encounterChance(15, 99, { cursedRecentlyUsed: true })
+    const b = encounterChance(15, 99, { cursedRecentlyUsed: true })
+    expect(a).toBe(b)
+  })
+})
+
+describe('selectFromPool — on-call hours', () => {
+  it('only returns on-call incidents (prod_incident, sev1_at_3am) from production_plains', () => {
+    // production_plains common: high_cpu, disk_full, 503_error — none onCall
+    // rare: prod_incident (onCall), runaway_process (not onCall)
+    // cursed: sev1_at_3am (onCall)
+    // With 500 seeds we guarantee at least some on-call entries are returned.
+    const onCallIds = new Set(['prod_incident', 'sev1_at_3am'])
+    let gotAtLeastOne = false
+    for (let seed = 1; seed <= 500; seed++) {
+      const r = selectFromPool('production_plains', seed, 5, { isOnCallHours: true })
+      if (r !== null) {
+        gotAtLeastOne = true
+        expect(onCallIds).toContain(r.enemyId)
+      }
+    }
+    expect(gotAtLeastOne).toBe(true)
+  })
+
+  it('never returns a non-on-call encounter when isOnCallHours is true', () => {
+    const nonOnCallIds = ['high_cpu', 'disk_full', '503_error', 'runaway_process']
+    for (let seed = 1; seed <= 500; seed++) {
+      const r = selectFromPool('production_plains', seed, 5, { isOnCallHours: true })
+      if (r) {
+        expect(nonOnCallIds).not.toContain(r.enemyId)
+      }
+    }
+  })
+
+  it('returns null for localhost_town regardless of isOnCallHours (all pools empty)', () => {
+    expect(selectFromPool('localhost_town', 42, 5, { isOnCallHours: true })).toBeNull()
+  })
+
+  it('isOnCallHours: false behaves identically to omitting the option', () => {
+    const r1 = selectFromPool('production_plains', 77, 10, { isOnCallHours: false })
+    const r2 = selectFromPool('production_plains', 77, 10)
+    expect(r1).toEqual(r2)
+  })
+})

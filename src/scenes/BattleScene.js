@@ -332,6 +332,23 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(800, callback)
         break
 
+      case 'budget_drain':
+        this._showLog(`Budget drained by ${event.value}!`)
+        this._refreshHUD()
+        this.time.delayedCall(400, callback)
+        break
+
+      case 'escalation':
+        this._showLog('Technical debt increased! The incident is escalating.')
+        this.time.delayedCall(500, callback)
+        break
+
+      case 'layer_transition':
+        this._showLog('Root cause revealed! A deeper layer emerges...')
+        this._enemyDomainText?.setText('[???]')
+        this.time.delayedCall(800, callback)
+        break
+
       case 'battle_end':
         this._onBattleEnd(event.value)
         break
@@ -348,12 +365,23 @@ export class BattleScene extends BaseScene {
     const { player, opponent } = this._battleState
 
     // Write engine state back to GameState
-    GameState.player.hp          = player.hp
-    GameState.player.reputation  = player.reputation
-    GameState.player.shamePoints = player.shamePoints
+    GameState.player.hp             = player.hp
+    GameState.player.reputation     = player.reputation
+    GameState.player.shamePoints    = player.shamePoints
+    GameState.player.technicalDebt  = player.technicalDebt !== undefined ? player.technicalDebt : GameState.player.technicalDebt
+    GameState.player.budget         = player.budget !== undefined ? player.budget : GameState.player.budget
+
+    // Track SLA breach in persistent stats
+    if (this._battleState.slaBreach) {
+      GameState.stats.slaBreaches = (GameState.stats.slaBreaches ?? 0) + 1
+    }
 
     if (result === 'win') {
       GameState.stats.battlesWon++
+
+      if (this._battleState.mode === BATTLE_MODES.INCIDENT) {
+        GameState.stats.incidentsResolved = (GameState.stats.incidentsResolved ?? 0) + 1
+      }
 
       // Apply XP using the post-turn quality tier
       const xp = calculateXP(opponent.difficulty ?? 1, this._battleState.winningTier ?? 'standard')

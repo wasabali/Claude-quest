@@ -9,8 +9,10 @@ import { getAll as getAllTrainers } from '../src/data/trainers.js'
 import { getAll as getAllEmblems } from '../src/data/emblems.js'
 import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
+import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
+const VALID_GATE_TYPES = ['hard', 'soft', 'knowledge', 'reputation', 'shame']
 const DATA_FILES = [
   'skills.js',
   'items.js',
@@ -18,6 +20,7 @@ const DATA_FILES = [
   'emblems.js',
   'quests.js',
   'encounters.js',
+  'gates.js',
 ].map(file => path.join(process.cwd(), 'src', 'data', file))
 
 describe('skills registry', () => {
@@ -117,5 +120,83 @@ describe('data module import boundaries', () => {
       expect(content).not.toMatch(/from ['"].*\/engine\//)
       expect(content).not.toMatch(/from ['"].*\/scenes\//)
     })
+  })
+})
+
+describe('gates registry', () => {
+  it('follows the registry pattern with getById, getAll, getBy', () => {
+    const gate = getGateById('margaret_website_gate')
+    expect(gate).toBeDefined()
+    expect(gate.id).toBe('margaret_website_gate')
+
+    const allGates = getAllGates()
+    expect(allGates.length).toBeGreaterThanOrEqual(1)
+
+    expect(typeof getGatesBy).toBe('function')
+    const hardGates = getGatesBy('type', 'hard')
+    expect(hardGates.length).toBeGreaterThanOrEqual(1)
+    hardGates.forEach(g => expect(g.type).toBe('hard'))
+  })
+
+  it('all gates have required fields', () => {
+    getAllGates().forEach(gate => {
+      expect(typeof gate.id).toBe('string')
+      expect(VALID_GATE_TYPES).toContain(gate.type)
+      expect(typeof gate.fromRegion).toBe('string')
+      expect(typeof gate.toRegion).toBe('string')
+      expect(typeof gate.hardBlocks).toBe('boolean')
+      expect(typeof gate.hintText).toBe('string')
+      expect(gate.hintText.length).toBeGreaterThan(0)
+      expect(typeof gate.flag).toBe('string')
+      expect(Array.isArray(gate.solutions)).toBe(true)
+    })
+  })
+
+  it('all gate solutions reference valid skills and tiers', () => {
+    getAllGates().forEach(gate => {
+      gate.solutions.forEach(sol => {
+        expect(getSkillById(sol.commandId)).toBeDefined()
+        expect(VALID_TIERS).toContain(sol.tier)
+        expect(typeof sol.repDelta).toBe('number')
+        expect(typeof sol.shameDelta).toBe('number')
+      })
+    })
+  })
+
+  it('hard gates have at least one solution', () => {
+    getAllGates()
+      .filter(g => g.type === 'hard')
+      .forEach(gate => {
+        expect(gate.solutions.length).toBeGreaterThanOrEqual(1)
+      })
+  })
+
+  it('reputation gates have a reputationThreshold', () => {
+    getAllGates()
+      .filter(g => g.type === 'reputation')
+      .forEach(gate => {
+        expect(typeof gate.reputationThreshold).toBe('number')
+        expect(gate.reputationThreshold).toBeGreaterThan(0)
+      })
+  })
+
+  it('shame gates have a shameThreshold', () => {
+    getAllGates()
+      .filter(g => g.type === 'shame')
+      .forEach(gate => {
+        expect(typeof gate.shameThreshold).toBe('number')
+        expect(gate.shameThreshold).toBeGreaterThan(0)
+      })
+  })
+
+  it('multi-step gates have steps[] with valid commandIds', () => {
+    getAllGates()
+      .filter(g => g.steps && g.steps.length > 0)
+      .forEach(gate => {
+        gate.steps.forEach(step => {
+          expect(getSkillById(step.commandId)).toBeDefined()
+          expect(VALID_TIERS).toContain(step.tier)
+        })
+      })
   })
 })

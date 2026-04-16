@@ -5,9 +5,11 @@ import {
   skillPhase,
   slaTickPhase,
   enemyPhase,
+  incidentAttackPhase,
   turnEndPhase,
   resolveTurn,
   BATTLE_MODES,
+  INCIDENT_ATTACKS,
 } from '../src/engine/BattleEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -569,6 +571,7 @@ describe('BattleEvent shape', () => {
     'skill_used', 'damage', 'heal', 'domain_reveal',
     'sla_tick', 'sla_breach', 'status_tick', 'status_remove',
     'status_apply', 'reputation', 'xp_gain', 'teach_skill', 'battle_end',
+    'budget_drain', 'escalation', 'layer_transition',
   ]
 
   it('all emitted events have recognised type strings', () => {
@@ -595,5 +598,216 @@ describe('BattleEvent shape', () => {
     const events = resolveTurn(state, skill)
     expect(events).not.toContain(undefined)
     expect(events).not.toContain(null)
+  })
+})
+
+
+// ---------------------------------------------------------------------------
+// incidentAttackPhase
+// ---------------------------------------------------------------------------
+
+function makeAttackOpponent(attacks, overrides = {}) {
+  return { id: 'test_incident', name: 'Test Incident', domain: 'cloud', hp: 60, maxHp: 60, difficulty: 2, attacks, ...overrides }
+}
+
+describe('incidentAttackPhase', () => {
+  it('returns empty array on turn 1 (Phase 1 — symptom display, no attack)', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['budget_spike']), { slaTimer: 5 })
+    expect(state.turn).toBe(1)
+    const events = incidentAttackPhase(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it('returns empty array in ENGINEER mode', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeAttackOpponent(['budget_spike']))
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it('returns empty array when opponent has no attacks', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent(), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toHaveLength(0)
+  })
+
+  it('emits budget_drain event and drains player budget on budget_spike attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ budget: 200 }), makeAttackOpponent(['budget_spike']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'budget_drain', target: 'player' }))
+    expect(state.player.budget).toBeLessThan(200)
+  })
+
+  it('player budget does not go below 0 from budget_spike', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ budget: 5 }), makeAttackOpponent(['budget_spike']), { slaTimer: 5 })
+    state.turn = 2
+    incidentAttackPhase(state)
+    expect(state.player.budget).toBe(0)
+  })
+
+  it('emits reputation event and drains reputation on reputation_leak attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeAttackOpponent(['reputation_leak']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'reputation', target: 'player' }))
+    expect(state.player.reputation).toBeLessThan(50)
+  })
+
+  it('emits sla_tick event on uptime_drain attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['uptime_drain']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'sla_tick', source: 'uptime_drain' }))
+  })
+
+  it('uptime_drain decrements slaTimer by an extra 1', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['uptime_drain']), { slaTimer: 5 })
+    state.turn = 2
+    incidentAttackPhase(state)
+    expect(state.slaTimer).toBe(4)
+  })
+
+  it('emits status_apply event on skill_block attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['skill_block']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'status_apply', target: 'player', statusName: 'skill_block' }))
+    expect(state.playerStatuses.some(s => s.name === 'skill_block')).toBe(true)
+  })
+
+  it('emits status_apply event on confusion attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['confusion']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'status_apply', target: 'player', statusName: 'confusion' }))
+  })
+
+  it('emits escalation event and increments technicalDebt on escalation attack', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 0 }), makeAttackOpponent(['escalation']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'escalation', target: 'player', value: 1 }))
+    expect(state.player.technicalDebt).toBe(1)
+  })
+
+  it('technicalDebt is capped at 10 by escalation', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ technicalDebt: 10 }), makeAttackOpponent(['escalation']), { slaTimer: 5 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(state.player.technicalDebt).toBe(10)
+    expect(events.find(e => e.type === 'escalation')).toBeUndefined()
+  })
+
+  it('cycles attacks deterministically based on turn number', () => {
+    const attacks = ['budget_spike', 'reputation_leak']
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ budget: 500, reputation: 50 }), makeAttackOpponent(attacks), { slaTimer: 10 })
+
+    state.turn = 2 // (2-2) % 2 = 0 → budget_spike
+    const events2 = incidentAttackPhase(state)
+    expect(events2).toContainEqual(expect.objectContaining({ type: 'budget_drain' }))
+
+    state.turn = 3 // (3-2) % 2 = 1 → reputation_leak
+    const events3 = incidentAttackPhase(state)
+    expect(events3).toContainEqual(expect.objectContaining({ type: 'reputation' }))
+
+    state.turn = 4 // (4-2) % 2 = 0 → budget_spike again
+    const events4 = incidentAttackPhase(state)
+    expect(events4).toContainEqual(expect.objectContaining({ type: 'budget_drain' }))
+  })
+
+  it('uptime_drain triggers sla_breach when timer reaches 0', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 100 }), makeAttackOpponent(['uptime_drain']), { slaTimer: 1 })
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'sla_breach' }))
+    expect(state.slaBreach).toBe(true)
+  })
+
+  it('uptime_drain does not double-breach already-breached SLA', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeAttackOpponent(['uptime_drain']), { slaTimer: 0 })
+    state.slaBreach = true
+    state.turn = 2
+    const events = incidentAttackPhase(state)
+    const breachCount = events.filter(e => e.type === 'sla_breach').length
+    expect(breachCount).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Multi-layer incident transitions
+// ---------------------------------------------------------------------------
+
+describe('multi-layer incident transitions', () => {
+  function makeLayeredOpponent() {
+    return {
+      id: 'crashloopbackoff', name: 'CrashLoopBackOff',
+      domain: 'kubernetes', hp: 38, maxHp: 38, difficulty: 3,
+      attacks: ['reputation_leak'],
+      layers: [
+        {
+          domain: 'security', hp: 28, maxHp: 28,
+          symptomText: 'Root cause found: missing Secret mount.',
+          rootCauseText: 'Missing Secret.',
+          attacks: ['skill_block'],
+          optimalFix: 'vault_rotate',
+        },
+      ],
+    }
+  }
+
+  it('createBattleState copies layers from opponent into state.layers', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    expect(state.layers).toHaveLength(1)
+    expect(state.layers[0].domain).toBe('security')
+  })
+
+  it('defeating layer 1 emits layer_transition instead of battle_end', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    state.opponent.hp = 0
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'layer_transition' }))
+    expect(events.find(e => e.type === 'battle_end')).toBeUndefined()
+  })
+
+  it('layer_transition updates opponent to the next layer data', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.opponent.domain).toBe('security')
+    expect(state.opponent.hp).toBe(28)
+  })
+
+  it('layer_transition resets domainRevealed to false for the new layer', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    state.domainRevealed = true
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.domainRevealed).toBe(false)
+  })
+
+  it('state.layers is empty after transitioning through the only extra layer', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.layers).toHaveLength(0)
+  })
+
+  it('defeating the final layer emits battle_end win', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeLayeredOpponent(), { slaTimer: 5 })
+    // Transition through layer 1
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    // Now defeat layer 2
+    state.opponent.hp = 0
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
+  })
+
+  it('no-layer opponent emits battle_end win directly on defeat', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 0 }), { slaTimer: 5 })
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
   })
 })
