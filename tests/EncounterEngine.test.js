@@ -188,20 +188,21 @@ describe('encounterChance — modifiers', () => {
 })
 
 describe('selectFromPool — on-call hours', () => {
-  it('returns null for production_plains when isOnCallHours and only non-onCall incidents in pool', () => {
-    // production_plains common pool: high_cpu, disk_full, 503_error — none have onCall: true
-    // rare pool: prod_incident (onCall:true), runaway_process (not onCall)
-    // cursed pool: sev1_at_3am (onCall:true)
-    // With the seeded RNG we may or may not hit on-call entries; run many seeds to get at least one hit
-    let gotOnCall = false
-    for (let seed = 1; seed <= 200; seed++) {
+  it('only returns on-call incidents (prod_incident, sev1_at_3am) from production_plains', () => {
+    // production_plains common: high_cpu, disk_full, 503_error — none onCall
+    // rare: prod_incident (onCall), runaway_process (not onCall)
+    // cursed: sev1_at_3am (onCall)
+    // With 500 seeds we guarantee at least some on-call entries are returned.
+    const onCallIds = new Set(['prod_incident', 'sev1_at_3am'])
+    let gotAtLeastOne = false
+    for (let seed = 1; seed <= 500; seed++) {
       const r = selectFromPool('production_plains', seed, 5, { isOnCallHours: true })
       if (r !== null) {
-        gotOnCall = true
-        expect(['prod_incident', 'sev1_at_3am']).toContain(r.enemyId)
+        gotAtLeastOne = true
+        expect(onCallIds).toContain(r.enemyId)
       }
     }
-    // We don't assert gotOnCall here — the point is that when a result IS returned it must be on-call
+    expect(gotAtLeastOne).toBe(true)
   })
 
   it('never returns a non-on-call encounter when isOnCallHours is true', () => {

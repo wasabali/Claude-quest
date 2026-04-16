@@ -368,8 +368,8 @@ export class BattleScene extends BaseScene {
     GameState.player.hp             = player.hp
     GameState.player.reputation     = player.reputation
     GameState.player.shamePoints    = player.shamePoints
-    GameState.player.technicalDebt  = player.technicalDebt ?? GameState.player.technicalDebt
-    GameState.player.budget         = player.budget ?? GameState.player.budget
+    GameState.player.technicalDebt  = player.technicalDebt !== undefined ? player.technicalDebt : GameState.player.technicalDebt
+    GameState.player.budget         = player.budget !== undefined ? player.budget : GameState.player.budget
 
     // Track SLA breach in persistent stats
     if (this._battleState.slaBreach) {

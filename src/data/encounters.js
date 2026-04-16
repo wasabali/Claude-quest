@@ -404,7 +404,7 @@ const ENCOUNTERS = {
     hp: 42,
     sla: 3,
     difficulty: 3,
-    attacks: ['budget_spike', 'budget_spike'],
+    attacks: ['budget_spike', 'budget_spike'], // double frequency — bill spikes drain budget twice per cycle
     optimalFix: 'cost_optimization',
     layers: null,
   },
