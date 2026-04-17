@@ -69,15 +69,17 @@ Shame Points are semi-permanent. They go up when you use cursed or nuclear techn
 |---|---|
 | 0 | Clean record. NPCs trust you. |
 | 1–2 | Minor flavour dialog changes. Pedersen sighs. Cursed locations become faintly visible. |
-| 3–4 | NPCs start dropping one-liners about what you did — different every time. The intern looked at your commit history and closed the tab pretty fast. |
+| 3–4 | NPCs start dropping **random one-liners** about what you did — different every visit. The intern looked at your commit history and closed the tab pretty fast. |
 | 5 | **Person of Interest** title. Access to the full cursed trainer network. Three AM Tavern fully active. |
 | 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. |
 | 10 | **Shadow Engineer** title. Visual change: you now look permanently tired and you always want coffee. Unlocks the holy grail skill: `kubectl delete ns production --grace-period=0 --force`. |
 | 15 | **Alternate ending unlocked.** THROTTLEMASTER offers to recruit you. The evil path is complete. |
 
-### Shame Threshold: 3 — The One-Liner Pool
+### Shame Threshold: 3–4 — The One-Liner Pool
 
-At shame 3+, NPCs don't repeat the same line about you anymore. They have a **pool of reactions** that rotate — different each visit:
+At shame 3–4, NPCs don't repeat the same line about you. They have a **pool of reactions** that rotate — different each visit. Once you hit shame 5, dedicated escalating responses kick in instead.
+
+Examples from the pool:
 
 - *"I heard about what you did to the repo. You know that `git reflog` exists, right?"*
 - *"Someone told me what happened in prod last week. ...We don't need to talk about it."*
