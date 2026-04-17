@@ -10,11 +10,12 @@ Consumable items you can use in battle or the overworld.
 
 | Item | Usable in Battle? | Effect | Description |
 |---|---|---|---|
-| **Red Bull** | ✅ | Heal 30 HP | 3am fuel. |
+| **Red Bull** | ✅ | Heal 30 HP | 3am fuel. Restores 30 HP. |
 | **Rollback Potion** | ✅ | Heal 20 HP | Reverts the latest bad deploy. |
-| **Azure Credit Voucher** | ✅ | Restore 50 Budget | No questions asked. |
-| **Skip Tests Scroll** | ✅ | Bypass one skill check | Your karma takes the hit. |
+| **Azure Credit Voucher** | ✅ | Restore 50 Budget | Restore 50 Budget. No questions asked. |
+| **Skip Tests Scroll** | ✅ | Bypass one skill check | Bypass one skill check. Your karma takes the hit. |
 | **On-Call Phone** | ❌ (overworld only) | Applies "on_call" status | Picks up the pager rotation immediately. |
+| **Coffee and an Apology** | ❌ (overworld only) | Reduces 1 Shame Point | A lukewarm coffee and a sticky note that says 'sorry about the deploy.' Reduces 1 Shame Point. The coffee is bad. The apology is genuine. Mostly. |
 
 ---
 
@@ -22,11 +23,13 @@ Consumable items you can use in battle or the overworld.
 
 Important items that unlock areas or advance the story. These can't be dropped.
 
-| Item | Effect | Description |
-|---|---|---|
-| **SSH Key (Staging)** | Unlocks staging server doors | Your gateway to Staging Valley. |
-| **Staging Env Token** | Required to enter Staging Valley | Without this, the guards won't let you through. |
-| **Terraform State** | *(none — key item)* | Don't touch it. Don't move it. Seriously. |
+| Item | Description |
+|---|---|
+| **SSH Key (Staging)** | Unlocks staging server doors. |
+| **Staging Env Token** | Required to enter Staging Valley. |
+| **Terraform State** | Don't touch it. Don't move it. |
+| **Cross-Origin-Opener-Policy** | Value: same-origin. You found this in a config file. It looked important. |
+| **Cross-Origin-Embedder-Policy** | Value: require-corp. Nobody knows why this is needed. It just is. |
 
 ---
 
@@ -47,37 +50,24 @@ Readable items that grant XP or provide information.
 
 | Item | Effect | Description |
 |---|---|---|
-| **Outdated Runbook** | +5 XP on first read | Half the steps are wrong. Still educational. |
-| **Incident Postmortem** | +20 XP (only if you lost your last battle) | Painful reading, but you learn the most from failure. |
-
-**Tip:** Always read the Incident Postmortem after a loss. +20 XP is generous, and it only works if your last battle was a defeat.
+| **Outdated Runbook** | +5 XP on first read | Half the steps are wrong. Still +5 XP. |
+| **Incident Postmortem** | +20 XP if your last battle was lost | Painful reading, but educational. |
+| **Published Post-Mortem** | Reduces 1 Shame Point | You wrote a blameless post-mortem. You named your mistakes. People read it. Reduces 1 Shame Point. The damage is done, but at least you owned it. |
 
 ---
 
 ## 🗑️ Junk
 
-Items that seem useless but... are they?
+Worthless items. Or are they?
 
-| Item | Can Drop? | Description |
-|---|---|---|
-| **Root Password (sticky note)** | ✅ | Found in Margaret's house. Useless. Horrifying. |
-| **Mystery node_modules** | ❌ | 47,000 files. Does nothing. Can't delete. "An inexplicable dependency forest." |
-| **Stale PR** | ✅ | Open since 2019. Nobody will merge it. |
-
-**Hint:** Don't be too quick to discard junk items. Some of them might be more useful than they look... 👀
-
----
-
-## Item Sources
-
-| Source | What You Get |
+| Item | Description |
 |---|---|
-| **Quest rewards** | Key items, tools, credentials |
-| **Trainer wins** | Occasionally drop tools |
-| **World exploration** | Docs, junk items, hidden items |
-| **Shops (Azure Town)** | Tools, healing items |
-| **Incident resolves** | Budget, sometimes tools |
+| **Root Password (sticky note)** | Found in Margaret's house. Useless. Horrifying. |
+| **Mystery node_modules** | An inexplicable dependency forest. |
+| **Stale PR** | Open since 2019. Nobody will merge it. |
+| **Cold Coffee** | Margaret's thanks. It was warm when she made it. You took too long. |
+| **Scorched Server** | Still smoking. A monument to your choices. A cursed salvage that restores 20 HP. |
 
 ---
 
-*"47,000 files. Does nothing. Can't delete." — Mystery node_modules tooltip*
+*Auto-generated from `src/data/items.js` by `scripts/generate-wiki.js`*

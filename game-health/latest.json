@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-04-17T00:00:00.000Z",
+  "success": true,
+  "summary": {
+    "totalTests": 0,
+    "passed": 0,
+    "failed": 0,
+    "pending": 0
+  },
+  "categories": {},
+  "findings": [],
+  "newFindings": [],
+  "fixedFindings": []
+}
