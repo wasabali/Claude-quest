@@ -101,7 +101,7 @@ export const SHADOW_ENGINEER = {
   CURSED_BUDGET_DISCOUNT:    5,   // Cursed-tier skills cost -5 budget
   HEAL_REDUCTION:            0.20, // Heal items restore 20% less
   COFFEE_SIP_HEAL:          15,   // ☕ Sip Coffee restores 15 HP
-  AUTO_LEARN_SKILL:         'exec_xp_cmdshell',
+  AUTO_LEARN_SKILL:         'exec_xp_cmdshell', // auto-learned when reaching Shadow Engineer threshold; used by scene layer
 }
 
 // Valid skill tiers — single source of truth for validation and data authoring.

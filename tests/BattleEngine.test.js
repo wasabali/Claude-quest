@@ -1219,8 +1219,8 @@ describe('skillPhase — Shadow Engineer budget modifications', () => {
       { slaTimer: 5 },
     )
     const optimalSkill = makeDamageSkill({ tier: 'optimal', budgetCost: 10 })
-    skillPhase(state, optimalSkill)
-    expect(events => events.find(e => e.source === 'shadow_fatigue')).toBeDefined
+    const events = skillPhase(state, optimalSkill)
+    expect(events).toContainEqual(expect.objectContaining({ source: 'shadow_fatigue' }))
     // Budget should be reduced by the +10 surcharge (on top of normal cost handled elsewhere)
     expect(state.player.budget).toBe(90)
   })
