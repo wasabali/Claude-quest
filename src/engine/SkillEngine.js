@@ -2,7 +2,7 @@
 // Handles domain matchups, damage calculation, XP, quality assessment,
 // and shame/reputation side effects.
 
-import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER } from '../config.js'
+import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS, REPUTATION_MIN, REPUTATION_MAX, GRIME_PER_SHAME } from '../config.js'
 
 // XP multipliers per solution quality tier.
 const XP_MULTIPLIERS = {
@@ -13,9 +13,10 @@ const XP_MULTIPLIERS = {
   nuclear:  0,
 }
 
-// Reputation gain for non-cursed skill use (per turn).
-const REP_GAIN_OPTIMAL  = 3
-const REP_GAIN_STANDARD = 1
+// Reputation delta per solution quality tier (non-cursed skill use per turn).
+const REP_GAIN_OPTIMAL    =  10
+const REP_GAIN_STANDARD   =   3
+const REP_CHANGE_SHORTCUT =  -5
 
 // ---------------------------------------------------------------------------
 // getDomainMultiplier
@@ -108,8 +109,9 @@ export function assessQuality(skill, opponent, domainRevealed) {
 //
 // Rules:
 //   - cursed/nuclear: apply sideEffect.shame and sideEffect.reputation
-//   - optimal: +REP_GAIN_OPTIMAL reputation (no shame)
-//   - standard/shortcut: +REP_GAIN_STANDARD reputation (no shame)
+//   - optimal:   +REP_GAIN_OPTIMAL    (no shame)
+//   - shortcut:  +REP_CHANGE_SHORTCUT (no shame, negative delta)
+//   - standard:  +REP_GAIN_STANDARD   (no shame)
 //   - reputation is clamped to [0, 100]
 //   - shamePoints only increases, never decrements
 // ---------------------------------------------------------------------------
@@ -121,12 +123,86 @@ export function applyShameAndReputation(player, skill) {
     reputation  += skill.sideEffect.reputation ?? 0
   } else if (skill.tier === 'optimal') {
     reputation += REP_GAIN_OPTIMAL
+  } else if (skill.tier === 'shortcut') {
+    reputation += REP_CHANGE_SHORTCUT
   } else {
     reputation += REP_GAIN_STANDARD
   }
 
-  // Clamp reputation to [0, 100]
-  reputation = Math.max(0, Math.min(100, reputation))
+  // Clamp reputation to [REPUTATION_MIN, REPUTATION_MAX]
+  reputation = Math.max(REPUTATION_MIN, Math.min(REPUTATION_MAX, reputation))
 
   return { ...player, shamePoints, reputation }
+}
+
+// ---------------------------------------------------------------------------
+// getReputationStatus
+// Returns the player's reputation status label based on the current score.
+// Thresholds (descending): 80+ Distinguished Engineer, 60+ Competent Engineer,
+// 40+ Adequate Engineer, 20+ Liability, 0+ Walking Incident.
+// ---------------------------------------------------------------------------
+export function getReputationStatus(reputation) {
+  for (const threshold of REPUTATION_THRESHOLDS) {
+    if (reputation >= threshold.min) return threshold.status
+  }
+  return REPUTATION_THRESHOLDS[REPUTATION_THRESHOLDS.length - 1].status
+}
+
+// ---------------------------------------------------------------------------
+// getShameTitle
+// Returns the title from the highest matching configured shame threshold,
+// or null if no threshold with a non-null title has been reached.
+// ---------------------------------------------------------------------------
+export function getShameTitle(shamePoints) {
+  for (const threshold of SHAME_THRESHOLDS) {
+    if (shamePoints >= threshold.shame && threshold.title !== null) {
+      return threshold.title
+    }
+  }
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// applyShameGrime
+// Returns a new emblems object with grime added to every *earned* emblem.
+// Grime is capped at 5 per emblem. Unearned emblems are untouched.
+// Called after any shame gain (cursed/nuclear skill use).
+// ---------------------------------------------------------------------------
+export function applyShameGrime(emblems, shameGained) {
+  if (!shameGained || shameGained <= 0) return { ...(emblems ?? {}) }
+  const result = {}
+  for (const [id, entry] of Object.entries(emblems ?? {})) {
+    if (entry.earned) {
+      result[id] = { ...entry, grime: Math.min(5, (entry.grime ?? 0) + shameGained * GRIME_PER_SHAME) }
+    } else {
+      result[id] = { ...entry }
+    }
+  }
+  return result
+}
+
+// ---------------------------------------------------------------------------
+// computeShameFlags
+// Returns an object mapping flag keys to true for every SHAME_THRESHOLD that
+// the player has reached or exceeded. Used to update GameState.story.flags
+// after shame is gained.
+// ---------------------------------------------------------------------------
+export function computeShameFlags(shamePoints) {
+  const flags = {}
+  for (const threshold of SHAME_THRESHOLDS) {
+    if (shamePoints >= threshold.shame) {
+      flags[threshold.flag] = true
+    }
+  }
+  return flags
+}
+
+// ---------------------------------------------------------------------------
+// reduceShame
+// Returns a new player snapshot with shamePoints reduced by `amount`.
+// Shame never goes below 0. Reputation is not affected.
+// Used by shame-redemption quests and items (e.g. Coffee and an Apology).
+// ---------------------------------------------------------------------------
+export function reduceShame(player, amount) {
+  return { ...player, shamePoints: Math.max(0, player.shamePoints - amount) }
 }

@@ -8,7 +8,7 @@ import {
   createBattleState,
   resolveTurn,
 } from '#engine/BattleEngine.js'
-import { assessQuality, calculateXP } from '#engine/SkillEngine.js'
+import { calculateXP, computeShameFlags } from '#engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
 // Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (160×144 native)
@@ -71,6 +71,7 @@ export class BattleScene extends BaseScene {
     this._battleState = createBattleState(mode, { ...GameState.player }, opponent, {
       slaTimer:        data.slaTimer ?? 10,
       telegraphedMove: data.telegraphedMove ?? null,
+      emblems:         GameState.emblems ?? {},
     })
 
     this._skillIndex = 0
@@ -244,11 +245,7 @@ export class BattleScene extends BaseScene {
 
     const events = resolveTurn(this._battleState, skill)
 
-    // Post-turn quality assessment — opponent.hp now reflects the actual outcome,
-    // enabling correct shortcut detection (wrong domain but incident resolved).
-    const quality = assessQuality(skill, this._battleState.opponent, this._battleState.domainRevealed)
-    this._battleState.winningTier = quality
-
+    // winningTier is now set inside skillPhase via assessQuality in the engine
     this._animateEvents(events)
   }
 
@@ -358,6 +355,7 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(600, callback)
         break
 
+
       case 'budget_drain':
         this._showLog(`Budget drained by ${event.value}!`)
         this._refreshHUD()
@@ -411,6 +409,15 @@ export class BattleScene extends BaseScene {
     GameState.player.shamePoints   = player.shamePoints
     GameState.player.technicalDebt = player.technicalDebt ?? GameState.player.technicalDebt
     GameState.player.budget        = player.budget !== undefined ? player.budget : GameState.player.budget
+
+    // Sync emblem grime accumulated during the battle
+    if (this._battleState.emblems && Object.keys(this._battleState.emblems).length > 0) {
+      GameState.emblems = { ...GameState.emblems, ...this._battleState.emblems }
+    }
+
+    // Set any shame threshold flags that were crossed during the battle
+    const shameFlags = computeShameFlags(player.shamePoints)
+    Object.assign(GameState.story.flags, shameFlags)
 
     // Track SLA breach in persistent stats
     if (this._battleState.slaBreach) {

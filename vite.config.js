@@ -1,7 +1,28 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
+const normalizeBasePath = (basePath) => {
+  if (!basePath) return '/'
+
+  const trimmedBasePath = basePath.replace(/^\/+|\/+$/g, '')
+  return trimmedBasePath ? `/${trimmedBasePath}/` : '/'
+}
+
+const getBasePath = () => {
+  if (!process.env.GITHUB_PAGES) return '/'
+
+  if (process.env.PAGES_BASE_PATH) {
+    return normalizeBasePath(process.env.PAGES_BASE_PATH)
+  }
+
+  const repository = process.env.GITHUB_REPOSITORY
+  const repoName = repository ? repository.split('/')[1] : ''
+
+  return normalizeBasePath(repoName)
+}
+
 export default defineConfig({
+  base: getBasePath(),
   resolve: {
     alias: {
       '#engine': resolve('./src/engine'),

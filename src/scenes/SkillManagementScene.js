@@ -45,6 +45,7 @@ export class SkillManagementScene extends BaseScene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.right)) this.onRight()
     if (Phaser.Input.Keyboard.JustDown(this.keys.confirm)) this.onConfirm()
     if (Phaser.Input.Keyboard.JustDown(this.keys.cancel)) this.onCancel()
+    if (Phaser.Input.Keyboard.JustDown(this.keys.stackoverflow)) this.onStackOverflow()
   }
 
   bindKeys() {
@@ -55,6 +56,7 @@ export class SkillManagementScene extends BaseScene {
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
       confirm: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
       cancel: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
+      stackoverflow: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
     }
   }
 
@@ -163,7 +165,7 @@ export class SkillManagementScene extends BaseScene {
     } else if (highlightedSkillId) {
       this.bottomText.setText(`unknown · unknown · free`)
     } else {
-      this.bottomText.setText('')
+      this.bottomText.setText(this.replaceSkillId ? '' : 'S: StackOverflow')
     }
   }
 
@@ -322,5 +324,14 @@ export class SkillManagementScene extends BaseScene {
       return
     }
     this.scene.stop('SkillManagementScene')
+  }
+
+  onStackOverflow() {
+    if (this.replaceSkillId) return
+    this.scene.pause()
+    this.scene.launch('StackOverflowScene', {
+      returnSceneKey: 'SkillManagementScene',
+      returnSceneData: {},
+    })
   }
 }

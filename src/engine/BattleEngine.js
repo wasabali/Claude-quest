@@ -2,7 +2,8 @@
 // Owns the battle state and phase queue. Returns BattleEvent[] arrays.
 // Scenes delegate all logic here; they only render the returned events.
 
-import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation } from './SkillEngine.js'
+import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
+import { REPUTATION_MIN, REPUTATION_MAX } from '../config.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -20,13 +21,6 @@ const MAX_TECHNICAL_DEBT = 10
 const TECHNICAL_DEBT_HP_PENALTY = 2
 
 // Reputation deltas applied at win resolution, per solution quality tier.
-const QUALITY_REP_DELTAS = {
-  optimal:  10,
-  standard: 3,
-  shortcut: -5,
-  cursed:   -15,
-  nuclear:  -30,
-}
 
 // Incident attack type identifiers (matches attacks[] entries in encounter data)
 export const INCIDENT_ATTACKS = {
@@ -46,6 +40,7 @@ const SLA_BREACH_HP_PENALTY  = 20
 const SLA_BREACH_REP_PENALTY = 10
 
 // Reputation change on engineer battle outcomes
+const ENGINEER_WIN_REP_OPTIMAL = 8
 const ENGINEER_LOSE_REP_PENALTY = 5
 
 // Approximate enemy base attack power (used in enemyPhase)
@@ -81,6 +76,7 @@ export function createBattleState(mode, player, opponent, options = {}) {
     slaBreach:        false,
     winningTier:      options.winningTier ?? null,
     layers:           opponent.layers ? [...opponent.layers] : [],
+    emblems:          options.emblems ? { ...options.emblems } : {},
     log:              [],
   }
 }
@@ -126,6 +122,13 @@ export function statusTickPhase(state) {
 // ---------------------------------------------------------------------------
 export function skillPhase(state, skill) {
   const events = []
+
+  // Enforce shameRequired gate — skills that require a minimum shame level
+  // (e.g. kubectl_delete_production) cannot be used below that threshold.
+  if (skill.shameRequired !== undefined && state.player.shamePoints < skill.shameRequired) {
+    events.push({ type: 'skill_blocked', target: 'player', skillId: skill.id, reason: 'shame_required' })
+    return events
+  }
 
   events.push({ type: 'skill_used', target: 'opponent', skillId: skill.id })
 
@@ -179,6 +182,15 @@ export function skillPhase(state, skill) {
   const repDelta   = updated.reputation  - state.player.reputation
   state.player.shamePoints = updated.shamePoints
   state.player.reputation  = updated.reputation
+
+  // Apply grime to all earned emblems when shame is gained and emit an event
+  // so BattleScene can sync GameState.emblems at battle end.
+  if (shameDelta > 0) {
+    const nextEmblems = applyShameGrime(state.emblems ?? {}, shameDelta)
+    state.emblems = nextEmblems
+    events.push({ type: 'emblems_updated', target: 'player', value: nextEmblems, shameDelta })
+  }
+
   if (repDelta !== 0 || shameDelta !== 0) {
     events.push({ type: 'reputation', target: 'player', value: repDelta, shameDelta })
   }
@@ -220,7 +232,7 @@ export function slaTickPhase(state) {
   if (state.slaTimer === 0) {
     state.slaBreach = true
     state.player.hp         = Math.max(0, state.player.hp - SLA_BREACH_HP_PENALTY)
-    state.player.reputation = Math.max(0, state.player.reputation - SLA_BREACH_REP_PENALTY)
+    state.player.reputation = Math.max(REPUTATION_MIN, state.player.reputation - SLA_BREACH_REP_PENALTY)
     events.push({
       type:            'sla_breach',
       target:          'player',
@@ -291,7 +303,7 @@ export function incidentAttackPhase(state) {
         if (state.slaTimer === 0 && !state.slaBreach) {
           state.slaBreach = true
           state.player.hp         = Math.max(0, state.player.hp - SLA_BREACH_HP_PENALTY)
-          state.player.reputation = Math.max(0, state.player.reputation - SLA_BREACH_REP_PENALTY)
+          state.player.reputation = Math.max(REPUTATION_MIN, state.player.reputation - SLA_BREACH_REP_PENALTY)
           events.push({
             type:           'sla_breach',
             target:         'player',
@@ -315,7 +327,7 @@ export function incidentAttackPhase(state) {
 
     case INCIDENT_ATTACKS.REPUTATION_LEAK: {
       const previousReputation = state.player.reputation ?? 0
-      const nextReputation = Math.max(0, previousReputation - REPUTATION_LEAK_VALUE)
+      const nextReputation = Math.max(REPUTATION_MIN, previousReputation - REPUTATION_LEAK_VALUE)
       const reputationDelta = nextReputation - previousReputation
       state.player.reputation = nextReputation
       if (reputationDelta !== 0) {
@@ -391,13 +403,14 @@ export function turnEndPhase(state) {
     const tier = state.winningTier ?? 'standard'
     const xp   = calculateXP(state.opponent.difficulty ?? 1, tier)
 
-    // Apply quality-based reputation delta at win resolution
-    const repDelta    = QUALITY_REP_DELTAS[tier] ?? 0
-    const newRep      = Math.max(0, Math.min(100, state.player.reputation + repDelta))
-    const actualDelta = newRep - state.player.reputation
-    state.player.reputation = newRep
-    if (actualDelta !== 0) {
-      events.push({ type: 'reputation', target: 'player', value: actualDelta })
+    // ENGINEER mode only: apply reputation bonus for optimal win
+    if (state.mode === BATTLE_MODES.ENGINEER && tier === 'optimal') {
+      const newRep = Math.min(REPUTATION_MAX, state.player.reputation + ENGINEER_WIN_REP_OPTIMAL)
+      const actualDelta = newRep - state.player.reputation
+      state.player.reputation = newRep
+      if (actualDelta !== 0) {
+        events.push({ type: 'reputation', target: 'player', value: actualDelta })
+      }
     }
 
     events.push({ type: 'xp_gain', target: 'player', value: xp })
@@ -406,8 +419,12 @@ export function turnEndPhase(state) {
     if (state.mode === BATTLE_MODES.ENGINEER) {
       if (tier === 'optimal' && state.opponent.teachSkillId) {
         events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
-      } else if (tier === 'standard' && state.opponent.teachSkillId) {
-        events.push({ type: 'teach_hint', target: 'player', value: state.opponent.teachSkillId })
+      } else if (tier === 'standard') {
+        if (state.opponent.winDialog) {
+          events.push({ type: 'dialog', target: 'player', text: state.opponent.winDialog })
+        } else if (state.opponent.teachSkillId) {
+          events.push({ type: 'teach_hint', target: 'player', value: state.opponent.teachSkillId })
+        }
       } else if (tier === 'cursed') {
         events.push({ type: 'trainer_disgusted', target: 'player' })
       } else if (tier === 'nuclear') {
@@ -422,7 +439,7 @@ export function turnEndPhase(state) {
   if (playerDefeated || slaLoss) {
     // Reputation penalty for losing an engineer battle (not SLA — that is penalised in slaTickPhase)
     if (playerDefeated && state.mode === BATTLE_MODES.ENGINEER) {
-      state.player.reputation = Math.max(0, state.player.reputation - ENGINEER_LOSE_REP_PENALTY)
+      state.player.reputation = Math.max(REPUTATION_MIN, state.player.reputation - ENGINEER_LOSE_REP_PENALTY)
       events.push({ type: 'reputation', target: 'player', value: -ENGINEER_LOSE_REP_PENALTY, shameDelta: 0 })
     }
     events.push({ type: 'battle_end', target: 'player', value: 'lose' })
