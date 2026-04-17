@@ -193,6 +193,26 @@ const ITEMS = {
     worldActions:   ['examine'],
     effect:         null,
   },
+  coffee_and_apology: {
+    id:             'coffee_and_apology',
+    displayName:    'Coffee and an Apology',
+    tab:            'tools',
+    description:    "A lukewarm coffee and a sticky note that says 'sorry about the deploy.' Reduces 1 Shame Point. The coffee is bad. The apology is genuine. Mostly.",
+    usableInBattle: false,
+    battleAction:   null,
+    worldActions:   ['use', 'examine'],
+    effect:         { type: 'reduce_shame', value: 1, onceFlag: null },
+  },
+  post_mortem_published: {
+    id:             'post_mortem_published',
+    displayName:    'Published Post-Mortem',
+    tab:            'docs',
+    description:    "You wrote a blameless post-mortem. You named your mistakes. People read it. Reduces 1 Shame Point. The damage is done, but at least you owned it.",
+    usableInBattle: false,
+    battleAction:   null,
+    worldActions:   ['use', 'examine'],
+    effect:         { type: 'reduce_shame', value: 1, onceFlag: null },
+  },
 }
 
 export const getById = (id)           => ITEMS[id]

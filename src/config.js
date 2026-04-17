@@ -57,26 +57,36 @@ export const WORLD_SCENE = {
 }
 
 // Reputation thresholds — sorted highest first for threshold lookups.
+// Range is -100 to 100. Starts at 50. Fully rebuildable.
 // Use getReputationStatus() in SkillEngine to resolve the current label.
 export const REPUTATION_THRESHOLDS = [
-  { min: 80, status: 'Distinguished Engineer' },
-  { min: 60, status: 'Competent Engineer'     },
-  { min: 40, status: 'Adequate Engineer'      },
-  { min: 20, status: 'Liability'              },
-  { min:  0, status: 'Walking Incident'       },
+  { min:  80,  status: 'Distinguished Engineer'          },
+  { min:  60,  status: 'Competent Engineer'              },
+  { min:  40,  status: 'Adequate Engineer'               },
+  { min:  20,  status: 'Liability'                       },
+  { min:   0,  status: 'Walking Incident'                },
+  { min: -25,  status: 'Known Incident'                  },
+  { min: -50,  status: 'Do Not Pair With'                },
+  { min: -100, status: 'The Reason We Have Runbooks'     },
 ]
+
+export const REPUTATION_MIN = -100
+export const REPUTATION_MAX =  100
 
 // Shame thresholds — sorted highest first.
 // Each entry is the lowest shame value that activates the row.
 // title: null means no new title is gained at that threshold.
 export const SHAME_THRESHOLDS = [
-  { shame: 15, title: null,                flag: 'secret_ending_accessible'             },
-  { shame: 10, title: 'Shadow Engineer',   flag: 'helm_hansen_refuses_new_doors_open'   },
-  { shame:  7, title: null,                flag: 'throttlemaster_contact'               },
-  { shame:  5, title: 'Person of Interest', flag: 'cursed_network_full_three_am_active' },
-  { shame:  3, title: null,                flag: 'named_engineers_fight_harder'         },
-  { shame:  1, title: null,                flag: 'pedersen_sighs_cursed_location_visible' },
+  { shame: 15, title: null,                 flag: 'secret_ending_accessible'                  },
+  { shame: 10, title: 'Shadow Engineer',    flag: 'shadow_engineer_title_unlocked'            },
+  { shame:  7, title: null,                 flag: 'throttlemaster_contact'                    },
+  { shame:  5, title: 'Person of Interest', flag: 'cursed_network_full_three_am_active'       },
+  { shame:  3, title: null,                 flag: 'npc_oneliners_active'                      },
+  { shame:  1, title: null,                 flag: 'pedersen_sighs_cursed_location_visible'    },
 ]
+
+// How much grime each shame point adds to all earned emblems.
+export const GRIME_PER_SHAME = 0.05
 
 // Status effects applied during battle
 export const STATUSES = {

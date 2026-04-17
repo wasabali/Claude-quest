@@ -1,40 +1,47 @@
 # Reputation & Shame
 
-Cloud Quest tracks two independent character stats that shape your experience: **Reputation** (rebuildable) and **Shame** (permanent). Together, they determine how NPCs treat you, what content you can access, and which ending you get.
+Cloud Quest tracks two independent character stats that shape your experience: **Reputation** (rebuildable) and **Shame** (permanent-ish). Together they determine how NPCs treat you, what content you can access, and which ending you get.
 
 ---
 
 ## Reputation
 
-**Range:** 0–100
-**Default start:** 50
-**Can recover:** ✅ Yes
+**Range:** −100 to 100  
+**Default start:** 50  
+**Can recover:** ✅ Yes — fully
 
-Reputation represents how other engineers and NPCs perceive you. It goes up when you solve problems well and down when you take shortcuts or use cursed techniques.
+Reputation represents how other engineers and NPCs perceive you. It goes up when you solve problems well and down when you take shortcuts or use cursed techniques. Unlike Shame, Reputation is always rebuildable — even from deep in the negatives.
 
 ### How Reputation Changes
 
 | Action | Rep Change |
 |---|---|
-| Cursed technique use | Variable penalty per skill (typically −8 to −20) |
-| Nuclear technique use | Variable penalty per skill (typically −13 to −30) |
-| SLA breach | −15 |
-| Quest completion | Varies by quest |
+| Optimal solution | +10 |
+| Standard solution | +3 |
+| Shortcut solution | −5 |
+| Cursed technique | Variable (typically −8 to −20) |
+| Nuclear technique | Variable (typically −13 to −30) |
+| SLA breach | −10 |
+| Engineer battle win (optimal) | +8 |
+| Engineer battle loss | −5 |
 
-### Reputation Effects
+### Reputation Status Labels
 
-| Rep Level | Effect |
-|---|---|
-| 80–100 | NPCs offer best prices, extra dialog options, and side quests |
-| 60–79 | Normal treatment |
-| 40–59 | Some NPCs distrust you. Fewer side quests available. |
-| 20–39 | Most NPCs refuse to help. Trainers are harder. |
-| 0–19 | Only cursed trainers will talk to you. THROTTLEMASTER notices. |
+| Score | Status | How NPCs Treat You |
+|---|---|---|
+| 80–100 | Distinguished Engineer | Extra dialog, best prices, side quests offered |
+| 60–79 | Competent Engineer | Normal treatment |
+| 40–59 | Adequate Engineer | Some side quests hidden |
+| 20–39 | Liability | NPCs are unhelpful, trainers are terse |
+| 0–19 | Walking Incident | Only cursed trainers deal with you |
+| −1 to −25 | Known Incident | NPCs are openly snarky — "Oh. It's you." |
+| −26 to −50 | Do Not Pair With | NPCs actively avoid you — "I was just leaving." |
+| −51 to −100 | The Reason We Have Runbooks | Your name is now a cautionary tale. Runbooks cite you by name. |
 
 ### Rebuilding Reputation
 
-Reputation is always recoverable:
-- Win battles with Optimal solutions
+Reputation is always recoverable — even from −100:
+- Win battles with Optimal solutions (+10 each)
 - Complete quests cleanly
 - Help NPCs with their problems
 - Avoid cursed techniques for a while
@@ -43,11 +50,11 @@ Reputation is always recoverable:
 
 ## Shame Points
 
-**Range:** 0+
-**Default start:** 0
-**Can recover:** ❌ Never
+**Range:** 0+  
+**Default start:** 0  
+**Can recover:** ✅ Slightly — see Redemption below
 
-Shame Points are **permanent**. They only go up. Every cursed technique adds +1 Shame. Every nuclear technique adds +2. There is no way to reduce Shame — it's a permanent record of every line you crossed.
+Shame Points are semi-permanent. They go up when you use cursed or nuclear techniques and only come down through deliberate effort. Every shortcut follows you.
 
 ### How Shame Accumulates
 
@@ -56,19 +63,77 @@ Shame Points are **permanent**. They only go up. Every cursed technique adds +1 
 | Cursed technique use | +1 |
 | Nuclear technique use | +2 |
 
-There is currently no gameplay mitigation for Shame gain.
-
 ### Shame Thresholds
 
 | Shame | What Happens |
 |---|---|
 | 0 | Clean record. NPCs trust you. |
-| 1–2 | Minor flavor dialog changes. Some NPCs give you "the look." |
-| 3–4 | Access to some hidden areas and cursed trainers. |
-| 5 | Certain secret content becomes visible (e.g., deleted StackOverflow threads). |
+| 1–2 | Minor flavour dialog changes. Pedersen sighs. Cursed locations become faintly visible. |
+| 3–4 | NPCs start dropping **random one-liners** about what you did — different every visit. The intern looked at your commit history and closed the tab pretty fast. |
+| 5 | **Person of Interest** title. Access to the full cursed trainer network. Three AM Tavern fully active. |
 | 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. |
-| 10 | NPC dialog shifts significantly. Cursed trainers offer upgraded techniques. |
-| 15 | **Alternate ending unlocked.** THROTTLEMASTER offers to recruit you. |
+| 10 | **Shadow Engineer** title. Visual change: you now look permanently tired and you always want coffee. Unlocks the holy grail skill: `kubectl delete ns production --grace-period=0 --force`. |
+| 15 | **Alternate ending unlocked.** THROTTLEMASTER offers to recruit you. The evil path is complete. |
+
+### Shame Threshold: 3–4 — The One-Liner Pool
+
+At shame 3–4, NPCs don't repeat the same line about you. They have a **pool of reactions** that rotate — different each visit. Once you hit shame 5, dedicated escalating responses kick in instead.
+
+Examples from the pool:
+
+- *"I heard about what you did to the repo. You know that `git reflog` exists, right?"*
+- *"Someone told me what happened in prod last week. ...We don't need to talk about it."*
+- *"I can't believe you committed directly to main. Professor Pedersen is inconsolable."*
+- *"So I heard about the force push. The whole team had to re-clone. You know that?"*
+- *"The intern cried. Just so you know. After your last deployment."*
+- *"Three people filed Jira tickets about you. Personally. About you."*
+
+### Shame Threshold: 5 — Trainers Use Cursed Skills
+
+At Shame 5, normal trainers start occasionally using cursed skills themselves. They've heard about you. They're not playing fair anymore. This makes battles harder without changing trainer stats — it's behavioural, not numerical. You made the world worse; now it fights back.
+
+### Shame Threshold: 10 — Shadow Engineer
+
+Reaching 10 Shame earns you the **Shadow Engineer** title and a visual change. Your sprite now looks permanently exhausted and is depicted with a coffee cup. The flavour text on your skill menu changes. Trainers treat you differently — some with fear, some with respect, some with a mix of both.
+
+More importantly: you unlock the **holy grail skill**:
+
+> **`kubectl delete ns production --grace-period=0 --force`**  
+> The move that ends careers and starts legends. Instant win. −50 rep. +3 shame. Your name goes in the runbook.
+
+This skill can only be used if you have 10+ Shame Points.
+
+---
+
+## Emblem Grime
+
+Every time you gain Shame Points, **all earned emblems** accumulate grime:
+
+```
++0.05 grime per shame point gained, per earned emblem
+```
+
+This is a visible consequence — your achievements literally get dirty from your choices. The Emblem polish minigame lets you clean them, but the grime keeps coming if you keep sinning.
+
+---
+
+## Shame Redemption
+
+Shame is not truly permanent anymore — but reducing it requires real effort:
+
+### Item: Coffee and an Apology
+- A lukewarm coffee and a sticky note that says "sorry about the deploy."
+- Reduces 1 Shame Point when used from the inventory.
+- Rare drop from cleanup quests and specific hidden vendors.
+- *"The coffee is bad. The apology is genuine. Mostly."*
+
+### Item: Published Post-Mortem
+- A blameless post-mortem you wrote about your own mistakes.
+- Reduces 1 Shame Point when used.
+- Obtained by completing specific story quests.
+- *"You named your mistakes. People read it. The damage is done, but at least you owned it."*
+
+> Redemption is real, but it's slow. You earned the Shame one bad decision at a time. You'll un-earn it one honest act at a time.
 
 ---
 
@@ -76,13 +141,13 @@ There is currently no gameplay mitigation for Shame gain.
 
 The most nuanced character state is **high Reputation AND high Shame**. You're an excellent engineer who crossed every line to get there. NPCs are confused by you. Trainers respect your skill but question your methods.
 
-This state unlocks unique dialog and interactions that neither pure-good nor pure-evil players see.
+This state unlocks unique dialog that neither pure-good nor pure-evil players see. Professor Pedersen will tell you: *"Your work is impressive. I wish I could say the same about your methods. *sighs* I hope you know what you're doing."*
 
 ---
 
 ## Technical Debt
 
-**Range:** 0–10
+**Range:** 0–10  
 **Cleared by:** Cleanup quests
 
 Technical Debt is a side effect of cursed technique use. Each cursed technique may add a **Technical Debt stack**, which applies a permanent −2 Max HP debuff (up to −20 at max stacks).
@@ -98,6 +163,17 @@ Unlike Shame, Technical Debt **can** be cleared through special **cleanup quests
 
 ---
 
+## Uptime vs Reputation
+
+Uptime and Reputation are different things:
+
+- **Reputation** is a persistent global stat. It reflects your long-term track record across the entire game world — how NPCs, trainers, and the community perceive you over time.
+- **Uptime** is a per-battle performance metric. It tracks your incident response time and SLA adherence during a specific battle. High uptime means you resolved the incident quickly and cleanly; breaching the SLA timer directly damages your Reputation for that session.
+
+Think of Reputation as your career record and Uptime as your shift performance. A bad shift (low uptime, SLA breach) hurts your Reputation. A good career (high Reputation) can absorb a few bad shifts.
+
+---
+
 ## The Evil Path
 
 See [Hidden Areas](hidden-areas.md) for details on the Outcast Network and THROTTLEMASTER's storyline.
@@ -106,10 +182,12 @@ At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "For
 
 ### Key Evil Path Moments
 
-1. **Shame 3–4** — Outcast Network locations begin to appear
-2. **Shame 7** — THROTTLEMASTER contacts you directly
-3. **Shame 10** — Cursed trainers offer upgraded nuclear techniques
-4. **Shame 15** — THROTTLEMASTER offers recruitment. Alternate ending available.
+1. **Shame 1** — Professor Pedersen starts sighing around you
+2. **Shame 3** — Outcast Network locations begin to appear; NPCs drop one-liners
+3. **Shame 5** — Person of Interest title; trainers start fighting dirty
+4. **Shame 7** — THROTTLEMASTER contacts you directly
+5. **Shame 10** — Shadow Engineer title; holy grail skill unlocked; you look tired
+6. **Shame 15** — THROTTLEMASTER offers recruitment; alternate ending available
 
 ---
 
@@ -119,17 +197,21 @@ At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "For
 - Better XP multipliers from Optimal solutions (×2 XP)
 - No Technical Debt means full HP
 - Better story outcomes and NPC interactions
-- Avoid permanent Shame accumulation
+- No emblem grime accumulation
+- Professor Pedersen stops sighing
 
 **Arguments for the dark side:**
 - Cursed techniques bypass domain matchups entirely
 - Nuclear techniques are incredibly powerful in emergencies
 - The evil path has its own unique content, areas, and storyline
 - THROTTLEMASTER's backstory is only available to high-Shame players
+- The Shadow Engineer skill is genuinely the most powerful move in the game
 - Some of the funniest dialog in the game is locked behind Shame thresholds
+- You can partially redeem yourself with Coffee and an Apology
 
 **The game's design encourages experimentation.** Your first playthrough doesn't have to be perfect.
 
 ---
 
-*"Shame is permanent. It never goes down. Every shortcut you take follows you." — Professor Pedersen*
+*"Shame is semi-permanent. It goes down slowly. Every shortcut you take still follows you — you just have the option to own it." — Professor Pedersen, revised edition*
+

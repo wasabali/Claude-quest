@@ -284,6 +284,15 @@ export class WorldScene extends BaseScene {
         if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
         if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
         if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
+        if (Array.isArray(variant.pool)) {
+          // NPC one-liner pools are intentionally non-deterministic — different
+          // line each visit. No seeded RNG needed; this is presentation-layer only.
+          if (variant.pool.length > 0) {
+            const idx = Math.floor(Math.random() * variant.pool.length)
+            return variant.pool[idx]
+          }
+          return variant.pages ?? entry?.pages ?? ['???']
+        }
         return variant.pages
       }
     }

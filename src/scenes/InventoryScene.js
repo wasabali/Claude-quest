@@ -8,6 +8,7 @@ import {
   normalizeInventoryEntry,
   removeItem,
 } from '#state/GameState.js'
+import { reduceShame } from '#engine/SkillEngine.js'
 
 const TABS = [
   { key: 'tools',       label: 'TOOLS', allowInBattle: true  },
@@ -131,9 +132,9 @@ export class InventoryScene extends BaseScene {
   getPrimaryAction(item) {
     if (this.mode === 'battle') return item.usableInBattle ? 'use' : 'examine'
 
-    const tab = this.getActiveTab().key
-    if (tab === 'docs') return item.worldActions.includes('read') ? 'read' : 'examine'
-    if (tab === 'tools') return 'examine'
+    const actions = item.worldActions ?? []
+    if (actions.includes('use'))  return 'use'
+    if (actions.includes('read')) return 'read'
     return 'examine'
   }
 
@@ -204,6 +205,20 @@ export class InventoryScene extends BaseScene {
         return { message: `You learned from failure. +${effect.value} XP.`, consume: false }
       }
       return { message: 'Nothing new to learn right now.', consume: false }
+    }
+
+    if (effect.type === 'reduce_shame') {
+      const previousShame = GameState.player.shamePoints
+      const updated = reduceShame(GameState.player, effect.value)
+      const actualReduction = previousShame - updated.shamePoints
+
+      if (actualReduction <= 0) {
+        return { message: 'Your conscience is already clear.\n(Relatively speaking.)', consume: false }
+      }
+
+      GameState.player.shamePoints = updated.shamePoints
+      markDirty()
+      return { message: `You feel slightly less terrible about yourself.\nShame: −${actualReduction}.`, consume: true }
     }
 
     if (effect.type === 'enter_hidden_area') {

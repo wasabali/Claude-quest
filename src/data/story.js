@@ -5,6 +5,10 @@
 // Each variant has a `condition` object with optional fields:
 //   reputationMin, reputationMax, shameMin, shameMax
 // The first matching variant wins (evaluated top-to-bottom).
+//
+// Variants may also have a `pool` field (array of pages arrays) instead of
+// `pages`. When matched, a random entry from the pool is selected. This is
+// used for shame-3 one-liners so players see different reactions each time.
 const STORY = {
   npc_margaret: {
     id:    'npc_margaret',
@@ -29,10 +33,29 @@ const STORY = {
         ],
       },
       {
+        // shame 3–4: random one-liner from pool about what you did to the repo
+        condition: { shameMin: 3, shameMax: 4 },
+        pool: [
+          ["I heard about what you did to the repo.\nYou know that `git reflog` exists, right?"],
+          ["Someone told me what happened in prod last week.\n...We don't need to talk about it."],
+          ["I can't believe you committed directly to main.\nProfessor Pedersen is inconsolable."],
+          ["So I heard about the force push.\nThe whole team had to re-clone. You know that?"],
+          ["The intern cried. Just so you know.\nAfter your last deployment."],
+          ["Three people filed Jira tickets about you.\nPersonally. About you."],
+        ],
+      },
+      {
         condition: { reputationMin: 80 },
         pages: [
           "Welcome back! The whole town is talking\nabout your last deployment.",
           "You're becoming a legend around here.",
+        ],
+      },
+      {
+        condition: { reputationMax: -25 },
+        pages: [
+          "Oh. It's you.",
+          "No, everything's fine. I was just leaving.",
         ],
       },
     ],
@@ -53,6 +76,15 @@ const STORY = {
     // Most-specific conditions (multiple fields) come before less-specific ones.
     variants: [
       {
+        // Shadow Engineer — genuine awe mixed with deep despair
+        condition: { shameMin: 10 },
+        pages: [
+          "I wrote the textbook on responsible engineering.\nYou apparently used it as a doorstop.",
+          "And yet... you're still here. Still winning.\n*stares into the middle distance*",
+          "I need a moment.",
+        ],
+      },
+      {
         // High shame + still competent → "brilliant but dangerous"
         condition: { shameMin: 5, reputationMin: 60 },
         pages: [
@@ -69,6 +101,16 @@ const STORY = {
         ],
       },
       {
+        // shame 3–4 one-liner pool
+        condition: { shameMin: 3, shameMax: 4 },
+        pool: [
+          ["I heard about what you did to the repo.\nI'm choosing to believe it was an accident."],
+          ["You skipped the tests again, didn't you.\nThe CI log doesn't lie."],
+          ["Three of my students saw what you did.\nThey're considering other careers now."],
+          ["I've started locking the lab when you're around.\nNothing personal."],
+        ],
+      },
+      {
         condition: { shameMin: 1 },
         pages: [
           "Hm. I've heard some things.\nJust... be careful with those techniques.",
@@ -80,6 +122,20 @@ const STORY = {
           "Excellent work on that last incident.\nYou're exactly the kind of engineer\nwe need more of.",
         ],
       },
+      {
+        condition: { reputationMax: -50 },
+        pages: [
+          "Ah. You.",
+          "You know we have a runbook now.\nSection 4 is just your name.",
+        ],
+      },
+      {
+        condition: { reputationMax: -25 },
+        pages: [
+          "I see you again.",
+          "I've updated the curriculum.\nThere's now a case study titled 'What Not To Do.'\nI think you'll recognise the scenarios.",
+        ],
+      },
     ],
   },
   npc_random_intern: {
@@ -89,10 +145,28 @@ const STORY = {
     ],
     variants: [
       {
+        condition: { shameMin: 10 },
+        pages: [
+          "Oh no.",
+          "My senior said if I see you,\nI should run a `git stash` and leave immediately.",
+          "Goodbye.",
+        ],
+      },
+      {
         condition: { shameMin: 5 },
         pages: [
           "Oh. Um. I heard about you.\nMy senior told me to avoid you.",
           "No offence.",
+        ],
+      },
+      {
+        // shame 3–4 one-liner pool
+        condition: { shameMin: 3, shameMax: 4 },
+        pool: [
+          ["I heard you push directly to main sometimes.\nIs... is that allowed?"],
+          ["Someone said you deployed on a Friday?\nAnd lived?"],
+          ["They're talking about you in the Slack channel.\nThe one I'm not supposed to know about."],
+          ["I looked at your commit history once.\nI closed the tab pretty fast."],
         ],
       },
       {
@@ -101,6 +175,13 @@ const STORY = {
         pages: [
           "I heard you fixed the payments API\nin two turns. Can you show me how?",
           "You're kind of my hero right now.",
+        ],
+      },
+      {
+        condition: { reputationMax: -25 },
+        pages: [
+          "Oh! Sorry, I didn't see— I mean I did see you, I just—",
+          "I'll just go check on... something. Elsewhere.",
         ],
       },
     ],

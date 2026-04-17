@@ -7,6 +7,9 @@ import {
   applyShameAndReputation,
   getReputationStatus,
   getShameTitle,
+  applyShameGrime,
+  reduceShame,
+  computeShameFlags,
 } from '../src/engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -267,11 +270,11 @@ describe('applyShameAndReputation', () => {
     expect(result.reputation).toBeGreaterThanOrEqual(40)
   })
 
-  it('reputation is clamped between 0 and 100', () => {
-    const playerLow = { shamePoints: 0, reputation: 5 }
+  it('reputation is clamped between -100 and 100', () => {
+    const playerLow = { shamePoints: 0, reputation: -90 }
     const skill = { tier: 'nuclear', isCursed: true, sideEffect: { shame: 2, reputation: -20 } }
     const result = applyShameAndReputation(playerLow, skill)
-    expect(result.reputation).toBeGreaterThanOrEqual(0)
+    expect(result.reputation).toBeGreaterThanOrEqual(-100)
 
     const playerHigh = { shamePoints: 0, reputation: 95 }
     const optimalSkill = { tier: 'optimal', isCursed: false, sideEffect: null }
@@ -381,5 +384,161 @@ describe('getShameTitle', () => {
 
   it('returns null at shame 3 (no title earned yet — shame 3 has no title, neither does 1)', () => {
     expect(getShameTitle(3)).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getReputationStatus — negative range
+// ---------------------------------------------------------------------------
+
+describe('getReputationStatus — negative reputation', () => {
+  it('returns Known Incident for -1 to -25', () => {
+    expect(getReputationStatus(-1)).toBe('Known Incident')
+    expect(getReputationStatus(-25)).toBe('Known Incident')
+  })
+
+  it('returns Do Not Pair With for -26 to -50', () => {
+    expect(getReputationStatus(-26)).toBe('Do Not Pair With')
+    expect(getReputationStatus(-50)).toBe('Do Not Pair With')
+  })
+
+  it('returns The Reason We Have Runbooks for -51 and below', () => {
+    expect(getReputationStatus(-51)).toBe('The Reason We Have Runbooks')
+    expect(getReputationStatus(-100)).toBe('The Reason We Have Runbooks')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// applyShameGrime
+// ---------------------------------------------------------------------------
+
+describe('applyShameGrime', () => {
+  it('adds grime to all earned emblems proportional to shame gained', () => {
+    const emblems = {
+      tux:      { earned: true,  shine: 0, grime: 0 },
+      pipeline: { earned: true,  shine: 0, grime: 0 },
+      vault:    { earned: false, shine: 0, grime: 0 },
+    }
+    const result = applyShameGrime(emblems, 1)
+    expect(result.tux.grime).toBeCloseTo(0.05)
+    expect(result.pipeline.grime).toBeCloseTo(0.05)
+    expect(result.vault.grime).toBe(0) // unearned — untouched
+  })
+
+  it('caps grime at 5', () => {
+    const emblems = { tux: { earned: true, shine: 0, grime: 4.98 } }
+    const result = applyShameGrime(emblems, 2)
+    expect(result.tux.grime).toBe(5)
+  })
+
+  it('does not mutate the original emblems object', () => {
+    const emblems = { tux: { earned: true, shine: 0, grime: 0 } }
+    applyShameGrime(emblems, 1)
+    expect(emblems.tux.grime).toBe(0)
+  })
+
+  it('returns unchanged emblems when shameGained is 0', () => {
+    const emblems = { tux: { earned: true, shine: 0, grime: 1 } }
+    const result = applyShameGrime(emblems, 0)
+    expect(result.tux.grime).toBe(1)
+  })
+
+  it('skips unearnedEmblems and only affects earned ones', () => {
+    const emblems = {
+      container: { earned: false, shine: 0, grime: 0 },
+      cloud:     { earned: true,  shine: 2, grime: 0.5 },
+    }
+    const result = applyShameGrime(emblems, 2)
+    expect(result.container.grime).toBe(0)
+    expect(result.cloud.grime).toBeCloseTo(0.6)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// reduceShame
+// ---------------------------------------------------------------------------
+
+describe('reduceShame', () => {
+  it('reduces shame by the given amount', () => {
+    const player = { shamePoints: 5, reputation: 50 }
+    const result = reduceShame(player, 1)
+    expect(result.shamePoints).toBe(4)
+  })
+
+  it('never reduces shame below 0', () => {
+    const player = { shamePoints: 1, reputation: 50 }
+    const result = reduceShame(player, 5)
+    expect(result.shamePoints).toBe(0)
+  })
+
+  it('does not mutate the original player object', () => {
+    const player = { shamePoints: 3, reputation: 60 }
+    reduceShame(player, 1)
+    expect(player.shamePoints).toBe(3)
+  })
+
+  it('does not affect reputation', () => {
+    const player = { shamePoints: 5, reputation: 42 }
+    const result = reduceShame(player, 2)
+    expect(result.reputation).toBe(42)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// computeShameFlags
+// ---------------------------------------------------------------------------
+
+describe('computeShameFlags', () => {
+  it('returns no flags when shame is 0', () => {
+    expect(computeShameFlags(0)).toEqual({})
+  })
+
+  it('returns pedersen flag when shame is 1', () => {
+    const flags = computeShameFlags(1)
+    expect(flags).toHaveProperty('pedersen_sighs_cursed_location_visible', true)
+  })
+
+  it('returns oneliners flag when shame is 3', () => {
+    const flags = computeShameFlags(3)
+    expect(flags).toHaveProperty('npc_oneliners_active', true)
+  })
+
+  it('returns shadow engineer flag when shame is 10', () => {
+    const flags = computeShameFlags(10)
+    expect(flags).toHaveProperty('shadow_engineer_title_unlocked', true)
+  })
+
+  it('returns all flags at or below the current shame level', () => {
+    const flags = computeShameFlags(10)
+    expect(flags).toHaveProperty('pedersen_sighs_cursed_location_visible', true)
+    expect(flags).toHaveProperty('npc_oneliners_active', true)
+    expect(flags).toHaveProperty('cursed_network_full_three_am_active', true)
+    expect(flags).toHaveProperty('shadow_engineer_title_unlocked', true)
+  })
+
+  it('does not return flags for thresholds not yet reached', () => {
+    const flags = computeShameFlags(5)
+    expect(flags).not.toHaveProperty('shadow_engineer_title_unlocked')
+    expect(flags).not.toHaveProperty('secret_ending_accessible')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// applyShameGrime — null safety
+// ---------------------------------------------------------------------------
+
+describe('applyShameGrime (null safety)', () => {
+  it('handles emblems with missing grime field using ?? 0', () => {
+    const emblems = { tux: { earned: true, shine: 0 } } // grime is undefined
+    const result = applyShameGrime(emblems, 1)
+    expect(result.tux.grime).toBeCloseTo(0.05)
+  })
+
+  it('returns empty object when emblems is null', () => {
+    expect(applyShameGrime(null, 1)).toEqual({})
+  })
+
+  it('returns empty object when emblems is undefined', () => {
+    expect(applyShameGrime(undefined, 1)).toEqual({})
   })
 })

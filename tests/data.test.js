@@ -42,6 +42,7 @@ describe('skills registry', () => {
       'helm_upgrade',
       'kubectl_apply',
       'kubectl_delete_ns',
+      'kubectl_delete_production',
       'kubectl_drain',
       'kubectl_exec',
       'kubectl_logs',
