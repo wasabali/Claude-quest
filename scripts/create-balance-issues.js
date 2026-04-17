@@ -109,7 +109,8 @@ for (const finding of newFindings) {
   writeFileSync(bodyFile, body)
 
   console.log(`  📝 Creating issue: ${titlePrefix}`)
-  gh(`issue create --title "${titlePrefix.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --label "${labels}"`)
+  const safeTitle = titlePrefix.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  gh(`issue create --title "${safeTitle}" --body-file "${bodyFile}" --label "${labels}"`)
 }
 
 // Clean up temp dir
