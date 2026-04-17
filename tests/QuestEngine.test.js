@@ -453,6 +453,28 @@ describe('resolveChoice', () => {
     expect(event.xp).toBe(30)
   })
 
+  it('flags stageReset for Alice wrong answers and prevents questComplete', () => {
+    const story = freshStory({
+      activeQuests: { architect_alice_design: { stage: 0, attempts: 1 } },
+    })
+    const player = freshPlayer()
+    // choice 1 is "Just buy a bigger server" — wrong with stage_reset penalty
+    const event = resolveChoice('architect_alice_design', 1, story, player)
+    expect(event.stageReset).toBe(true)
+    expect(event.questComplete).toBe(false)
+    expect(event.penalty).toEqual({ type: 'stage_reset' })
+  })
+
+  it('sets stageReset false for correct choices', () => {
+    const story = freshStory({
+      activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
+    })
+    const player = freshPlayer()
+    // choice 2 is optimal answer
+    const event = resolveChoice('dev_dave_flaky', 2, story, player)
+    expect(event.stageReset).toBe(false)
+  })
+
   it('includes itemReward when choice has one', () => {
     const story = freshStory({
       activeQuests: { startup_steve_storage: { stage: 0, attempts: 1 } },

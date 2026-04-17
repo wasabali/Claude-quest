@@ -140,13 +140,15 @@ export function resolveChoice(questId, choiceIndex, storyState, playerState) {
   const isCorrect = choice.correct !== false
   const questComplete = isCorrect && isLastStage
 
-  // Build penalty — handle both new-style { type, value } and old-style hpLoss
+  // Build penalty — handle both new-style { type, value } and legacy hpLoss
+  // (margaret_website uses hpLoss; newer quests use { type, value })
   let penalty = choice.penalty || null
   if (!penalty && choice.hpLoss) {
     penalty = { type: 'hp', value: -choice.hpLoss }
   }
 
-  // HP floor: clamp HP penalty so player never goes below 1
+  // HP floor at 1: clamp HP penalty so player can't die from wrong answers.
+  // Only HP penalties are clamped — budget/reputation have no floor by design.
   if (penalty && penalty.type === 'hp' && penalty.value < 0) {
     const currentHp = playerState.hp ?? 100
     const maxLoss = currentHp - 1
@@ -154,6 +156,11 @@ export function resolveChoice(questId, choiceIndex, storyState, playerState) {
       penalty = { ...penalty, value: -maxLoss }
     }
   }
+
+  // stage_reset penalty: the scene resets the player to redo the current
+  // stage. The engine flags it here; the scene applies it via startQuest
+  // or by resetting activeQuests[questId].stage to the current value.
+  const stageReset = penalty != null && penalty.type === 'stage_reset'
 
   return {
     questId,
@@ -168,8 +175,9 @@ export function resolveChoice(questId, choiceIndex, storyState, playerState) {
     flag:             choice.flag || null,
     triggerEncounter: choice.triggerEncounter || null,
     responseDialog:   choice.responseDialog || [],
-    questComplete,
-    completionFlag:   questComplete ? (quest.completionFlag || null) : null,
+    stageReset,
+    questComplete:    stageReset ? false : questComplete,
+    completionFlag:   (stageReset ? false : questComplete) ? (quest.completionFlag || null) : null,
   }
 }
 
