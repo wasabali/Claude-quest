@@ -9,6 +9,151 @@
 // Variants may also have a `pool` field (array of pages arrays) instead of
 // `pages`. When matched, a random entry from the pool is selected. This is
 // used for shame-3 one-liners so players see different reactions each time.
+//
+// dialogByAct: optional per-act dialog overrides. When the player's current
+// act matches a key, those pages replace the default `pages` (before variants
+// are evaluated). Keys are act numbers (1–5) or 'finale'/'postgame'.
+
+// ---------------------------------------------------------------------------
+// ACT_TRANSITIONS — flag-triggered act advancement definitions
+// ---------------------------------------------------------------------------
+const ACT_TRANSITIONS = {
+  prologue_to_1: {
+    id:           'prologue_to_1',
+    triggerFlags: ['starter_deck_chosen', 'first_battle_won'],
+    fromAct:      0,
+    newAct:       1,
+    titleCard:    'ACT 1',
+    titleSub:     '"Push to Production"',
+    narration: [
+      'Professor Pedersen waves you off.',
+      "The world's problems await.",
+      'Your first commit awaits.',
+    ],
+  },
+  act1_to_2: {
+    id:           'act1_to_2',
+    triggerFlags: ['margaret_quest_complete', 'gym_1_beaten'],
+    fromAct:      1,
+    newAct:       2,
+    titleCard:    'ACT 2',
+    titleSub:     '"It Works on My Machine"',
+    narration: [
+      "Margaret's bakery went live.",
+      "Four hours later:",
+      "It was on the front page of HN.",
+    ],
+  },
+  act2_to_3: {
+    id:           'act2_to_3',
+    triggerFlags: ['gym_2_beaten', 'gym_3_beaten', 'staging_deployed'],
+    fromAct:      2,
+    newAct:       3,
+    titleCard:    'ACT 3',
+    titleSub:     '"Legacy Migration"',
+    narration: [
+      "NorCloud AS has a new client.",
+      "OldCorp. Legacy systems since 1987.",
+      "They said: 'Don't touch anything.'",
+    ],
+  },
+  act3_to_4: {
+    id:           'act3_to_4',
+    triggerFlags: ['gym_4_beaten', 'gym_5_beaten', 'do_not_touch_resolved'],
+    fromAct:      3,
+    newAct:       4,
+    titleCard:    'ACT 4',
+    titleSub:     '"The Throttling"',
+    narration: [
+      "The migration is done.",
+      "But something doesn't add up.",
+      "Kristoffer knows more than he's said.",
+    ],
+  },
+  act4_to_finale: {
+    id:           'act4_to_finale',
+    triggerFlags: ['gym_6_beaten', 'gym_7_beaten', 'throttlemaster_unmasked'],
+    fromAct:      4,
+    newAct:       5,
+    titleCard:    'FINALE',
+    titleSub:     '"The Post-Mortem"',
+    narration: [
+      "THROTTLEMASTER is Karsten Ottesen.",
+      "Kristoffer's ex-colleague from OmniCloud.",
+      "Now: the CTO is waiting.",
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// VIRAL_WAVE — scripted 3-encounter sequence on first Production Plains
+//              entry after Act 2 begins
+// ---------------------------------------------------------------------------
+const VIRAL_WAVE = {
+  id:           'viral_wave',
+  triggerAct:   2,
+  triggerFlag:  'viral_wave_complete',
+  location:     'production_plains',
+  encounters: [
+    { id: 'high_cpu_incident',        description: 'High CPU incident' },
+    { id: 'disk_full_incident',       description: 'Disk Full incident' },
+    { id: 'cascading_failure_incident', description: 'Cascading failure incident' },
+  ],
+  rewardFlag:   'viral_wave_complete',
+  rewardNpc:    'sla_signe',
+  rewardItem:   'on_call_phone',
+}
+
+// ---------------------------------------------------------------------------
+// THREE_AM_SCENE — forced scripted sequence after viral wave
+// ---------------------------------------------------------------------------
+const THREE_AM_SCENE = {
+  id:          'three_am_scene',
+  triggerFlag: 'viral_wave_complete',
+  guardFlag:   'three_am_scene_complete',
+  clockText:   '03:17',
+  narration: [
+    "Your phone buzzes. Then again.",
+    "The on-call rotation doesn't care\nthat you just went to bed.",
+    "You stare at the ceiling.",
+    "The alerts keep coming.",
+    "...you get up.",
+  ],
+  returnLocation: 'localhost_town',
+}
+
+// ---------------------------------------------------------------------------
+// KRISTOFFER — per-act locations and shame reactions
+// ---------------------------------------------------------------------------
+const KRISTOFFER_LOCATIONS = {
+  1:        'localhost_town',
+  2:        'production_plains',
+  3:        'oldcorp_basement',
+  4:        'architecture_district',
+  5:        null,
+  postgame: 'localhost_town',
+}
+
+const KRISTOFFER_SHAME_REACTIONS = [
+  { shameMin: 15, pages: ["You're going to join him, aren't you."] },
+  { shameMin: 10, pages: ["You're going down the same path\nKarsten did. Please stop."] },
+  { shameMin:  7, pages: ["THROTTLEMASTER contacted you,\ndidn't he. I can tell."] },
+  { shameMin:  3, pages: ["I've heard some… concerning things\nabout your methods."] },
+]
+
+// ---------------------------------------------------------------------------
+// NPC_APPEARANCES — new NPCs that appear in specific acts
+// ---------------------------------------------------------------------------
+const NPC_APPEARANCES = {
+  sla_signe:         { appearsInAct: 2, location: 'production_plains' },
+  dagny_the_dba:     { appearsInAct: 3, location: 'oldcorp_basement' },
+  compliance_carina: { appearsInAct: 4, location: 'azure_town' },
+  pedersen_finale:   { appearsInAct: 5, location: 'cloud_console' },
+}
+
+// ---------------------------------------------------------------------------
+// STORY — NPC dialog registry (existing + per-act overrides)
+// ---------------------------------------------------------------------------
 const STORY = {
   npc_margaret: {
     id:    'npc_margaret',
@@ -17,6 +162,13 @@ const STORY = {
       "The Azure Terminal is just east of here.\nUse it to manage your skill deck.",
       "Be careful in the tall grass — incidents love\nto ambush young engineers.",
     ],
+    dialogByAct: {
+      1: ["My website keeps going down!", "Can you help?"],
+      2: ["Did you see that traffic spike?", "I've been baking non-stop."],
+      3: ["Things are calmer now.", "Still making bread. Still online."],
+      4: ["I heard about the THROTTLEMASTER thing.", "Scary stuff."],
+      5: ["Go get 'em. The cloud needs you."],
+    },
     variants: [
       {
         condition: { shameMin: 10 },
@@ -72,8 +224,13 @@ const STORY = {
       "Ah, a new student! Study hard and use\nonly the approved techniques.",
       "There are no shortcuts worth taking\nin this profession.",
     ],
-    // Variants are evaluated top-to-bottom; first match wins.
-    // Most-specific conditions (multiple fields) come before less-specific ones.
+    dialogByAct: {
+      1: ["Remember: always read the docs first.", "The cloud is vast, but well-documented."],
+      2: ["That viral moment has me worried.", "Scale-out is one thing. Scale-out at 3am\nis another."],
+      3: ["I visited NorCloud last week.\nBe very careful with DO_NOT_TOUCH.", "Legacy systems bite back."],
+      4: ["The THROTTLEMASTER reveal…\nI feared something like this.", "Trust your training."],
+      5: ["This is it. The Cloud Console awaits.", "Everything I taught you leads here."],
+    },
     variants: [
       {
         // Shadow Engineer — genuine awe mixed with deep despair
@@ -216,8 +373,115 @@ const STORY = {
       "I put in a request to host it in West-EU-2.\nStill waiting on the ticket.",
     ],
   },
+  npc_kristoffer: {
+    id:    'npc_kristoffer',
+    pages: [
+      "Welcome to NorCloud! I'm Kristoffer,\nyour team lead.",
+      "Let me know if you need anything.",
+    ],
+    dialogByAct: {
+      1: ["Good to have you on the team.", "Head out and handle some incidents.\nI'll be here if you need me."],
+      2: ["Did you see the traffic numbers?", "This is getting out of hand.\nI'm… I'm sure it'll be fine."],
+      3: ["OldCorp is… complicated.", "Just don't touch anything they told\nus not to touch. Please."],
+      4: ["We need to talk.", "I should have told you sooner.\nAbout Karsten. About everything."],
+      5: ["..."],
+      postgame: ["I'm sorry. That's all I can say."],
+    },
+    locationByAct: KRISTOFFER_LOCATIONS,
+    shameReactions: KRISTOFFER_SHAME_REACTIONS,
+    variants: [
+      {
+        condition: { shameMin: 15 },
+        pages: [
+          "You're going to join him, aren't you.",
+        ],
+      },
+      {
+        condition: { shameMin: 10 },
+        pages: [
+          "You're going down the same path\nKarsten did. Please stop.",
+        ],
+      },
+      {
+        condition: { shameMin: 7 },
+        pages: [
+          "THROTTLEMASTER contacted you,\ndidn't he. I can tell.",
+        ],
+      },
+      {
+        condition: { shameMin: 3 },
+        pages: [
+          "I've heard some… concerning things\nabout your methods.",
+        ],
+      },
+    ],
+  },
+  npc_sla_signe: {
+    id:    'npc_sla_signe',
+    pages: [
+      "SLA Signe: You survived the wave?",
+      "Here — take this On-Call Phone.\nYou're going to need it.",
+    ],
+    appearsInAct: 2,
+    location: 'production_plains',
+  },
+  npc_dagny_the_dba: {
+    id:    'npc_dagny_the_dba',
+    pages: [
+      "Dagny the DBA: These tables haven't\nbeen normalised since 1987.",
+      "Don't even look at the stored procedures.",
+    ],
+    appearsInAct: 3,
+    location: 'oldcorp_basement',
+  },
+  npc_compliance_carina: {
+    id:    'npc_compliance_carina',
+    pages: [
+      "Compliance Carina: Every deployment\nneeds an audit trail.",
+      "No exceptions. Yes, even hotfixes.",
+    ],
+    appearsInAct: 4,
+    location: 'azure_town',
+  },
+  npc_pedersen_finale: {
+    id:    'npc_pedersen_finale',
+    pages: [
+      "Professor Pedersen: You made it.",
+      "The Cloud Console is through that door.",
+      "Everything I taught you leads to this.",
+    ],
+    appearsInAct: 5,
+    location: 'cloud_console',
+  },
 }
 
+// ---------------------------------------------------------------------------
+// STORY registry exports (NPC dialog)
+// ---------------------------------------------------------------------------
 export const getById = (id)           => STORY[id]
 export const getAll  = ()             => Object.values(STORY)
 export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
+
+// ---------------------------------------------------------------------------
+// ACT_TRANSITIONS registry exports
+// ---------------------------------------------------------------------------
+export const getTransitionById  = (id) => ACT_TRANSITIONS[id]
+export const getAllTransitions   = ()   => Object.values(ACT_TRANSITIONS)
+
+// ---------------------------------------------------------------------------
+// Scripted sequence exports
+// ---------------------------------------------------------------------------
+export const getViralWave    = () => VIRAL_WAVE
+export const getThreeAmScene = () => THREE_AM_SCENE
+
+// ---------------------------------------------------------------------------
+// NPC appearance exports
+// ---------------------------------------------------------------------------
+export const getNpcAppearances    = ()   => NPC_APPEARANCES
+export const getNpcAppearance     = (id) => NPC_APPEARANCES[id]
+
+// ---------------------------------------------------------------------------
+// Kristoffer location/shame exports
+// ---------------------------------------------------------------------------
+export const getKristofferLocations     = () => KRISTOFFER_LOCATIONS
+export const getKristofferShameReactions = () => KRISTOFFER_SHAME_REACTIONS

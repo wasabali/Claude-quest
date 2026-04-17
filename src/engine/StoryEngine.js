@@ -33,10 +33,10 @@ export function checkActTransition(currentAct, flags) {
 // getKristofferLocation
 // Returns the location string for the given act (1-5 or 'postgame').
 // Returns null for act 5 (he's absent in the finale).
-// Returns undefined for unknown act numbers.
 // ---------------------------------------------------------------------------
 export function getKristofferLocation(act) {
   const locations = getKristofferLocations()
+  if (!(act in locations)) return undefined
   return locations[act]
 }
 
