@@ -231,6 +231,8 @@ const STORY = {
     actFirstAppearance: 2,
     shameContact: 7,
     shameRecruitment: 15,
+    // Dialog pools keyed by act/shame context.
+    // [name] placeholders are replaced by the scene layer with the player's name.
     dialogPools: {
       act2_taunt: [
         "Your pipeline is now running in degraded mode.",

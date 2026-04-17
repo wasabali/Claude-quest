@@ -56,6 +56,13 @@ const SKILL_BLOCK_DURATION  = 1
 const CONFUSION_DURATION    = 1
 const THROTTLE_DURATION     = 2
 
+// Calculates boss outcome based on shame thresholds (arrest / choice / recruitment)
+function bossOutcome(shame, thresholds) {
+  if (shame >= (thresholds.recruitment ?? Infinity)) return 'recruitment'
+  if (shame >= (thresholds.arrest ?? Infinity))      return 'choice'
+  return 'arrest'
+}
+
 // ---------------------------------------------------------------------------
 // createBattleState
 // Initialises a fresh battle state. This is the only mutable object in the
@@ -424,15 +431,8 @@ export function turnEndPhase(state) {
 
     // Boss encounters: shame-based outcome branching on win
     if (state.opponent.type === 'boss' && state.opponent.shameThresholds) {
-      const shame      = state.player.shamePoints ?? 0
-      const thresholds = state.opponent.shameThresholds
-      let outcome = 'arrest'
-      if (shame >= (thresholds.recruitment ?? Infinity)) {
-        outcome = 'recruitment'
-      } else if (shame >= (thresholds.arrest ?? Infinity)) {
-        outcome = 'choice'
-      }
-      events.push({ type: 'boss_outcome', target: 'player', value: outcome, shame })
+      const shame = state.player.shamePoints ?? 0
+      events.push({ type: 'boss_outcome', target: 'player', value: bossOutcome(shame, state.opponent.shameThresholds), shame })
     }
 
     // ENGINEER mode only: apply reputation bonus for optimal win
@@ -482,15 +482,8 @@ export function turnEndPhase(state) {
 
     // Boss encounters: shame-based outcome branching
     if (state.opponent.type === 'boss' && state.opponent.shameThresholds) {
-      const shame      = state.player.shamePoints ?? 0
-      const thresholds = state.opponent.shameThresholds
-      let outcome = 'arrest' // default: < arrest threshold
-      if (shame >= (thresholds.recruitment ?? Infinity)) {
-        outcome = 'recruitment'
-      } else if (shame >= (thresholds.arrest ?? Infinity)) {
-        outcome = 'choice'
-      }
-      events.push({ type: 'boss_outcome', target: 'player', value: outcome, shame })
+      const shame = state.player.shamePoints ?? 0
+      events.push({ type: 'boss_outcome', target: 'player', value: bossOutcome(shame, state.opponent.shameThresholds), shame })
     }
 
     // Reputation penalty for losing an engineer battle (not SLA — that is penalised in slaTickPhase)

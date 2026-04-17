@@ -152,6 +152,7 @@ export class WorldScene extends BaseScene {
         this._ghostSprite.setVisible(false)
         this._ghostSprite.destroy()
         this._ghostSprite = null
+        if (!GameState.story.flags) GameState.story.flags = {}
         GameState.story.flags.throttlemaster_act2_seen = true
       }
     }
