@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
   applyStatus,
+  removeStatus,
   tickStatuses,
   isStatusActive,
 } from '../src/engine/StatusEngine.js'
@@ -141,6 +142,66 @@ describe('applyStatus', () => {
     const state  = makeBattleState()
     const events = applyStatus(state, 'player', 'nonexistent_status')
     expect(events).toEqual([])
+  })
+})
+
+describe('removeStatus', () => {
+  it('removes an active status', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'throttled')
+    expect(isStatusActive(state, 'player', 'throttled')).toBe(true)
+
+    removeStatus(state, 'player', 'throttled')
+    expect(isStatusActive(state, 'player', 'throttled')).toBe(false)
+  })
+
+  it('returns status_remove event with correct shape', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'throttled')
+
+    const events = removeStatus(state, 'player', 'throttled')
+    expect(events.length).toBe(1)
+    expect(events[0]).toEqual({
+      type:   'status_remove',
+      target: 'player',
+      value:  'throttled',
+      text:   'throttled removed from player',
+    })
+  })
+
+  it('returns empty array when status not present', () => {
+    const state  = makeBattleState()
+    const events = removeStatus(state, 'player', 'throttled')
+    expect(events).toEqual([])
+  })
+
+  it('technical debt cannot be removed', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'technical_debt')
+    expect(isStatusActive(state, 'player', 'technical_debt')).toBe(true)
+
+    const events = removeStatus(state, 'player', 'technical_debt')
+    expect(events).toEqual([])
+    expect(isStatusActive(state, 'player', 'technical_debt')).toBe(true)
+  })
+
+  it('only removes from specified target', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'throttled')
+    applyStatus(state, 'opponent', 'throttled')
+
+    removeStatus(state, 'player', 'throttled')
+    expect(isStatusActive(state, 'player',   'throttled')).toBe(false)
+    expect(isStatusActive(state, 'opponent', 'throttled')).toBe(true)
+  })
+
+  it('status array is actually modified', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'throttled')
+    expect(state.player.statuses.length).toBe(1)
+
+    removeStatus(state, 'player', 'throttled')
+    expect(state.player.statuses.length).toBe(0)
   })
 })
 

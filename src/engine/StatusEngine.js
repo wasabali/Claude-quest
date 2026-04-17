@@ -51,6 +51,31 @@ export function applyStatus(battleState, target, statusId, randomFn = Math.rando
   ]
 }
 
+// Remove a specific status from the target.
+// Returns BattleEvent[].
+// - For technical_debt: this is a no-op (cannot be removed in battle).
+// - For all other statuses: removes the first matching entry.
+// - If the status is not present, returns [].
+export function removeStatus(battleState, target, statusId) {
+  // Technical debt cannot be removed
+  if (statusId === 'technical_debt') return []
+
+  const statuses = battleState[target].statuses
+  const idx = statuses.findIndex(s => s.id === statusId)
+  if (idx === -1) return []
+
+  statuses.splice(idx, 1)
+
+  return [
+    {
+      type:   'status_remove',
+      target,
+      value:  statusId,
+      text:   `${statusId} removed from ${target}`,
+    },
+  ]
+}
+
 // Tick all statuses on target by one turn.
 // - Decrements remaining for finite statuses.
 // - Removes entries when remaining reaches 0 and emits status_expired.
