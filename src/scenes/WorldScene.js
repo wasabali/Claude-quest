@@ -4,13 +4,21 @@ import { DialogBox } from '#ui/DialogBox.js'
 import { CONFIG } from '../config.js'
 import { GameState, hasItem, markDirty } from '#state/GameState.js'
 import { getById as getStoryById } from '#data/story.js'
+import { getById as getRegionById } from '#data/regions.js'
+import { canTravel, getDiscoveredTerminals, canFastTravel } from '#engine/RegionEngine.js'
 
-const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
 const TILE_SIZE   = CONFIG.TILE_SIZE   // 48px
 
 const WALK_SPEED  = TILE_SIZE * 2     // 96 px/sec
 const RUN_SPEED   = TILE_SIZE * 4     // 192 px/sec
+
+// 4-frame stepped fade for region transitions (no smooth tweening)
+const FADE_STEPS     = [1.0, 0.66, 0.33, 0.0]
+const FADE_STEP_MS   = 50
+
+// Map edge detection margin (in pixels)
+const EDGE_MARGIN = TILE_SIZE / 2
 
 export class WorldScene extends BaseScene {
   constructor() {
@@ -18,7 +26,12 @@ export class WorldScene extends BaseScene {
   }
 
   preload() {
-    this.load.tilemapTiledJSON(MAP_KEY, 'assets/maps/localhost_town.tmj')
+    const regionId = GameState.player.location || 'localhost_town'
+    this._regionId = regionId
+
+    if (!this.cache.tilemap.exists(regionId)) {
+      this.load.tilemapTiledJSON(regionId, `assets/maps/${regionId}.tmj`)
+    }
 
     if (!this.textures.exists(TILESET_KEY)) {
       const g = this.make.graphics({ add: false })
@@ -74,23 +87,39 @@ export class WorldScene extends BaseScene {
   create(data = {}) {
     this.dialog       = new DialogBox(this)
     this._interacting = false
+    this._transitioning = false
     this._facing      = 'down'
     this._stepCount   = 0
     this._lastTileX   = -1
     this._lastTileY   = -1
+    this._entryDir    = data.entryDirection || null
 
-    this._setupMap()
+    const regionId = this._regionId || GameState.player.location || 'localhost_town'
+
+    this._setupMap(regionId)
     this._setupNpcSprites()
     this._setupPlayer()
     this._setupInput()
     this._setupCamera()
 
-    GameState.player.location = 'localhost_town'
+    GameState.player.location = regionId
+    markDirty()
+
+    // Unlock fast travel terminal on first visit
+    const region = getRegionById(regionId)
+    if (region?.hasFastTravel) {
+      const terminalFlag = `terminal_unlocked_${regionId}`
+      if (!GameState.story.flags[terminalFlag]) {
+        GameState.story.flags[terminalFlag] = true
+        markDirty()
+      }
+    }
+
     this.playBgm('town')
   }
 
-  _setupMap() {
-    this._map = this.make.tilemap({ key: MAP_KEY })
+  _setupMap(regionId) {
+    this._map = this.make.tilemap({ key: regionId })
     const tileset = this._map.addTilesetImage('stub_tiles', TILESET_KEY, TILE_SIZE, TILE_SIZE, 0, 0)
 
     this._groundLayer  = this._map.createLayer('Ground',  tileset, 0, 0)
@@ -124,8 +153,18 @@ export class WorldScene extends BaseScene {
   }
 
   _setupPlayer() {
-    const startX = 5 * TILE_SIZE + TILE_SIZE / 2
-    const startY = 10 * TILE_SIZE + TILE_SIZE / 2
+    const mapW = this._map.widthInPixels
+    const mapH = this._map.heightInPixels
+
+    // Default spawn: center of map
+    let startX = 5 * TILE_SIZE + TILE_SIZE / 2
+    let startY = 10 * TILE_SIZE + TILE_SIZE / 2
+
+    // Entry direction: place player at the edge they entered from
+    if (this._entryDir === 'west')  { startX = TILE_SIZE + TILE_SIZE / 2; startY = mapH / 2 }
+    if (this._entryDir === 'east')  { startX = mapW - TILE_SIZE - TILE_SIZE / 2; startY = mapH / 2 }
+    if (this._entryDir === 'north') { startX = mapW / 2; startY = TILE_SIZE + TILE_SIZE / 2 }
+    if (this._entryDir === 'south') { startX = mapW / 2; startY = mapH - TILE_SIZE - TILE_SIZE / 2 }
 
     this._player = this.physics.add.sprite(startX, startY, 'player')
     this._player.setDepth(5)
@@ -133,7 +172,7 @@ export class WorldScene extends BaseScene {
     this._player.body.setSize(28, 28).setOffset(2, 4)
 
     this.physics.add.collider(this._player, this._collisionLayer)
-    this.physics.world.setBounds(0, 0, this._map.widthInPixels, this._map.heightInPixels)
+    this.physics.world.setBounds(0, 0, mapW, mapH)
   }
 
   _setupInput() {
@@ -149,12 +188,14 @@ export class WorldScene extends BaseScene {
   }
 
   update() {
+    if (this._transitioning) return
     if (this._interacting || this.dialog.isActive) {
       this._player.setVelocity(0, 0)
       this._handleDialogInput()
       return
     }
     this._handleMovement()
+    this._checkEdgeTransition()
     this._checkEncounterStep()
   }
 
@@ -221,12 +262,29 @@ export class WorldScene extends BaseScene {
     this._interacting = true
 
     if (npcName === 'azure_terminal') {
-      const pages = getStoryById('npc_azure_terminal')?.pages ?? ['> AZURE TERMINAL v2.0']
-      this.dialog.show(pages, () => {
-        this._interacting = false
-        this.scene.pause()
-        this.scene.launch('SkillManagementScene', { returnScene: 'WorldScene' })
-      })
+      // Unlock terminal flag on interaction
+      const terminalFlag = `terminal_unlocked_${this._regionId}`
+      if (!GameState.story.flags[terminalFlag]) {
+        GameState.story.flags[terminalFlag] = true
+        markDirty()
+      }
+
+      const terminals = getDiscoveredTerminals(GameState.story.flags)
+      const hasOtherTerminals = terminals.filter(id => id !== this._regionId).length > 0
+
+      if (hasOtherTerminals) {
+        const pages = getStoryById('npc_azure_terminal')?.pages ?? ['> AZURE TERMINAL v2.0']
+        this.dialog.show(pages, () => {
+          this._openFastTravelMenu()
+        })
+      } else {
+        const pages = getStoryById('npc_azure_terminal')?.pages ?? ['> AZURE TERMINAL v2.0']
+        this.dialog.show(pages, () => {
+          this._interacting = false
+          this.scene.pause()
+          this.scene.launch('SkillManagementScene', { returnScene: 'WorldScene' })
+        })
+      }
       return
     }
 
@@ -297,6 +355,100 @@ export class WorldScene extends BaseScene {
       }
     }
     return entry?.pages ?? ['???']
+  }
+
+  _checkEdgeTransition() {
+    const px = this._player.x
+    const py = this._player.y
+    const mapW = this._map.widthInPixels
+    const mapH = this._map.heightInPixels
+
+    let direction = null
+    if (px <= EDGE_MARGIN)          direction = 'west'
+    else if (px >= mapW - EDGE_MARGIN) direction = 'east'
+    else if (py <= EDGE_MARGIN)          direction = 'north'
+    else if (py >= mapH - EDGE_MARGIN) direction = 'south'
+
+    if (!direction) return
+
+    const result = canTravel(this._regionId, direction, GameState)
+    if (!result.target) return
+
+    if (!result.allowed) {
+      this._player.setVelocity(0, 0)
+      this._interacting = true
+      this.dialog.show([result.reason], () => { this._interacting = false })
+      // Push player back from edge so they don't re-trigger
+      const pushback = TILE_SIZE
+      if (direction === 'west')  this._player.x += pushback
+      if (direction === 'east')  this._player.x -= pushback
+      if (direction === 'north') this._player.y += pushback
+      if (direction === 'south') this._player.y -= pushback
+      return
+    }
+
+    this._transitionToRegion(result.target, result.entry)
+  }
+
+  // 4-frame stepped fade (100% → 66% → 33% → 0%), not smooth
+  _transitionToRegion(targetRegionId, entryDirection) {
+    this._transitioning = true
+    this._player.setVelocity(0, 0)
+
+    const overlay = this.add.rectangle(
+      this.cameras.main.scrollX + CONFIG.WIDTH / 2,
+      this.cameras.main.scrollY + CONFIG.HEIGHT / 2,
+      CONFIG.WIDTH, CONFIG.HEIGHT, 0x000000, 0,
+    ).setDepth(100).setScrollFactor(0)
+
+    let step = 0
+    const fade = this.time.addEvent({
+      delay: FADE_STEP_MS,
+      repeat: FADE_STEPS.length - 1,
+      callback: () => {
+        overlay.setAlpha(1 - FADE_STEPS[step])
+        step++
+        if (step >= FADE_STEPS.length) {
+          GameState.player.location = targetRegionId
+          markDirty()
+          this.scene.restart({ entryDirection })
+        }
+      },
+    })
+  }
+
+  _openFastTravelMenu() {
+    const terminals = getDiscoveredTerminals(GameState.story.flags)
+    const currentRegion = this._regionId
+
+    // Filter out current region
+    const destinations = terminals.filter(id => id !== currentRegion)
+    if (destinations.length === 0) {
+      this.dialog.show(['No other terminals discovered yet.'], () => {
+        this._interacting = false
+      })
+      return
+    }
+
+    const menuItems = destinations.map(id => {
+      const region = getRegionById(id)
+      return region ? region.name : id
+    })
+
+    // Show terminal names as dialog pages, then travel to selected
+    // For now, travel to the first discovered terminal (Menu component
+    // integration will replace this once the Menu UI is wired up)
+    const pages = [
+      '> AZURE TERMINAL — FAST TRAVEL',
+      ...menuItems.map((name, i) => `  ${i + 1}. ${name}`),
+      `Traveling to ${menuItems[0]}...`,
+    ]
+    this.dialog.show(pages, () => {
+      this._interacting = false
+      if (canFastTravel(destinations[0], GameState.story.flags)) {
+        this._transitionToRegion(destinations[0], null)
+      }
+    })
   }
 
   _checkEncounterStep() {
