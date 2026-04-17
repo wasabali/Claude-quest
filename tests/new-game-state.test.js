@@ -104,6 +104,7 @@ describe('initNewGame', () => {
       act: 1,
       completedQuests: [],
       flags: {},
+      activeQuests: {},
     })
     expect(GameState.stats).toEqual({
       battlesWon: 0,

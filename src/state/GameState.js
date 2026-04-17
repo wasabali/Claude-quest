@@ -65,6 +65,7 @@ export const GameState = {
     act:             1,
     completedQuests: [],
     flags:           {},
+    activeQuests:    {},   // { questId: { stage: 0, attempts: 1 } }
   },
   stats: { ...DEFAULT_STATS },
   _session: {
@@ -192,6 +193,7 @@ export function initNewGame(name, mascot) {
     act:             1,
     completedQuests: [],
     flags:           {},
+    activeQuests:    {},
   }
   GameState.stats = { ...DEFAULT_STATS }
   GameState._session = {
