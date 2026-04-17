@@ -306,7 +306,7 @@ const STORY = {
     id:    'terminal_hosting',
     pages: [
       '> az staticwebapp show --name cloud-quest',
-      '{\n  "name": "cloud-quest",\n  "location": "West Europe",\n  "sku": "Free",\n  "repositoryUrl": "https://github.com/wasabali/claudeomon",\n  "branch": "main",\n  "defaultHostname": "cloud-quest.azurestaticapps.net"\n}',
+      '{\n  "name": "cloud-quest",\n  "location": "West Europe",\n  "sku": "Free",\n  "repositoryUrl": "https://github.com/wasabali/Claude-quest",\n  "branch": "main",\n  "defaultHostname": "cloud-quest.azurestaticapps.net"\n}',
       '> cat staticwebapp.config.json',
       '{\n  "globalHeaders": {\n    "Cross-Origin-Opener-Policy": "same-origin",\n    "Cross-Origin-Embedder-Policy": "require-corp"\n  }\n}',
       'These two headers are the reason you can play this game.\nYou are inside the infrastructure you are learning to manage.',
