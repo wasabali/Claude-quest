@@ -283,6 +283,11 @@ const REGIONS = {
 // REGION CONNECTIONS — directed world graph
 // Each key is a region ID; each value maps a cardinal direction to a target
 // region, the entry direction at that target, and optional gate requirements.
+//
+// Gate requirement fields (optional `requires` object):
+//   act           — minimum game act the player must have reached
+//   dungeonPoints — score threshold earned inside the dungeon
+//   resourceLocks — number of resource locks the player must hold
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const REGION_CONNECTIONS = {
