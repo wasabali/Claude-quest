@@ -3,6 +3,10 @@ name: Game Health
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'graphify-out/**'
+      - 'docs/wiki/**'
+      - 'game-health/latest.json'
 
 permissions:
   contents: write

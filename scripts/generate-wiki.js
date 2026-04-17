@@ -58,6 +58,11 @@ function difficultyStars(n) {
   return '⭐'.repeat(Math.min(n, 5))
 }
 
+function formatLocation(loc) {
+  if (!loc) return ''
+  return loc.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
 function effectDescription(skill) {
   const e = skill.effect
   if (!e) return '—'
@@ -174,7 +179,7 @@ Every skill in Cloud Quest is a real CLI command. This page lists them all, orga
       md += '| Skill | Tier | Effect | Description | Where to Learn |\n'
       md += '|---|---|---|---|---|\n'
       for (const s of normal) {
-        const where = [s.learnedFrom, s.learnedAt ? s.learnedAt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''].filter(Boolean).join(', ')
+        const where = [s.learnedFrom, formatLocation(s.learnedAt)].filter(Boolean).join(', ')
         const budgetNote = s.budgetCost > 0 ? ` Budget cost: ${s.budgetCost}.` : ''
         md += `| \`${s.displayName}\` | ${s.tier.charAt(0).toUpperCase() + s.tier.slice(1)} | ${effectDescription(s)} | ${s.description}${budgetNote} | ${where} |\n`
       }
@@ -185,7 +190,7 @@ Every skill in Cloud Quest is a real CLI command. This page lists them all, orga
       md += '| Skill | Tier | Effect | Side Effect | Where to Learn |\n'
       md += '|---|---|---|---|---|\n'
       for (const s of cursed) {
-        const where = [s.learnedFrom, s.learnedAt ? s.learnedAt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''].filter(Boolean).join(', ')
+        const where = [s.learnedFrom, formatLocation(s.learnedAt)].filter(Boolean).join(', ')
         md += `| \`${s.displayName}\` | ${s.tier.charAt(0).toUpperCase() + s.tier.slice(1)} | ${effectDescription(s)} | ${sideEffectDescription(s)} | ${where} |\n`
       }
     }
@@ -230,7 +235,7 @@ These are the engineers who fight fair and teach you real skills.
   for (const t of good) {
     const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
     const label    = DOMAIN_LABELS[t.domain] || t.domain
-    const location = (t.location || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    const location = formatLocation(t.location || 'unknown')
     const sig      = t.signatureSkill ? `\`${t.signatureSkill.replace(/_/g, ' ')}\`` : '—'
     const intro    = t.introDialog ? t.introDialog.slice(0, 60) + (t.introDialog.length > 60 ? '…' : '') : ''
     md += `| **${t.name}** | ${emoji} ${label} | ${location} | ${difficultyStars(t.difficulty)} | ${sig} | ${intro} |\n`
@@ -258,7 +263,7 @@ These engineers have gone to the dark side. They hang out in shady corners of th
   for (const t of cursed) {
     const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
     const label    = DOMAIN_LABELS[t.domain] || t.domain
-    const location = (t.location || 'unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    const location = formatLocation(t.location || 'unknown')
     const teach    = t.teachSkillId ? `\`${t.teachSkillId.replace(/_/g, ' ')}\`` : '—'
     md += `| **${t.name}** | ${emoji} ${label} | ${teach} | ${t.shameRequired || 0} | ${location} |\n`
   }
@@ -279,7 +284,7 @@ These engineers have gone to the dark side. They hang out in shady corners of th
     for (const t of wild) {
       const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
       const label    = DOMAIN_LABELS[t.domain] || t.domain
-      const location = (t.location || 'any').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      const location = formatLocation(t.location || 'any')
       md += `| **${t.name}** | ${emoji} ${label} | ${difficultyStars(t.difficulty)} | ${location} |\n`
     }
   }
@@ -319,7 +324,7 @@ Random encounters happen as you explore the world. Each region has its own **enc
     const hasEncounters = [...pool.common, ...pool.rare, ...pool.cursed].length > 0
     if (!hasEncounters) continue
 
-    const regionName = regionId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    const regionName = formatLocation(regionId)
     md += `\n### ${regionName}\n\n`
     md += '| Rarity | Encounter | Domain | HP | SLA | Difficulty |\n'
     md += '|---|---|---|---|---|---|\n'

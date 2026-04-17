@@ -31,23 +31,15 @@ let rawJson
 if (inputFile) {
   rawJson = readFileSync(resolve(inputFile), 'utf-8')
 } else {
-  // Read from stdin
-  const chunks = []
-  const fd = 0
-  const buf = Buffer.alloc(65536)
-  let bytesRead
-  try {
-    while ((bytesRead = readFileSync(fd, buf, 0, buf.length)) > 0) {
-      chunks.push(buf.slice(0, bytesRead))
-    }
-  } catch {
-    // EOF
-  }
-  rawJson = Buffer.concat(chunks).toString('utf-8')
+  rawJson = readFileSync(0, 'utf-8')
 }
 
 // Vitest JSON reporter may output multiple JSON objects; take the first line
 const firstLine = rawJson.split('\n').find(l => l.trim().startsWith('{'))
+if (!firstLine) {
+  console.error('❌ No JSON object found in input. Is the vitest JSON reporter output valid?')
+  process.exit(1)
+}
 const vitestData = JSON.parse(firstLine)
 
 // ─── Load previous baseline (if it exists) ───────────────────────────────────

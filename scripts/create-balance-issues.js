@@ -6,10 +6,11 @@
 //
 // Usage: node scripts/create-balance-issues.js [--report game-health/latest.json] [--dry-run]
 
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'fs'
 import { execSync } from 'child_process'
-import { resolve, dirname } from 'path'
+import { resolve, dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import { tmpdir } from 'os'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT      = resolve(__dirname, '..')
@@ -71,6 +72,9 @@ const newFindings = (report.findings || []).filter(f => (report.newFindings || [
 
 console.log(`\n📋 Issue management: ${newFindings.length} new findings, ${(report.fixedFindings || []).length} fixed findings\n`)
 
+// Create a temp dir for issue body files
+const tmpDir = mkdtempSync(join(tmpdir(), 'balance-issues-'))
+
 for (const finding of newFindings) {
   const titlePrefix = `[Balance] ${finding.group} — ${finding.title}`
   const existing    = findExistingIssue(titlePrefix)
@@ -100,9 +104,16 @@ for (const finding of newFindings) {
     `_Auto-created by game-health pipeline on ${report.timestamp}_`,
   ].filter(Boolean).join('\n')
 
+  // Write body to a temp file to avoid shell injection
+  const bodyFile = join(tmpDir, `issue-${Date.now()}.md`)
+  writeFileSync(bodyFile, body)
+
   console.log(`  📝 Creating issue: ${titlePrefix}`)
-  gh(`issue create --title "${titlePrefix}" --body "${body.replace(/"/g, '\\"')}" --label "${labels}"`)
+  gh(`issue create --title "${titlePrefix.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --label "${labels}"`)
 }
+
+// Clean up temp dir
+try { rmSync(tmpDir, { recursive: true }) } catch { /* ignore */ }
 
 // ─── Close issues for fixed findings ─────────────────────────────────────────
 for (const fixedId of report.fixedFindings || []) {
