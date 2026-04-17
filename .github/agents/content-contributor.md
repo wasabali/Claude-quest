@@ -110,10 +110,10 @@ cert_expired_prod: {
 ## How to Help a Developer Add an Incident
 
 1. Ask for: symptom (what the player sees), root cause, domain type, severity, region
-2. Determine SLA timer from severity: sev0=1, sev1=3, sev2=4–6, sev3=5–10
+2. Determine SLA timer from severity: sev0=1, sev1=3, sev2=6, sev3=10
 3. Write symptoms as they'd appear in real monitoring/terminal output
-4. Read `src/data/encounters.js` and add the incident as a new `ENCOUNTERS` entry with `type: 'incident'`
-5. Add the incident ID to the correct pool in `ENCOUNTER_POOLS` (same file)
+4. Read `src/data/encounters.js` and add the incident ID to the right pool
+5. If `src/data/incidents.js` doesn't exist, create it with the registry pattern first
 
 ## Data Rules (Non-Negotiable)
 

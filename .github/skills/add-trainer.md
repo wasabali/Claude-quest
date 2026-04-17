@@ -1,8 +1,6 @@
 # Add Trainer
 
-Scaffold a new trainer definition in `src/data/trainers.js`. Invoke with the trainer concept (e.g. "add a Kubernetes specialist trainer, mid-game, hostile").
-
-You are adding a new trainer (NPC engineer battle opponent) to Cloud Quest. Follow every rule below exactly.
+Scaffold a new trainer definition in `src/data/trainers.js`. Invoke with the trainer concept (e.g. "Kubernetes specialist, mid-game, hostile").
 
 ## What you need from the user
 

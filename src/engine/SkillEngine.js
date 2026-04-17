@@ -2,7 +2,7 @@
 // Handles domain matchups, damage calculation, XP, quality assessment,
 // and shame/reputation side effects.
 
-import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER } from '../config.js'
+import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS } from '../config.js'
 
 // XP multipliers per solution quality tier.
 const XP_MULTIPLIERS = {
@@ -13,9 +13,10 @@ const XP_MULTIPLIERS = {
   nuclear:  0,
 }
 
-// Reputation gain for non-cursed skill use (per turn).
-const REP_GAIN_OPTIMAL  = 3
-const REP_GAIN_STANDARD = 1
+// Reputation delta per solution quality tier (non-cursed skill use per turn).
+const REP_GAIN_OPTIMAL    =  10
+const REP_GAIN_STANDARD   =   3
+const REP_CHANGE_SHORTCUT =  -5
 
 // ---------------------------------------------------------------------------
 // getDomainMultiplier
@@ -108,8 +109,9 @@ export function assessQuality(skill, opponent, domainRevealed) {
 //
 // Rules:
 //   - cursed/nuclear: apply sideEffect.shame and sideEffect.reputation
-//   - optimal: +REP_GAIN_OPTIMAL reputation (no shame)
-//   - standard/shortcut: +REP_GAIN_STANDARD reputation (no shame)
+//   - optimal:   +REP_GAIN_OPTIMAL    (no shame)
+//   - shortcut:  +REP_CHANGE_SHORTCUT (no shame, negative delta)
+//   - standard:  +REP_GAIN_STANDARD   (no shame)
 //   - reputation is clamped to [0, 100]
 //   - shamePoints only increases, never decrements
 // ---------------------------------------------------------------------------
@@ -121,6 +123,8 @@ export function applyShameAndReputation(player, skill) {
     reputation  += skill.sideEffect.reputation ?? 0
   } else if (skill.tier === 'optimal') {
     reputation += REP_GAIN_OPTIMAL
+  } else if (skill.tier === 'shortcut') {
+    reputation += REP_CHANGE_SHORTCUT
   } else {
     reputation += REP_GAIN_STANDARD
   }
@@ -129,4 +133,31 @@ export function applyShameAndReputation(player, skill) {
   reputation = Math.max(0, Math.min(100, reputation))
 
   return { ...player, shamePoints, reputation }
+}
+
+// ---------------------------------------------------------------------------
+// getReputationStatus
+// Returns the player's reputation status label based on the current score.
+// Thresholds (descending): 80+ Distinguished Engineer, 60+ Competent Engineer,
+// 40+ Adequate Engineer, 20+ Liability, 0+ Walking Incident.
+// ---------------------------------------------------------------------------
+export function getReputationStatus(reputation) {
+  for (const threshold of REPUTATION_THRESHOLDS) {
+    if (reputation >= threshold.min) return threshold.status
+  }
+  return REPUTATION_THRESHOLDS[REPUTATION_THRESHOLDS.length - 1].status
+}
+
+// ---------------------------------------------------------------------------
+// getShameTitle
+// Returns the title from the highest matching configured shame threshold,
+// or null if no threshold with a non-null title has been reached.
+// ---------------------------------------------------------------------------
+export function getShameTitle(shamePoints) {
+  for (const threshold of SHAME_THRESHOLDS) {
+    if (shamePoints >= threshold.shame && threshold.title !== null) {
+      return threshold.title
+    }
+  }
+  return null
 }

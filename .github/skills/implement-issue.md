@@ -1,6 +1,6 @@
 # Implement Issue
 
-Implement a GitHub issue following Cloud Quest's architecture and conventions. Invoke with an issue number (e.g. "implement issue #6").
+Implement a GitHub issue following Cloud Quest's architecture and conventions. Invoke with an issue number (e.g. "implement issue 6").
 
 ## Step 1 — Understand the issue
 
@@ -35,31 +35,16 @@ Engine code constraints:
 - No `import Phaser` anywhere in `src/engine/`
 - Functions return `BattleEvent[]` — never mutate state silently
 - All public functions must be exported
-- The battle engine uses pure functions (`createBattleState`, `resolveTurn`), not a class
 
 ```js
-// BattleEvent shape — engine functions return arrays of these.
-// Scene code should branch on `type` and read only the fields for that event.
+// BattleEvent shape — every engine function returns these
 {
-  type: 'damage'             // hp loss
-      | 'heal'               // hp gain
-      | 'skill_used'         // skill was used
-      | 'status_apply'       // status effect added
-      | 'status_tick'        // ongoing status timer tick
-      | 'status_remove'      // status effect expired
-      | 'status_expired'     // status fully removed
-      | 'budget_drain'       // budget loss
-      | 'reputation'         // reputation change (+ shame for cursed)
-      | 'sla_tick'           // SLA countdown updated
-      | 'sla_breach'         // SLA timer hit 0, penalties applied
-      | 'domain_reveal'      // enemy domain revealed
-      | 'escalation'         // technical debt increased
-      | 'layer_transition'   // multi-layer incident shifts to next layer
-      | 'xp_gain'            // xp awarded on win
-      | 'teach_skill'        // trainer teaches a skill on win
-      | 'battle_end',        // battle over — value is 'win' or 'lose'
+  type: 'damage' | 'heal' | 'status_apply' | 'status_remove'
+      | 'budget_drain' | 'shame' | 'dialog' | 'sla_tick'
+      | 'reveal' | 'win' | 'lose',
   target: 'player' | 'opponent',
-  value: Number | String,    // varies by event type
+  value: Number,
+  text: String,   // 'dialog' type only
 }
 ```
 
@@ -111,9 +96,9 @@ If the issue touches `src/scenes/`:
   - All text uses `{ fontFamily: CONFIG.FONT }`
 
 ```js
-// Correct pattern: call engine function → render returned events
-onSkillSelected(skill) {
-  const events = resolveTurn(this._battleState, skill)
+// Correct pattern: engine call → render events
+onSkillSelected(skillId) {
+  const events = this.engine.useSkill(skillId)
   events.forEach(event => this.renderEvent(event))
 }
 ```

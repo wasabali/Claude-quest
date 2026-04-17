@@ -2,7 +2,7 @@
 
 Turn a real work problem into a Cloud Quest battle incident. Invoke with a description of the issue (e.g. "Our pods keep OOMKilling in prod after the latest deploy").
 
-## What is an incident in Cloud Quest?
+# What is an incident in Cloud Quest?
 
 In Cloud Quest, **incidents are wild encounters** — the player stumbles into them while exploring the world, like running into a Pokémon in tall grass. Instead of a creature, the enemy is a technical problem: a CrashLoopBackOff, a cost spike, a failing pipeline.
 
@@ -32,7 +32,7 @@ Extract from the invocation or ask:
    | `security` | Creds exposed, access denied, cert expired, vulnerability |
    | `iac` | Terraform drift, Pulumi failures, config mismatch |
    | `serverless` | Cold starts, timeout, function errors, event trigger issues |
-   | `observability` | Monitoring, alerting, dashboards, noisy signals, blocked diagnosis, stale tickets |
+   | `observability` | *(not used for incidents — observability skills reveal, not damage)* |
 
 4. **How urgent is it?** (sets the SLA timer)
    | Severity | SLA turns | Description |
@@ -60,45 +60,52 @@ Extract from the invocation or ask:
 
 ## Step 1 — Create the incident entry
 
-Add the incident to `src/data/encounters.js`, in the existing `ENCOUNTERS` registry. **Do not create a separate `src/data/incidents.js` file** — incidents are encounter definitions with `type: 'incident'` inside the `ENCOUNTERS` object.
+Add to `src/data/incidents.js`. If the file doesn't exist yet, create it with the registry pattern:
 
-Read the file first to see the existing format, then add a new entry:
+```js
+const INCIDENTS = {}
+export const getById = (id)           => INCIDENTS[id]
+export const getAll  = ()             => Object.values(INCIDENTS)
+export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
+```
+
+Then add the incident:
 
 ```js
 incident_id_here: {
   id: 'incident_id_here',                      // snake_case, descriptive
-  type: 'incident',                            // required so EncounterEngine treats this as an incident
-  name: 'CrashLoopBackOff',                    // what the player sees on screen (the symptom)
-  symptomText: 'Pod has been restarting 47 times. Last exit code: 137. Node memory pressure detected.',
-  rootCauseText: 'Memory limit set too low — container OOMKilled repeatedly.',
+  displayName: 'CrashLoopBackOff',             // what the player sees on screen (the symptom)
   domain: 'kubernetes',                        // hidden until revealed
   hp: 80,                                      // how much damage to deal before it's resolved
-  sla: 6,                                      // turns before SLA breach (3/6/10/1 for sev1/2/3/0)
-  difficulty: 3,                               // 1–5, affects XP reward
-  attacks: ['reputation_leak'],                // incident attack pattern (cycled each turn)
-  optimalFix: 'kubectl_rollout_restart',       // skill ID for ideal solution
-  layers: null,                                // null or array of layer objects for multi-stage incidents
+  slaTimer: 6,                                 // turns before SLA breach (3/6/10/1 for sev1/2/3/0)
+  severity: 'sev2',
+  symptoms: [
+    'Pod has been restarting 47 times.',
+    'Last exit code: 137.',
+    'Node memory pressure detected.',
+  ],
+  rootCause: 'Memory limit set too low — container OOMKilled repeatedly.',
+  revealDialog: 'Domain revealed: Containers. The pod keeps hitting its memory ceiling.',
+  resolveDialog: 'Incident resolved. Memory limits updated. Pod stable.',
+  slaBreachDialog: 'SLA breached. This is now a P1. Your manager knows.',
 },
 ```
 
 ### Field notes
 
-- **`name`**: The error message or symptom as it would appear in a terminal or alert. Not a description — the actual string.
-- **`type`**: Must be `'incident'` so the engine recognises it.
-- **`hp`**: How tough is this to fix? `25–40` for easy, `40–55` for medium, `55+` for hard.
-- **`symptomText`**: A single string describing what the player sees before the domain is revealed. Think: what does `kubectl describe`, CloudWatch, or your monitoring tool show?
-- **`rootCauseText`**: The real answer. Only shown after domain is revealed.
-- **`sla`**: Turns until SLA breach. Use 1 for sev0, 3 for sev1, 4–6 for sev2, 5–10 for sev3.
-- **`difficulty`**: 1–5 scale. Affects XP reward on resolution.
-- **`attacks`**: Array of incident attack IDs cycled each turn. Valid values: `uptime_drain`, `budget_spike`, `reputation_leak`, `skill_block`, `confusion`, `escalation`.
-- **`optimalFix`**: Skill ID of the ideal solution (or `null` if context-dependent).
-- **`layers`**: `null` for single-stage incidents, or an array of layer objects for multi-stage incidents that reveal deeper root causes.
+- **`displayName`**: The error message or symptom as it would appear in a terminal or alert. Not a description — the actual string.
+- **`hp`**: How tough is this to fix? `40–60` for sev3, `60–80` for sev2, `80–100` for sev1, `100+` for sev0.
+- **`symptoms`**: 2–4 lines of what the player sees before the domain is revealed. Think: what does `kubectl describe`, CloudWatch, or your monitoring tool show?
+- **`rootCause`**: The real answer. Only shown after domain is revealed.
+- **`revealDialog`**: Shown when an Observability skill reveals the domain. Short. Clinical. Like a real diagnosis.
+- **`resolveDialog`**: Shown when the player wins. Satisfying. The problem is fixed.
+- **`slaBreachDialog`**: Shown when the timer hits 0. Should sting. This is a real consequence.
 
 ---
 
 ## Step 2 — Add to the encounter pool
 
-Open `src/data/encounters.js` and add the incident ID to the correct region's rarity pool in `ENCOUNTER_POOLS`:
+Open `src/data/encounters.js` and add the incident ID to the correct region and rarity pool:
 
 ```js
 container_port: {
@@ -113,13 +120,11 @@ container_port: {
 ## Step 3 — Verify
 
 - [ ] `id` matches the object key
-- [ ] `type` is `'incident'`
-- [ ] `domain` is one of the 8 valid values (including `observability`)
-- [ ] `symptomText` and `rootCauseText` are filled in
-- [ ] `sla` is a reasonable number of turns
-- [ ] `attacks` contains only valid attack type IDs
-- [ ] Incident added to the correct pool in `ENCOUNTER_POOLS`
-- [ ] Registry exports in `encounters.js` are unchanged
+- [ ] `domain` is one of the 7 valid values (not `observability`)
+- [ ] `symptoms` has at least 2 entries
+- [ ] `slaTimer` matches the severity (1/3/6/10 for sev0/1/2/3)
+- [ ] Incident added to the correct pool in `encounters.js`
+- [ ] Registry exports unchanged in `incidents.js`
 
 ---
 
@@ -128,19 +133,22 @@ container_port: {
 **The real thing:** *"We had pods OOMKilling in prod after bumping the Node.js image. Someone set the memory limit to 128Mi but the new image uses 200Mi at idle."*
 
 ```js
-// src/data/encounters.js — add to the ENCOUNTERS object
+// src/data/incidents.js
 crashloopbackoff_oom: {
   id: 'crashloopbackoff_oom',
-  type: 'incident',
-  name: 'CrashLoopBackOff',
-  symptomText: 'Pod restart count: 23. OOMKilled. Exit code 137. kubectl describe shows memory pressure on the node.',
-  rootCauseText: 'Memory limit (128Mi) below actual usage after image upgrade (~200Mi idle).',
+  displayName: 'CrashLoopBackOff',
   domain: 'containers',
   hp: 75,
-  sla: 6,
-  difficulty: 3,
-  attacks: ['reputation_leak'],
-  optimalFix: 'kubectl_rollout_restart',
-  layers: null,
+  slaTimer: 6,
+  severity: 'sev2',
+  symptoms: [
+    'Pod restart count: 23.',
+    'OOMKilled. Exit code 137.',
+    'kubectl describe shows memory pressure on the node.',
+  ],
+  rootCause: 'Memory limit (128Mi) below actual usage after image upgrade (~200Mi idle).',
+  revealDialog: 'Domain revealed: Containers. The pod keeps exceeding its memory limit.',
+  resolveDialog: 'Memory limits updated to 512Mi. Pod has been running stable for 10 minutes.',
+  slaBreachDialog: 'This is now a P1. The on-call rotation has been paged.',
 },
 ```

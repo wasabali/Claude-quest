@@ -77,59 +77,16 @@ test('nuclear: skill.tier === nuclear')
 
 ## BattleEvent Shape
 
-Every engine function returns an array of `BattleEvent` objects. Scene code branches on `type` and reads only the relevant fields.
+Every engine function returns an array of `BattleEvent` objects:
 
 ```js
-// Numeric events
 {
-  type: 'damage' | 'heal' | 'status_apply' | 'status_tick'
-      | 'status_remove' | 'status_expired' | 'budget_drain'
-      | 'reputation' | 'sla_tick' | 'escalation' | 'xp_gain',
+  type: 'damage' | 'heal' | 'status_apply' | 'status_remove'
+      | 'budget_drain' | 'shame' | 'dialog' | 'sla_tick'
+      | 'reveal' | 'win' | 'lose',
   target: 'player' | 'opponent',
   value: Number,
-}
-
-// Domain reveal
-{
-  type: 'domain_reveal',
-  target: 'opponent',
-  value: String,   // the domain name
-}
-
-// Skill used
-{
-  type: 'skill_used',
-  target: 'player' | 'opponent',
-  skillId: String,
-}
-
-// SLA breach
-{
-  type: 'sla_breach',
-  target: 'player',
-  value: Number,           // HP penalty
-  reputationLoss: Number,  // rep penalty
-}
-
-// Teach skill on win
-{
-  type: 'teach_skill',
-  target: 'player',
-  value: String,           // skill ID
-}
-
-// Battle over
-{
-  type: 'battle_end',
-  target: 'player',
-  value: 'win' | 'lose',
-}
-
-// Layer transition (multi-stage incidents)
-{
-  type: 'layer_transition',
-  target: 'opponent',
-  value: Object,           // next layer data
+  text: String,   // for 'dialog' type events
 }
 ```
 

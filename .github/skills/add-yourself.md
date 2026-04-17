@@ -1,143 +1,316 @@
 # Add Yourself
 
-Add yourself to Cloud Quest as a trainer NPC and turn your real CLI commands into battle skills. Invoke with a short description of yourself (e.g. "I'm a Kubernetes engineer at Acme, I live in kubectl and helm").
+Add yourself to Cloud Quest as an NPC. You don't need to be an engineer — managers, POs, scrum masters, security people, designers, and anyone else can become part of the game world. Choose your level of involvement: from a simple NPC with a catchphrase to a full battle trainer or quest giver.
 
-## What is Cloud Quest?
+Invoke with a short description of yourself (e.g. "I'm a product owner who lives in Jira" or "I'm a Kubernetes engineer at Acme, I live in kubectl and helm" or "I'm a scrum master, I just want a funny cameo").
 
-Cloud Quest is a GameBoy Color-style RPG where you play as a junior cloud engineer fighting your way to Principal Engineer. You solve incidents (real technical problems — CrashLoopBackOff, 503 errors, runaway costs), battle other engineers in turn-based fights, and learn real CLI commands.
+# What is Cloud Quest?
 
-**Commands are your weapons.** `kubectl apply`, `az webapp deploy`, `terraform plan` — these are the skills in your battle deck.
+Cloud Quest is a GameBoy Color-style RPG where you play as a junior cloud engineer fighting your way to Principal Engineer. You solve incidents (real technical problems — CrashLoopBackOff, 502 errors, runaway costs), battle other engineers in turn-based fights, and learn real CLI commands.
 
-**Domains are the type system.** There are 7 combat domains in a cycle:
-```
-Linux → Security → Serverless → Cloud → IaC → Containers → Kubernetes → Linux
-```
-Each domain deals ×2 damage to the one it beats, ×0.5 to the one it's weak against.
-
-**Trainer NPCs are real engineer archetypes.** When the player beats a trainer in battle, they learn that trainer's signature skill. Trainers telegraph their moves one turn in advance. Their dialog reflects their real personality.
-
-You can add yourself as a trainer the player encounters in the world — with your actual commands as skills, your real opinions as dialog, and your domain expertise as your battle type.
+The game world is full of NPCs — not just engineers. There are managers who block your path with process, POs who hand out quests, scrum masters who give items, and random characters who exist just to be funny. Everyone in the industry has a place in Cloud Quest.
 
 ---
 
-## What you need to provide
+## Step 0 — Choose your NPC type
 
-Either extract this from the invocation, or ask the developer:
+Ask the person what level of involvement they want. There are four tiers:
 
-1. **Your name** (display name for the NPC, can be a handle)
-2. **Your job title / role** (e.g. "Platform Engineer", "DevOps Lead", "Cloud Architect")
-3. **Your primary domain** — pick one: `linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless` `observability`
-4. **3–5 real CLI commands you actually use** (the more specific the better — flags and all)
-5. **Your personality in one sentence** (how colleagues would describe you in a code review)
-6. **Your signature move** — the one command you reach for first, always
-7. **Your location** — where in the game world should the player find you? Pick one:
+### 🗣️ Tier 1: Catchphrase NPC (simplest)
+A character the player can talk to. They say something funny or insightful when interacted with. No battle, no quest, no items — just vibes.
+
+**Best for:** anyone who just wants a cameo — managers, execs, designers, recruiters, whoever.
+
+### 🎁 Tier 2: Item / Skill Giver NPC
+Like Tier 1, but the NPC gives the player a random item or teaches a skill when first spoken to.
+
+**Best for:** mentors, leads, or anyone who wants to contribute something useful to the player's journey.
+
+### 📋 Tier 3: Quest NPC
+The NPC gives the player a quest with dialog choices and rewards. Can be a simple one-stage quest or multi-stage.
+
+**Best for:** product owners, scrum masters, managers, or anyone with a real scenario they want to turn into a quest.
+
+### ⚔️ Tier 4: Battle Trainer
+A full trainer NPC the player battles using domain-matched skills. Trainer teaches their signature skill on defeat.
+
+**Best for:** engineers, SREs, DevOps folks, security engineers — anyone who uses real CLI commands daily.
+
+---
+
+## What you need from the person
+
+### All tiers need:
+1. **Name** (display name for the NPC — real name, handle, or a fun alias)
+2. **Role / title** (e.g. "Product Owner", "Scrum Master", "Platform Engineer", "VP of Engineering")
+3. **Location** — where should the player find you? Pick one:
    - `localhost_town` — beginner area, friendly
-   - `pipeline_pass` — mid-game, CI/CD focused
-   - `container_port` — containers/Docker area
-   - `cloud_citadel` — cloud platform area
-   - `kernel_caves` — Linux/infra area
-   - `serverless_steppes` — serverless area
-   - `three_am_tavern` — hidden area for the cursed/chaotic (requires shame ≥ 2)
+   - `pipeline_pass` — CI/CD and process area
+   - `jira_dungeon` — workflow, tickets, process-heavy area
+   - `production_plains` — mid-game production environment
+   - `kubernetes_colosseum` — Kubernetes battles
+   - `security_vault` — security-focused area
+   - `shell_cavern` — Linux/terminal area
+   - `helm_repository` — Helm/container packaging
+   - `architecture_district` — architecture and IaC area
+   - `three_am_tavern` — hidden area for the chaotic (requires shame ≥ 3)
+4. **Personality in one sentence** (how colleagues would describe them)
+
+### Tier 1 additionally needs:
+5. **A catchphrase or 1–3 dialog lines** (what they say when the player talks to them)
+
+### Tier 2 additionally needs:
+5. **What they give** — an item ID from `src/data/items.js` or a skill ID from `src/data/skills.js`
+6. **A dialog line** when giving the item/skill
+
+### Tier 3 additionally needs:
+5. **The quest scenario** — what problem does the player help them with?
+6. **Dialog choices** — what options does the player pick from? (at least one correct, one wrong)
+7. **Reward** — XP amount and/or item(s)
+
+### Tier 4 additionally needs:
+5. **Primary domain** — `linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless` `observability`
+6. **3–5 real CLI commands** they actually use (specific — flags and all)
+7. **Signature skill** — the one command they reach for first
+8. **Difficulty** — 1 (beginner) to 5 (endgame)
+
+If any info is missing, ask before writing anything.
 
 ---
 
-## Step 1 — Create skills for your commands
+## Tier 1 — Catchphrase NPC
 
-For each CLI command, create a skill entry in `src/data/skills.js`.
+Add a story dialog entry to `src/data/story.js`. Read the file first.
 
-Read the file first. Then append each skill using this template:
+```js
+npc_your_id: {
+  id: 'npc_your_id',
+  pages: [
+    "First line of dialog when the player talks to you.",
+    "Second line — optional. Add as many pages as you want.",
+  ],
+},
+```
+
+### Dialog quality rules for non-battle NPCs
+- Write like a real person in a real office — not a generic RPG NPC
+- Lean into the role's real personality and frustrations
+- It's fine to be funny, sarcastic, tired, or enthusiastic — match the person
+
+**Examples by role:**
+- **Product Owner**: *"The backlog is not a wishlist. It's a graveyard of good intentions."*
+- **Scrum Master**: *"Stand-up was supposed to be 15 minutes. It's been 45. Again."*
+- **Engineering Manager**: *"I don't write code anymore. I write performance reviews. It's worse."*
+- **Designer**: *"I handed over the Figma file three weeks ago. They're still using Comic Sans."*
+- **Recruiter**: *"Looking for a senior engineer. Must have 10 years of Kubernetes experience. Kubernetes is 10 years old. I see no problem."*
+- **VP of Engineering**: *"We're moving to microservices. No, I haven't read the RFD. Why do you ask?"*
+
+---
+
+## Tier 2 — Item / Skill Giver NPC
+
+Do everything from Tier 1 (add the story dialog entry), **plus** connect the NPC to an item or skill gift.
+
+The gift is triggered by adding a quest flag or gate interaction. The simplest approach:
+
+1. Add dialog to `src/data/story.js` that includes the gift moment
+2. If giving an **existing item**, reference its ID from `src/data/items.js`
+3. If giving a **new item**, create it in `src/data/items.js`:
+
+```js
+your_item_id: {
+  id:             'your_item_id',
+  displayName:    'Your Item Name',
+  tab:            'tools',              // tools | keyItems | credentials | docs | junk
+  description:    'Funny one-liner about what this item is.',
+  usableInBattle: false,
+  battleAction:   'examine',
+  worldActions:   ['examine', 'drop'],
+  effect:         null,                 // or { type: 'heal_hp', value: 20 } etc.
+},
+```
+
+---
+
+## Tier 3 — Quest NPC
+
+Do everything from Tier 1 (story dialog), **plus** add a quest to `src/data/quests.js`. Read the file first.
+
+```js
+your_quest_id: {
+  id: 'your_quest_id',
+  npc: 'your_npc_id',
+  location: 'jira_dungeon',
+  stages: [
+    {
+      dialog: ['First line of the problem.', 'Second line — explain the situation.'],
+      choices: [
+        { text: 'A wrong answer', correct: false, hpLoss: 10 },
+        { text: 'The right answer', correct: true },
+        { text: 'A funny wrong answer', correct: false, hpLoss: 10 },
+      ],
+      correctDialog: ['Great response when player picks correctly.'],
+      wrongDialog: ['Response when player picks wrong.'],
+    },
+  ],
+  rewards: { xp: 50, items: [{ id: 'item_id', qty: 1 }] },
+  completedDialog: ['What the NPC says if the player talks to them after completing the quest.'],
+  followUp: null,
+},
+```
+
+### Quest scenario ideas by role
+- **Product Owner**: *"The requirements changed mid-sprint. Again. Help me re-prioritise."*
+- **Scrum Master**: *"Retro actions have piled up. Nobody's doing them. Fix this."*
+- **Manager**: *"I need to justify headcount. Give me metrics that prove we need another engineer."*
+- **Security**: *"Someone committed a secret to the public repo. Find it before the scanner does."*
+- **QA Lead**: *"The flaky test suite is blocking the release. What do we do?"*
+
+---
+
+## Tier 4 — Battle Trainer
+
+This is the full engineer experience. You create skills for their commands and a trainer entry.
+
+### Step 1 — Create skills
+
+Add skill entries to `src/data/skills.js`. Read the file first. Match the existing format exactly:
 
 ```js
 command_snake_case: {
   id: 'command_snake_case',
   displayName: 'actual-cli-command --with-flags',
-  domain: 'kubernetes',    // match your chosen domain
-  tier: 'optimal',         // optimal | standard | shortcut | cursed | nuclear
+  domain: 'kubernetes',
+  tier: 'optimal',
   isCursed: false,
   budgetCost: 0,
   description: 'One sentence. What this command actually does.',
-  effect: { type: 'damage', value: 30 },   // see power guide below
+  effect: { type: 'damage', value: 30 },
   sideEffect: null,
   warningText: null,
+  learnedFrom: 'Trainer Display Name',
+  learnedAt: 'location_id',
+  availableInAct: 1,
 },
 ```
 
-### Power guide (effect.value)
+#### Power guide (effect.value)
 | Command type | Base power |
 |---|---|
 | Create / apply / deploy | 30–40 |
-| Observe / debug / inspect | 20–25 (or `{ type: 'reveal_domain', value: 0 }` for observability) |
+| Observe / debug / inspect | 20–25 (or `{ type: 'reveal_domain', value: 1 }` for observability) |
 | Restart / rollout | 25–35 |
 | Delete / force / override | 40–60 |
-| Known-destructive (force push, rm, drop) | 50–80 — set `tier: 'cursed'` or `'nuclear'`, `domain: null`, `isCursed: true` |
+| Known-destructive (force push, rm, drop) | 50–80 — set `tier: 'cursed'` or `'nuclear'`, `isCursed: true` |
 
-### Tier guide
-- `optimal` — the right tool for the job, you'd be proud of this in a review
+#### Tier guide
+- `optimal` — the right tool for the job
 - `standard` — solid but not the cleanest
 - `shortcut` — works, but your tech lead raises an eyebrow
-- `cursed` — you know this is wrong. `domain: null`, `isCursed: true`, add `sideEffect` and `warningText`
-- `nuclear` — scorched earth. `domain: null`, `isCursed: true`. There will be consequences.
+- `cursed` — you know this is wrong. Keep the real domain, set `isCursed: true`, add `sideEffect` and `warningText`
+- `nuclear` — scorched earth. Keep the real domain, set `isCursed: true`. There will be consequences.
 
-### ID rules
-- Convert command to `snake_case`, strip flags
-- Example: `kubectl rollout restart deployment/api` → `kubectl_rollout_restart`
-- If an ID already exists, suffix with `_2` or be more specific
+Note: cursed/nuclear skills keep their real domain. Matchup bypass is handled by `isCursed`/`tier` in the engine, not `domain: null`.
 
----
+### Step 2 — Create the trainer entry
 
-## Step 2 — Create your trainer NPC
+Add to `src/data/trainers.js`. Read the file first.
 
-Add your trainer entry to `src/data/trainers.js`. Read the file first.
-
+#### Standard trainer
 ```js
-your_id_here: {
-  id: 'your_id_here',               // snake_case of your name
-  name: 'Your Display Name',
-  domain: 'kubernetes',             // your chosen domain
-  deck: ['skill_id_1', 'skill_id_2', 'skill_id_3'],  // use the skills you just created
-  signatureSkill: 'skill_id_1',     // taught to the player on an Optimal win
-  telegraphs: [
-    'One line that hints at your next move. In character.',
-    'A second telegraph line. Different vibe.',
-    'Optional third — used before your signature move.',
-  ],
-  introDialog: 'One or two sentences. Your engineer personality. Why you fight. No questions — assert.',
-  winDialog: 'What you say when the player beats you. Teach them something real.',
-  loseDialog: 'What you say when you lose. Short. Stings a little. Maybe a hint.',
-  isCursedTrainer: false,           // true only for three_am_tavern / hidden areas
-  shameRequired: 0,                 // 0 for normal trainers; 2+ for cursed
-  location: 'container_port',      // where the player finds you
+your_id: {
+  id: 'your_id',
+  name: 'Display Name',
+  domain: 'kubernetes',
+  location: 'kubernetes_colosseum',
+  difficulty: 3,                    // 1 (beginner) to 5 (endgame)
+  signatureSkill: 'skill_id',      // taught to player on win
+  isCursed: false,
 },
 ```
 
-### Dialog quality rules
-- **`introDialog`**: Your real engineering philosophy in 1–2 sentences. No "um" or questions. Assert.
-  - Bad: *"Oh hey, are you here for a battle?"*
-  - Good: *"I've been running this cluster since before you knew what a pod was."*
-- **`winDialog`**: You just lost. What do you give them? A real command, a hard-won opinion, a shortcut.
-  - Bad: *"Good fight! Here's your prize."*
-  - Good: *"Not bad. You should know — `kubectl rollout undo` will save you one day."*
-- **`loseDialog`**: They beat you. Own it, but make it sting or be useful.
-  - Bad: *"Oh well, you won!"*
-  - Good: *"You got lucky. Come back when you know what `--dry-run=client` is for."*
-- **`telegraphs`**: Foreshadow the move. The player should be able to guess your next action if they're paying attention.
-  - Bad: *"I'm going to attack you."*
-  - Good: *"This cluster hasn't been healthy since the last deploy..."* (hints at a rollout restart)
+#### Cursed trainer
+```js
+your_id: {
+  id: 'your_id',
+  name: 'Display Name',
+  vibe: 'Short personality summary — one sentence max.',
+  domain: 'iac',                    // keep the real domain
+  cursedSkill: 'skill_id',
+  isCursed: true,
+},
+```
 
 ---
 
-## Step 3 — Verify
+## Verify
 
-- [ ] Each skill ID matches its object key exactly
-- [ ] All skill `domain` values are valid
-- [ ] `signatureSkill` is one of the skills in `deck`
-- [ ] `telegraphs` has at least 2 entries
-- [ ] No Phaser imports in either data file
-- [ ] Registry exports at bottom of both files are unchanged
+### All tiers
+- [ ] `id` matches the object key in every file touched
+- [ ] No Phaser imports in any data file
+- [ ] Registry exports at bottom of each file are unchanged
+- [ ] Location IDs exist in `src/data/encounters.js` or `src/data/gates.js`
+
+### Tier 4 (Battle Trainer) additionally
+- [ ] All skill `domain` values are valid (one of: `linux` `containers` `kubernetes` `cloud` `security` `iac` `serverless` `observability`)
+- [ ] `signatureSkill` exists in `src/data/skills.js`
+- [ ] Cursed trainers have `isCursed: true` and `cursedSkill` set
+- [ ] Skill IDs match their object keys
 
 ---
 
-## Example — a completed contribution
+## Examples
+
+### Tier 1 — A Product Owner cameo
+
+```js
+// src/data/story.js
+npc_po_priya: {
+  id: 'npc_po_priya',
+  pages: [
+    "Priya the PO: The backlog has 847 items.",
+    "I've prioritised them all as P1.",
+    "Don't look at me like that.",
+  ],
+},
+```
+
+### Tier 3 — A Scrum Master quest
+
+```js
+// src/data/story.js
+npc_scrum_sam: {
+  id: 'npc_scrum_sam',
+  pages: [
+    "Sam the Scrum Master: Stand-up ran 45 minutes today.",
+    "We need to fix the process. Can you help?",
+  ],
+},
+
+// src/data/quests.js
+sam_standup_quest: {
+  id: 'sam_standup_quest',
+  npc: 'scrum_sam',
+  location: 'jira_dungeon',
+  stages: [
+    {
+      dialog: ['Stand-up keeps running over.', 'Three people gave status updates about their lunch.'],
+      choices: [
+        { text: 'Add a timer and enforce 2 mins per person', correct: true },
+        { text: 'Cancel stand-up entirely', correct: false, hpLoss: 10 },
+        { text: 'Make it async in Slack', correct: false, hpLoss: 10 },
+      ],
+      correctDialog: ['Finally! Someone with sense.'],
+      wrongDialog: ['That... will not go well.'],
+    },
+  ],
+  rewards: { xp: 40, items: [] },
+  completedDialog: ['Stand-up was 12 minutes today. A personal best.'],
+  followUp: null,
+},
+```
+
+### Tier 4 — An engineer battle trainer
 
 ```js
 // src/data/skills.js
@@ -148,29 +321,23 @@ kubectl_rollout_restart: {
   tier: 'optimal',
   isCursed: false,
   budgetCost: 0,
-  description: 'Restart a deployment rolling update. Fixes most things that are quietly broken.',
+  description: 'Restart a deployment. Fixes most things that are quietly broken.',
   effect: { type: 'damage', value: 35 },
   sideEffect: null,
   warningText: null,
+  learnedFrom: 'Ola the Ops Guy',
+  learnedAt: 'kubernetes_colosseum',
+  availableInAct: 2,
 },
 
 // src/data/trainers.js
-ola_ops_guy: {
-  id: 'ola_ops_guy',
+ola_ops: {
+  id: 'ola_ops',
   name: 'Ola the Ops Guy',
   domain: 'kubernetes',
-  deck: ['kubectl_rollout_restart', 'kubectl_describe', 'kubectl_logs'],
+  location: 'kubernetes_colosseum',
+  difficulty: 3,
   signatureSkill: 'kubectl_rollout_restart',
-  telegraphs: [
-    'This pod\'s been restarting since Tuesday...',
-    'Let me check the events on that node.',
-    'Time to restart some services.',
-  ],
-  introDialog: 'I\'ve been running this cluster since before you knew what a pod was. Let\'s see what you\'ve got.',
-  winDialog: 'Decent. One thing — always check events before you restart. `kubectl describe pod` first.',
-  loseDialog: 'Read the logs. Then come back.',
-  isCursedTrainer: false,
-  shameRequired: 0,
-  location: 'container_port',
+  isCursed: false,
 },
 ```

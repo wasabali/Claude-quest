@@ -56,6 +56,28 @@ export const WORLD_SCENE = {
   ORIGIN_CENTER:     0.5,
 }
 
+// Reputation thresholds — sorted highest first for threshold lookups.
+// Use getReputationStatus() in SkillEngine to resolve the current label.
+export const REPUTATION_THRESHOLDS = [
+  { min: 80, status: 'Distinguished Engineer' },
+  { min: 60, status: 'Competent Engineer'     },
+  { min: 40, status: 'Adequate Engineer'      },
+  { min: 20, status: 'Liability'              },
+  { min:  0, status: 'Walking Incident'       },
+]
+
+// Shame thresholds — sorted highest first.
+// Each entry is the lowest shame value that activates the row.
+// title: null means no new title is gained at that threshold.
+export const SHAME_THRESHOLDS = [
+  { shame: 15, title: null,                flag: 'secret_ending_accessible'             },
+  { shame: 10, title: 'Shadow Engineer',   flag: 'helm_hansen_refuses_new_doors_open'   },
+  { shame:  7, title: null,                flag: 'throttlemaster_contact'               },
+  { shame:  5, title: 'Person of Interest', flag: 'cursed_network_full_three_am_active' },
+  { shame:  3, title: null,                flag: 'named_engineers_fight_harder'         },
+  { shame:  1, title: null,                flag: 'pedersen_sighs_cursed_location_visible' },
+]
+
 // Status effects applied during battle
 export const STATUSES = {
   throttled:      { desc: 'Only 1 skill every 2 turns',          duration: 3         },

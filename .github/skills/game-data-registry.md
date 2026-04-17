@@ -50,7 +50,7 @@ az_monitor_logs: {
   isCursed: false,
   budgetCost: 0,
   description: 'Pull Azure Monitor logs. Reveals enemy domain type and HP.',
-  effect: { type: 'reveal_domain', value: 0 },
+  effect: { type: 'reveal', value: 0 },
   sideEffect: null,
   warningText: null,
 },

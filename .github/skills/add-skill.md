@@ -1,6 +1,6 @@
 # Add Skill
 
-Scaffold a new skill definition in `src/data/skills.js`. Invoke with the real CLI command to add (e.g. "add a skill for kubectl rollout restart").
+Scaffold a new skill definition in `src/data/skills.js`. Invoke with the real CLI command to add (e.g. "kubectl rollout restart").
 
 ## What you need from the user
 
@@ -50,7 +50,7 @@ Use these tables. No other values are valid.
 | Type | When to use |
 |---|---|
 | `damage` | Combat damage. Set `value` to base power (10–80). |
-| `reveal_domain` | Observability skills — reveals enemy domain type. `value: 0`. |
+| `reveal` | Observability skills only. `value: 0`. |
 | `heal` | Restores player HP. `value` = HP restored. |
 | `status_apply` | Applies a status effect to target. Add `status` field with status name. |
 | `buff_clear` | Removes buffs. Add `turns` and `target` fields. |
@@ -88,7 +88,7 @@ command_snake_case: {
   isCursed: false,
   budgetCost: 0,
   description: 'Reveals enemy domain type and HP.',
-  effect: { type: 'reveal_domain', value: 0 },
+  effect: { type: 'reveal', value: 0 },
   sideEffect: null,
   warningText: null,
 },
