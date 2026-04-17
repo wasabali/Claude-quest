@@ -102,6 +102,21 @@ export const STATUSES = {
   in_review:      { desc: 'Cannot act for 1–3 turns',            duration: 'random'  },
 }
 
+// Battle background mapping — maps Cloud Quest regions to PokeRogue arena IDs.
+// Each region can specify `a` and `b` layers for parallax.
+export const BATTLE_BACKGROUNDS = {
+  localhost_town:         { arena: 'plains'       },
+  pipeline_pass:          { arena: 'construction' },
+  jira_dungeon:           { arena: 'cave'         },
+  production_plains:      { arena: 'factory'      },
+  kubernetes_colosseum:   { arena: 'stadium'      },
+  three_am_tavern:        { arena: 'abyss'        },
+  server_graveyard:       { arena: 'ruins'        },
+  node_modules_maze:      { arena: 'forest'       },
+  dev_null_void:          { arena: 'space'        },
+  deprecated_azure_region: { arena: 'wasteland'   },
+}
+
 // Cumulative XP required to reach each level (1-indexed; level 1 starts at 0 XP)
 export const XP_TABLE = [
      0,  100,  250,  450,  700, 1000,  // levels 1–6

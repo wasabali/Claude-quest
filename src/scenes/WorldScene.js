@@ -66,7 +66,7 @@ export class WorldScene extends BaseScene {
       g.fillStyle(0x50c8ff)
       g.fillRect(8, 8, 32, 8)
       g.fillRect(8, 20, 20, 4)
-      g.generateTexture('azure_terminal', 48, 48)
+      g.generateTexture('azure_terminal', TILE_SIZE, TILE_SIZE)
       g.destroy()
     }
   }

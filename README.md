@@ -1,6 +1,6 @@
 # Cloud Quest
 
-A browser-based GameBoy Color-style RPG where you play as a junior cloud engineer ascending to Principal Engineer.
+A browser-based RPG where you play as a junior cloud engineer ascending to Principal Engineer.
 
 Solve incidents with real cloud CLI commands, battle other engineers, earn certification emblems, and try not to `rm -rf /` anything important.
 
@@ -58,3 +58,9 @@ _Automated balance & integrity checks run on every push to `main`._
 _Last updated: 2026-04-17T19:06:47.360Z_
 
 <!-- GAME-HEALTH-END -->
+
+---
+
+## Attribution
+
+> Battle backgrounds, UI windows, and HUD assets adapted from [PokeRogue](https://github.com/pagefaultgames/pokerogue) by pagefaultgames, used under CC-BY-NC-SA-4.0.

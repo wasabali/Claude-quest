@@ -11,7 +11,7 @@ import {
 import { calculateXP, computeShameFlags } from '#engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
-// Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (160×144 native)
+// Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (1920×1080)
 // ---------------------------------------------------------------------------
 const ENEMY_HP_BAR_X   = Math.floor(CONFIG.WIDTH / 2)
 const ENEMY_HP_BAR_Y   = 10

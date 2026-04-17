@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working on Cloud Quest.
 
 ## Project Overview
 
-**Cloud Quest** is a browser-based GameBoy Color-style RPG built with Phaser 3. You play as a junior cloud engineer progressing to Principal Engineer by solving incidents, battling other engineers, and learning real cloud CLI commands. Funny, educational, satirical. Zero backend — fully stateless, runs in any browser.
+**Cloud Quest** is a browser-based RPG built with Phaser 3. You play as a junior cloud engineer progressing to Principal Engineer by solving incidents, battling other engineers, and learning real cloud CLI commands. Funny, educational, satirical. Zero backend — fully stateless, runs in any browser.
 
 See `docs/sessions/2026-04-15-game-design.md` for the full design record and all decisions made.
 
@@ -38,7 +38,7 @@ npm run preview   # Preview production build locally
 
 ```
 cloud-quest/
-├── index.html                  # GameBoy Color shell (CSS border, buttons)
+├── index.html                  # Game shell (Press Start 2P font, PokeRogue attribution)
 ├── package.json                # vite + phaser
 ├── vite.config.js              # Path aliases, dev server headers, build config
 ├── staticwebapp.config.json    # COOP/COEP headers for Azure Static Web Apps
@@ -248,34 +248,34 @@ Design issues: #41 (domain matchups) · #42 (solution tiers) · #43 (incidents) 
 
 ---
 
-## Visual Style — Non-Negotiable
+## Visual Style
 
-- **Resolution**: 160×144px native, scaled 4× to 640×576px display
-- **Pixel scaling**: CSS `image-rendering: pixelated` on the canvas; no browser smoothing
-- **`antialias: false`** in the Phaser game config — non-negotiable, prevents WebGL blurring sprites
-- **Palette**: Max 56 colors total on screen; max 4 colors per sprite
+- **Resolution**: 1920×1080 canvas, `Phaser.Scale.FIT` — fills browser, preserves ratio
+- **Renderer**: WebGL (Phaser AUTO)
+- **Tile size**: 48×48px — viewport shows 40 tiles wide × ~22 tiles tall
 - **Font**: Press Start 2P (Google Fonts, free)
 - **No smooth tweening** — all animations are 2–4 frame sprite flips
+- **UI windows**: 9-slice panels following PokeRogue's `ui-theme.ts` pattern
+- **Visual foundation**: PokeRogue assets (CC-BY-NC-SA-4.0) for battle backgrounds, UI chrome, HUD elements
+
+No `pixelArt: true`, no `antialias: false` — rendering at full resolution, not upscaling pixel art.
 
 ```js
 // src/config.js
 export const CONFIG = {
-  WIDTH: 160,
-  HEIGHT: 144,
-  SCALE: 4,
-  TILE_SIZE: 16,
+  WIDTH: 1920,
+  HEIGHT: 1080,
+  TILE_SIZE: 48,
   FONT: '"Press Start 2P"',
 }
 
-// src/main.js — Phaser game config (pixel-perfect enforcement)
+// src/main.js — Phaser game config
 new Phaser.Game({
   type: Phaser.AUTO,
   width: CONFIG.WIDTH,
   height: CONFIG.HEIGHT,
-  antialias: false,           // REQUIRED — never remove; prevents WebGL sprite blurring
-  pixelArt: true,             // Sets antialias false + roundPixels true
   scale: {
-    mode: Phaser.Scale.FIT,   // Scales to window while preserving aspect ratio
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   scene: [ BootScene, TitleScene, WorldScene, BattleScene, /* ... */ ],
