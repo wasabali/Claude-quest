@@ -19,14 +19,12 @@ jobs:
 
       - name: Clone GitHub Wiki
         run: |
-          git config --global credential.helper store
-          echo "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com" > ~/.git-credentials
-          git clone https://github.com/${{ github.repository }}.wiki.git /tmp/wiki
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git /tmp/wiki
 
       - name: Copy wiki pages
         run: |
-          # Copy all wiki markdown files (no-op if none exist)
-          find docs/wiki -maxdepth 1 -name '*.md' -exec cp {} /tmp/wiki/ \;
+          # Mirror docs/wiki/ into the cloned wiki repo (recursive, removes deleted pages)
+          rsync -a --delete --exclude='.git' docs/wiki/ /tmp/wiki/
 
           # GitHub Wiki uses Home.md as the landing page — rename README
           if [ -f /tmp/wiki/README.md ]; then
