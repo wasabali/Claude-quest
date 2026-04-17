@@ -13,13 +13,13 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 <details>
 <summary>⚠️ SPOILERS — Click to reveal hidden area locations and how to find them</summary>
 
-### Hidden Area 1: The Server Graveyard *(Planned)*
+### Hidden Area 1: The Server Graveyard
 
 | Detail | Info |
 |---|---|
 | **How to find** | SSH into a terminal that looks "dead" or decommissioned |
-| **Outcast trainer** | *Planned:* Deprecated Dagfinn |
-| **Teaches** | *Planned:* `terraform destroy` |
+| **Outcast trainer** | Deprecated Dagfinn |
+| **Teaches** | `terraform destroy` |
 | **Vibe** | Rows of powered-down servers. Blinking lights in the dark. The ghosts of infrastructure past. |
 
 ---
@@ -37,13 +37,13 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 
 ---
 
-### Hidden Area 3: The /dev/null Void *(Planned)*
+### Hidden Area 3: The /dev/null Void
 
 | Detail | Info |
 |---|---|
 | **How to find** | Pipe output to `/dev/null` three times in a single battle |
-| **Outcast trainer** | *Planned:* The Null Pointer |
-| **Teaches** | *Planned:* `history -c` |
+| **Outcast trainer** | The Null Pointer |
+| **Teaches** | `history -c` |
 | **Vibe** | Absolute emptiness. Sound disappears. Your actions have no visible effect. |
 
 ---
@@ -61,27 +61,36 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 
 ---
 
-### Hidden Area 5: Deprecated Azure Region (West-EU-2) *(Planned)*
+### Hidden Area 5: Deprecated Azure Region (West-EU-2)
 
 | Detail | Info |
 |---|---|
 | **How to find** | Select the greyed-out `West-EU-2` region from an Azure Terminal |
-| **Outcast trainer** | *Planned:* West-EU-2 Wilhelm |
-| **Teaches** | *Planned:* `az feature register --namespace Microsoft.Legacy` |
+| **Outcast trainer** | West-EU-2 Wilhelm |
+| **Teaches** | `az feature register --namespace Microsoft.Legacy` |
 | **Vibe** | A forgotten data centre that shouldn't exist anymore. Cobwebs on the racks. Still running 2018 workloads. |
 
 ---
 
-### Hidden Area 6: DO_NOT_TOUCH.exe *(Planned)*
+### Hidden Area 6: DO_NOT_TOUCH.exe
 
 | Detail | Info |
 |---|---|
-| **How to find** | Open the file despite every NPC warning you not to |
+| **How to find** | Open the file in the OldCorp Basement despite every NPC warning you not to |
 | **Outcast trainer** | *(none — contains notes and lore only)* |
-| **Teaches** | *Planned:* `EXEC xp_cmdshell` |
+| **Teaches** | `EXEC xp_cmdshell` — 999 damage. The game asks three times if you're sure. |
 | **Vibe** | OldCorp basement. Legacy VB6 systems. Flickering fluorescent lights. The smell of 2003. |
 
-**Note:** Every NPC in Act 3 will tell you not to open `DO_NOT_TOUCH.exe`. Open it anyway.
+**How it works:**
+- You'll encounter a door in the OldCorp Basement labelled `DO_NOT_TOUCH.exe`
+- **Every NPC in Act 3 will warn you** — Dagny the DBA, Hotfix Håkon, the OldCorp CTO
+- If you open it anyway, you'll fight **The VB6 Billing Horror** (immune to Cloud/IaC/K8s/Containers — Linux and Security only)
+- Win the battle: learn `EXEC xp_cmdshell` (+1 Shame)
+- Alternatively, **migrate it properly** instead of opening it — a 3-choice quiz, correct answer earns the `legacy_migration_badge` from Dagny. No Shame, different reward.
+
+*"The invoices will be wrong for months." — if you lose the battle*
+
+**Note:** After defeating The VB6 Billing Horror, the OldCorp CTO's final line is: *"Can you also fix my home Wi-Fi?"* This is not a quest.
 
 </details>
 
@@ -94,12 +103,15 @@ Six hidden areas form the **Outcast Network** — a secret society of engineers 
 
 Finding all six Outcast Network locations unlocks a seventh hidden area: **THROTTLEMASTER's Old Workstation**.
 
-This is where THROTTLEMASTER worked before he went rogue. It contains:
+This is where Karsten Ottesen worked before he went rogue. It contains:
 - His full backstory
-- Notes explaining why he turned to the dark side
-- Evidence that connects to the main storyline
+- Notes explaining why he was passed over for promotion at OmniCloud Corp
+- Evidence that connects to the main storyline (Kristoffer's role)
+- The explanation for everything THROTTLEMASTER did across Acts 2–4
 
-**Critical decision:** If you show THROTTLEMASTER's notes to **Professor Pedersen** before Act 4, it changes the ending. This is the only way to unlock the true ending.
+**Critical decision:** If you show THROTTLEMASTER's notes to **Professor Pedersen** before Act 4, it changes the ending. This is one way to unlock a modified ending.
+
+The workstation also reveals: THROTTLEMASTER's real name is **Karsten Ottesen**. He was the best engineer at OmniCloud. They promoted Kristoffer instead.
 
 </details>
 

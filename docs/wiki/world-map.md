@@ -111,8 +111,20 @@ The Kubernetes arena. Pod crashes, OOM kills, and YAML nightmares everywhere.
 
 ---
 
-### The 3am Tavern
-*"Nothing good happens after 2am."*
+### OldCorp Basement
+*"Something was built here in 1987. It's still running."*
+
+An Act 3 location unlocked after accepting NorCloud's OldCorp contract. Legacy VB6 systems, flickering fluorescent lights, the smell of servers that haven't been rebooted since 2003.
+
+**Key NPCs:** Dagny the DBA (warns you about `DO_NOT_TOUCH.exe`, gives `legacy_migration_badge` for optimal migration)
+
+**Special encounter:** The Legacy Monolith — a 1994 server rack that fights back. Communicates only via BSOD error codes. Immune to Cloud, IaC, Kubernetes, and Containers. Only Linux and Security work.
+
+**Contains:** `DO_NOT_TOUCH.exe` — see [Hidden Areas](hidden-areas.md)
+
+---
+
+
 
 A hidden area for the most chaotic encounters. This is where the cursed trainers hang out.
 
@@ -149,14 +161,16 @@ Finale: The Cloud Console → Gym 8 (The Executive Suite / The CTO)
 
 ## Story Acts
 
-| Act | Title | Summary |
-|---|---|---|
-| Prologue | "Hello World" | Professor Pedersen's lab. Pick a name, choose a starter deck. First battle: a 404 on campus Wi-Fi. |
-| Act 1 | "Push to Production" | Deploy Margaret's bakery site. Learn CI/CD. First gym. |
-| Act 2 | "It Works on My Machine" | App goes viral. THROTTLEMASTER's first interference. The 3:17am crisis. |
-| Act 3 | "Legacy Migration" | OldCorp migration. Jira Dungeon. Kubernetes Colosseum. Discover `DO_NOT_TOUCH.exe`. |
-| Act 4 | "Root Cause Analysis" | THROTTLEMASTER unmasked. Security Vault. Architecture District. |
-| Finale | "The Post-Mortem" | The CTO fight (three phases). Promoted to Principal Engineer. |
+| Act | Title | Summary | Trigger |
+|---|---|---|---|
+| Prologue | "Hello World" | Professor Pedersen's lab. Pick a name, choose a starter deck. First battle: a 404 on campus Wi-Fi. | — |
+| Act 1 | "Push to Production" | Deploy Margaret's bakery site. Learn CI/CD. First gym. | `starter_deck_chosen` + first battle won |
+| Act 2 | "It Works on My Machine" | Margaret's bakery goes viral (front page of HN). THROTTLEMASTER's first interference. The 3:17am crisis. | `margaret_quest_complete` + Gym 1 beaten |
+| Act 3 | "Legacy Migration" | OldCorp contract. Jira Dungeon. Kubernetes Colosseum. `DO_NOT_TOUCH.exe`. | Gyms 2 & 3 beaten + staged deploy complete |
+| Act 4 | "Root Cause Analysis" | THROTTLEMASTER unmasked as Karsten Ottesen. Security Vault. Architecture District. | Gyms 4 & 5 beaten + `do_not_touch_resolved` |
+| Finale | "The Post-Mortem" | The CTO fight (three phases: Cloud → FinOps → Excel). One of three endings. | Gyms 6 & 7 beaten + THROTTLEMASTER unmasked |
+
+Act transitions play a title card + 3-line narration using the DialogBox. The world then updates — NPCs react differently, new characters appear in regions.
 
 ---
 

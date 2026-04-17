@@ -63,12 +63,12 @@ There is currently no gameplay mitigation for Shame gain.
 | Shame | What Happens |
 |---|---|
 | 0 | Clean record. NPCs trust you. |
-| 1–2 | Minor flavor dialog changes. Some NPCs give you "the look." |
-| 3–4 | Access to some hidden areas and cursed trainers. |
-| 5 | Certain secret content becomes visible (e.g., deleted StackOverflow threads). |
-| 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. |
-| 10 | NPC dialog shifts significantly. Cursed trainers offer upgraded techniques. |
-| 15 | **Alternate ending unlocked.** THROTTLEMASTER offers to recruit you. |
+| 1–2 | Minor flavour dialog changes. Professor Pedersen gives you "the look." |
+| 3–4 | Named trainers who know you start reacting ("I've heard some… concerning things"). Access to some hidden areas. |
+| 5 | **Trainers start mirroring cursed techniques back at you.** They've learned your playbook. |
+| 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. Cursed outcast network opens fully. |
+| 10 | **Shadow Engineer title unlocked.** Gym leaders refuse to teach you their signature skills after defeat. |
+| 15 | **Alternate ending unlocked.** THROTTLEMASTER offers recruitment. "Fork the Company" path available. |
 
 ---
 
@@ -102,14 +102,24 @@ Unlike Shame, Technical Debt **can** be cleared through special **cleanup quests
 
 See [Hidden Areas](hidden-areas.md) for details on the Outcast Network and THROTTLEMASTER's storyline.
 
-At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "Fork the Company" ending. This is a fully viable path — the game never blocks you. It just asks: at what cost?
+At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate **"Fork the Company"** ending. This is a fully viable path — the game never blocks you. It just asks: at what cost?
+
+### Three Endings
+
+| Ending | Condition | What Happens |
+|---|---|---|
+| **"The Post-Mortem"** | Shame < 10 | Beat The CTO. Promoted to Principal Engineer. Confluence page generated (0 views). 47 Azure Monitor alerts await. |
+| **"The Shadow Post-Mortem"** | Shame 10–14 | Beat The CTO. Promoted, but: "There are also some audit findings. We'll discuss those in a separate meeting." Minor-key credits. 47 compliance findings pending. |
+| **"Fork the Company"** | Shame ≥ 15 | Skip The CTO. Join THROTTLEMASTER. TechThrottle Consulting AS. Monthly Azure bill: €47,000. Title: **Principal Villain.** |
 
 ### Key Evil Path Moments
 
-1. **Shame 3–4** — Outcast Network locations begin to appear
-2. **Shame 7** — THROTTLEMASTER contacts you directly
-3. **Shame 10** — Cursed trainers offer upgraded nuclear techniques
-4. **Shame 15** — THROTTLEMASTER offers recruitment. Alternate ending available.
+1. **Shame 1** — Cursed areas become faintly visible on the map
+2. **Shame 3–4** — Named NPCs start noticing. Outcast Network locations appear
+3. **Shame 5** — Trainers mirror cursed techniques back at you
+4. **Shame 7** — THROTTLEMASTER contacts you directly
+5. **Shame 10** — Shadow Engineer. Leaders won't teach. Outcast network fully open.
+6. **Shame 15** — THROTTLEMASTER offers recruitment. Alternate ending available.
 
 ---
 
@@ -119,6 +129,7 @@ At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "For
 - Better XP multipliers from Optimal solutions (×2 XP)
 - No Technical Debt means full HP
 - Better story outcomes and NPC interactions
+- Gym leaders teach you their skills
 - Avoid permanent Shame accumulation
 
 **Arguments for the dark side:**
