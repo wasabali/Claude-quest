@@ -345,6 +345,7 @@ Skills are invoked in Claude Code with `/skill-name`. They load specialised cont
 
 | Skill | When to use |
 |---|---|
+| `/spec-issue "<feature idea>"` | Draft a well-specced development issue from a feature idea — acceptance criteria, affected layers, data shapes. Creates issues that `/implement-issue` can pick up. |
 | `/implement-issue <number>` | Implement a GitHub issue following Cloud Quest's architecture and conventions. |
 | `/add-skill "<cli command>"` | Scaffold a new skill definition in `src/data/skills.js` from a real CLI command. |
 | `/add-trainer "<concept>"` | Scaffold a new trainer definition in `src/data/trainers.js`. |

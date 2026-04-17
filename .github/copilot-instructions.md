@@ -122,6 +122,25 @@ export const GameState = {
 - Hardcode domain names, tier names, or multiplier values — use `src/config.js`
 - Add logic to data files
 
+## Available Skills
+
+Skills are defined in `.github/skills/` and provide specialised workflows for common tasks.
+
+| Skill | When to use |
+|---|---|
+| `spec-issue "<feature idea>"` | Draft a well-specced development issue from a feature idea — acceptance criteria, affected layers, data shapes. Creates issues that `implement-issue` can pick up. |
+| `implement-issue <number>` | Implement a GitHub issue following Cloud Quest's architecture and conventions. |
+| `add-skill "<cli command>"` | Scaffold a new skill definition in `src/data/skills.js` from a real CLI command. |
+| `add-trainer "<concept>"` | Scaffold a new trainer definition in `src/data/trainers.js`. |
+| `add-incident "<description>"` | Turn a real work problem into a Cloud Quest battle incident in `src/data/`. |
+| `add-yourself "<bio>"` | Add yourself to the game as a trainer NPC with your real CLI commands as skills. |
+| `cloud-quest-battle` | Load the complete battle system reference — use before touching `BattleEngine`, `SkillEngine`, `StatusEngine`, `BattleScene`, or any battle logic. |
+| `game-data-registry` | Load the data layer reference — use before adding skills, items, trainers, or emblems to `src/data/`. |
+| `phaser-scene-patterns` | Load Phaser 3 scene patterns — use before implementing or modifying any scene or UI component. |
+| `triage-issues "<area>"` | Scan codebase and docs for contradictions, errors, and open questions, then file GitHub issues. |
+| `resolve-question <number>` | Iterate design ideas for a `[Design Question]` issue and find the best fit. |
+| `update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
+
 ## graphify
 
 Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` if it exists.
