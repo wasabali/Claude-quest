@@ -109,3 +109,14 @@ export const XP_TABLE = [
   3850, 4500, 5200, 5950, 6750,        // levels 12–16
   7600, 8500, 9450, 10450,             // levels 17–20
 ]
+
+// Ending conditions — shame thresholds + required story flags
+export const ENDING_CONDITIONS = {
+  post_mortem:        { maxShame: 9,  requiredFlag: 'cto_defeated'                       },
+  shadow_post_mortem: { minShame: 10, maxShame: 14, requiredFlag: 'cto_defeated'         },
+  fork_the_company:   { minShame: 15, requiredFlag: 'throttlemaster_recruitment_accepted' },
+}
+
+// Boss fight: Executive Mode multiplier and HP threshold
+export const EXECUTIVE_MODE_THRESHOLD   = 0.25
+export const EXECUTIVE_MODE_MULTIPLIER  = 1.5
