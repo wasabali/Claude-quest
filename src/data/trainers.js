@@ -123,7 +123,7 @@ const TRAINERS = {
     maxHp: 90,
     difficulty: 3,
     deck: ['chmod_fix', 'ssh_keygen', 'nmap_scan', 'az_role_assignment_create'],
-    teachSkillId: 'az_role_assignment_create',
+    teachSkillId: 'ssh_keygen',
     signatureSkill: 'ssh_keygen',
     emblemReward: 'vault',
     mechanic: 'auth_challenge',
@@ -292,7 +292,7 @@ const TRAINERS = {
     deck: ['az_monitor_alert', 'grep_logs', 'tail_f', 'kubectl_logs'],
     teachSkillId: 'az_monitor_alert',
     signatureSkill: 'az_monitor_alert',
-    emblemReward: 'sre',
+    emblemReward: null,
     mechanic: 'kanban_tracker',
     mechanicConfig: { idleAtkBonus: 5 },
     telegraphs: [

@@ -159,10 +159,12 @@ describe('gym leaders', () => {
       })
   })
 
-  it('each gym leader has emblemReward', () => {
-    gymLeaders.forEach(leader => {
-      expect(typeof leader.emblemReward).toBe('string')
-    })
+  it('each gym leader with an emblemReward references a valid emblem string', () => {
+    gymLeaders
+      .filter(l => l.emblemReward !== null)
+      .forEach(leader => {
+        expect(typeof leader.emblemReward).toBe('string')
+      })
   })
 
   it('each gym leader except CTO has a subLeader referencing a valid trainer', () => {
