@@ -173,3 +173,103 @@ These pre-existing issues should be updated to align with decisions made in this
 - **#6** (Battle Engine) — now needs to account for domain matchup system, solution tier evaluation, and two-deck engineer battle mode
 - **#9** (Random Encounters) — now superseded in detail by #43; should reference #43 for the incident battle spec
 - **#5** (Data Layer) — `skills.js` needs `domain` and `tier` fields per the new combat design
+
+---
+
+## Session Continuation — Development Tooling & Foundation (same date, later session)
+
+### Project Foundation Scaffold (PR #62, merged to main)
+
+Full scaffold created and merged. Files added:
+
+| File | Purpose |
+|---|---|
+| `package.json` | `phaser ^3.88`, `vite ^5.4`, `vitest ^2.1`, npm scripts |
+| `vite.config.js` | Path aliases (`#engine`, `#data`, `#scenes`, `#state`, `#ui`, `#utils`), COOP/COEP headers, Vitest config |
+| `index.html` | GameBoy Color shell, Press Start 2P font, `image-rendering: pixelated` |
+| `src/main.js` | Phaser game init — `antialias: false`, `pixelArt: true`, FIT scale |
+| `src/config.js` | `CONFIG` (160×144, 4× scale), `DOMAIN_MATCHUPS`, `STRONG/WEAK_MULTIPLIER`, `STATUSES`, `XP_TABLE` |
+| `src/overrides.js` | Dev-only test overrides (all commented out); applied by GameState at startup in dev mode |
+| `src/state/GameState.js` | Single mutable state: player, skills, inventory, emblems, story, stats, `_session` |
+| `src/state/SaveManager.js` | `.cloudquest` save format — UTF-8-safe base64 + SHA-256 checksum |
+| `src/utils/random.js` | Mulberry32 seeded PRNG: `seedRandom`, `randInt`, `randChoice` |
+| `src/utils/crypto.js` | `sha256()` via Web Crypto API |
+| `src/utils/fileIO.js` | `download()` and `openFilePicker()` |
+| `src/scenes/BaseScene.js` | Abstract base: `showDialog()`, `fadeToScene()`, `playBgm()` with loop-point support |
+| `src/data/*.js` | Empty registry stubs (skills, items, trainers, quests, emblems, story, encounters) |
+| `assets/audio/bgm-loop-points.json` | BGM loop registry `{trackId: {start, end}}` — fill when audio finalised |
+| `tests/config.test.js` | 15 tests covering CONFIG dimensions, domain matchup cycle, multipliers, XP table |
+
+**Key implementation decisions:**
+- `playBgm()` uses `cache.audio.exists()` (not `sound.get()`) to check for audio; uses Phaser `addMarker()` for seamless loops
+- `SaveManager` uses TextEncoder/TextDecoder for UTF-8-safe base64 (not raw `btoa`/`atob`)
+- Status `on_call: duration: 5` (battles), `in_review: duration: 'random'` (1–3 turns) — intentional design, not a bug
+
+---
+
+### Claude Code Agents Created
+
+| Agent | Purpose |
+|---|---|
+| `battle-engine-tdd` | TDD specialist for `src/engine/` — writes tests first, zero Phaser dependency |
+| `game-data-author` | Creates/validates `src/data/` definitions — knows all valid field values |
+| `phaser-reviewer` | Reviews Phaser scenes/UI for engine separation, GameState usage, pixel compliance |
+| `content-contributor` | Game world expert — world map, domain cycle, trainer archetypes, data rules |
+
+---
+
+### Claude Code Skills Created
+
+| Skill | Slash command | Purpose |
+|---|---|---|
+| `cloud-quest-battle` | reference only | Full battle system reference for BattleEngine/SkillEngine work |
+| `game-data-registry` | reference only | Registry pattern, all valid field values, cursed technique structure |
+| `phaser-scene-patterns` | reference only | Scene lifecycle, engine delegation, GameState, DialogBox, pixel compliance |
+| `implement-issue` | `/implement-issue <n>` | Implement any GitHub issue following project architecture |
+| `add-skill` | `/add-skill "<cmd>"` | Scaffold a skill definition in `src/data/skills.js` |
+| `add-trainer` | `/add-trainer "<concept>"` | Scaffold a trainer in `src/data/trainers.js` |
+| `add-yourself` | `/add-yourself "<desc>"` | Add yourself as a trainer NPC with your real CLI commands as skills |
+| `add-incident` | `/add-incident "<desc>"` | Convert a real work incident into a wild encounter |
+
+---
+
+### Contributor Onboarding (PR #63, merged to main)
+
+`docs/CONTRIBUTING.md` — human-readable onboarding guide covering:
+- What you can contribute (trainer NPC, skills, incidents)
+- How to add yourself: slash command path and manual path
+- How to add an incident: slash command path and manual path
+- Domain matchup cheat sheet
+- Pre-PR checklist
+
+---
+
+### Key Architecture Clarifications (from Copilot review fixes)
+
+Issues caught and corrected during PR #63 review:
+
+1. **BattleEvent union** — `reputation_damage` added as a valid type; `dialog` events documented as a separate shape (no `target`/`value` — only `text`)
+2. **Naming convention** — PascalCase for class-exporting files (`BattleEngine.js`, `BaseScene.js`); camelCase for data/utils (`skills.js`, `random.js`)
+3. **`observability` domain** — valid for skills and trainers (support/reveal, 0 damage); **not valid** for incidents. Docs now consistent across all files.
+4. **Registry pattern** — 3 exports only (`getById`, `getAll`, `getBy`), no per-entry exports
+5. **Hidden areas** — 3 documented hidden regions (`three_am_tavern`, `legacy_codebase`, `outcast_network`); original design doc mentions 6 but only 3 are specified. Docs updated to reflect documented count.
+6. **Overrides** — applied by `GameState.js` at startup, not by the engine. Engine never reads `overrides.js`.
+7. **Scene imports** — always use path aliases (`#engine/`, `#state/`, `#ui/`), never relative paths
+8. **Scene transitions** — always use `fadeToScene()`, never `this.scene.start()` in gameplay code
+
+---
+
+### PRs This Session
+
+| PR | Title | Status |
+|---|---|---|
+| #62 | Project foundation scaffold | Merged to main |
+| #63 | Contributor tooling, onboarding, and foundation docs | Merged to main (Copilot resolved merge conflicts in `845ff57`) |
+
+---
+
+### Issues Closed This Session
+
+- **#10** (Cloudémon companions) — Closed as `not_planned`. Pivoted to commands-as-skills; creature companions removed from design.
+- **#39** (Pause Menu) — Updated: "Cloudémon" slot replaced with "Engineer Profile" (Reputation, Shame, Technical Debt, Level/XP).
+- **#61** (Foundation scaffold) — Created and implemented in PR #62.
