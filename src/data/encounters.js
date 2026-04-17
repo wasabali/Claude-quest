@@ -52,6 +52,11 @@ export const ENCOUNTER_POOLS = {
     rare:   [],
     cursed: [],
   },
+  oldcorp_basement: {
+    common: [],
+    rare:   ['legacy_monolith'],
+    cursed: [],
+  },
 }
 
 const ENCOUNTERS = {
@@ -482,6 +487,23 @@ const ENCOUNTERS = {
     difficulty: 3,
     attacks: ['reputation_leak'],
     optimalFix: 'vault_rotate',
+    layers: null,
+  },
+  legacy_monolith: {
+    id: 'legacy_monolith',
+    type: 'incident',
+    name: 'The Legacy Monolith',
+    symptomText: 'A 1994 server rack. Windows XP error dialogs. Still running VB6.',
+    rootCauseText: 'Nobody has dared touch this system in 30 years. It communicates via BSOD error codes.',
+    domain: null,
+    hp: 200,
+    sla: null,
+    difficulty: 5,
+    attacks: ['escalation', 'confusion', 'skill_block'],
+    optimalFix: null,
+    immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    vulnerableDomains: ['linux', 'security'],
+    dropItem: 'oldcorp_keycard',
     layers: null,
   },
 }

@@ -213,6 +213,16 @@ const ITEMS = {
     worldActions:   ['use', 'examine'],
     effect:         { type: 'reduce_shame', value: 1, onceFlag: null },
   },
+  oldcorp_keycard: {
+    id:             'oldcorp_keycard',
+    displayName:    'OldCorp Keycard',
+    tab:            'keyItems',
+    description:    'A yellowed keycard with a faded OldCorp logo. Grants access to DO_NOT_TOUCH.exe. Smells like 1994.',
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['examine'],
+    effect:         null,
+  },
 }
 
 export const getById = (id)           => ITEMS[id]

@@ -88,6 +88,13 @@ export const SHAME_THRESHOLDS = [
 // How much grime each shame point adds to all earned emblems.
 export const GRIME_PER_SHAME = 0.05
 
+// Gym leader shame reactions.
+// wary: leader adds wary pre-battle line. teachRefusal: leader refuses to teach signature skill.
+export const GYM_SHAME_THRESHOLDS = {
+  wary: 5,
+  teachRefusal: 10,
+}
+
 // Valid skill tiers — single source of truth for validation and data authoring.
 export const SKILL_TIERS = Object.freeze(['optimal', 'standard', 'shortcut', 'cursed', 'nuclear'])
 

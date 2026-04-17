@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { DOMAIN_MATCHUPS } from '../src/config.js'
+import { DOMAIN_MATCHUPS, GYM_SHAME_THRESHOLDS } from '../src/config.js'
 import { getById as getSkillById, getAll as getAllSkills, getBy as getSkillsBy } from '../src/data/skills.js'
 import { getById as getItemById, getAll as getAllItems } from '../src/data/items.js'
-import { getAll as getAllTrainers } from '../src/data/trainers.js'
+import { getById as getTrainerById, getAll as getAllTrainers } from '../src/data/trainers.js'
 import { getAll as getAllEmblems } from '../src/data/emblems.js'
 import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
@@ -112,6 +112,118 @@ describe('other data registries', () => {
       ...getAllGates().map(entry => entry.id),
     ]
     expect(new Set(allIds).size).toBe(allIds.length)
+  })
+})
+
+describe('gym leaders', () => {
+  const gymLeaders = getAllTrainers().filter(t => t.role === 'gym_leader')
+
+  it('defines all 8 gym leaders', () => {
+    expect(gymLeaders).toHaveLength(8)
+  })
+
+  it('each gym leader has gymNumber 1–8 with no duplicates', () => {
+    const numbers = gymLeaders.map(t => t.gymNumber).sort()
+    expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+  })
+
+  it('each gym leader has personality dialog arrays', () => {
+    gymLeaders.forEach(leader => {
+      expect(Array.isArray(leader.preBattleDialog)).toBe(true)
+      expect(leader.preBattleDialog.length).toBeGreaterThan(0)
+      expect(Array.isArray(leader.postDefeatDialog)).toBe(true)
+      expect(leader.postDefeatDialog.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('each gym leader has shame ≥ 5 wary dialog', () => {
+    gymLeaders.forEach(leader => {
+      expect(Array.isArray(leader.preBattleDialog_highShame)).toBe(true)
+      expect(leader.preBattleDialog_highShame.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('each gym leader has shame ≥ 10 teach refusal dialog', () => {
+    gymLeaders.forEach(leader => {
+      expect(Array.isArray(leader.postDefeatDialog_highShame)).toBe(true)
+      expect(leader.postDefeatDialog_highShame.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('each gym leader has mechanicConfig (except CTO)', () => {
+    gymLeaders
+      .filter(l => l.id !== 'the_cto')
+      .forEach(leader => {
+        expect(leader.mechanic).toBeTruthy()
+        expect(leader.mechanicConfig).toBeTruthy()
+      })
+  })
+
+  it('each gym leader has emblemReward', () => {
+    gymLeaders.forEach(leader => {
+      expect(typeof leader.emblemReward).toBe('string')
+    })
+  })
+
+  it('each gym leader except CTO has a subLeader referencing a valid trainer', () => {
+    gymLeaders
+      .filter(l => l.id !== 'the_cto')
+      .forEach(leader => {
+        expect(typeof leader.subLeader).toBe('string')
+        expect(getTrainerById(leader.subLeader)).toBeDefined()
+      })
+  })
+
+  it('Captain Nines has sla_timer mechanic with turnLimit and repPenalty', () => {
+    const captain = getTrainerById('captain_nines')
+    expect(captain.mechanic).toBe('sla_timer')
+    expect(captain.mechanicConfig.turnLimit).toBe(8)
+    expect(captain.mechanicConfig.repPenalty).toBe(15)
+  })
+
+  it('Docker Dag has layered_defence mechanic with 3 layers', () => {
+    const dag = getTrainerById('docker_dag')
+    expect(dag.mechanic).toBe('layered_defence')
+    expect(dag.mechanicConfig.layers).toBe(3)
+  })
+
+  it('Kube Master has respawn mechanic', () => {
+    const kube = getTrainerById('kube_master')
+    expect(kube.mechanic).toBe('respawn')
+    expect(kube.mechanicConfig.respawnCount).toBe(3)
+    expect(kube.mechanicConfig.respawnHpPercent).toBe(50)
+  })
+
+  it('Fatima is marked as field_trainer, not a gym leader', () => {
+    const fatima = getTrainerById('fatima_witch')
+    expect(fatima.role).toBe('field_trainer')
+  })
+})
+
+describe('Legacy Monolith encounter', () => {
+  it('is immune to cloud, iac, kubernetes, containers', () => {
+    const enc = getAllEncounters().find(e => e.id === 'legacy_monolith')
+    expect(enc).toBeDefined()
+    expect(enc.immuneDomains).toEqual(['cloud', 'iac', 'kubernetes', 'containers'])
+  })
+
+  it('is vulnerable to linux and security', () => {
+    const enc = getAllEncounters().find(e => e.id === 'legacy_monolith')
+    expect(enc.vulnerableDomains).toEqual(['linux', 'security'])
+  })
+
+  it('drops oldcorp_keycard', () => {
+    const enc = getAllEncounters().find(e => e.id === 'legacy_monolith')
+    expect(enc.dropItem).toBe('oldcorp_keycard')
+    expect(getItemById('oldcorp_keycard')).toBeDefined()
+    expect(getItemById('oldcorp_keycard').tab).toBe('keyItems')
+  })
+})
+
+describe('GYM_SHAME_THRESHOLDS', () => {
+  it('has wary threshold at 5 and teachRefusal at 10', () => {
+    expect(GYM_SHAME_THRESHOLDS.wary).toBe(5)
+    expect(GYM_SHAME_THRESHOLDS.teachRefusal).toBe(10)
   })
 })
 
