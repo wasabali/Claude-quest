@@ -24,6 +24,19 @@ function freshStory(overrides = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: creates a fresh player state for tests
+// ---------------------------------------------------------------------------
+function freshPlayer(overrides = {}) {
+  return {
+    hp:          100,
+    maxHp:       100,
+    reputation:  50,
+    shamePoints: 0,
+    ...overrides,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // isQuestAvailable
 // ---------------------------------------------------------------------------
 describe('isQuestAvailable', () => {
@@ -253,7 +266,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 2 is "Find the race condition and fix it" — optimal
     const event = resolveChoice('dev_dave_flaky', 2, story, player)
     expect(event.correct).toBe('optimal')
@@ -270,7 +283,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 1 is "Add retry logic" — standard
     const event = resolveChoice('dev_dave_flaky', 1, story, player)
     expect(event.correct).toBe('standard')
@@ -281,7 +294,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 0 is "Delete the failing test" — false
     const event = resolveChoice('dev_dave_flaky', 0, story, player)
     expect(event.correct).toBe(false)
@@ -295,7 +308,7 @@ describe('resolveChoice', () => {
       flags: { act_2_started: true },
       activeQuests: { budget_barry_bill: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 2 is "Delete everything and start over" — cursed
     const event = resolveChoice('budget_barry_bill', 2, story, player)
     expect(event.correct).toBe('cursed')
@@ -309,7 +322,7 @@ describe('resolveChoice', () => {
       flags: { act_2_started: true },
       activeQuests: { nervous_nancy_breach: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 2 is "Don't worry" — nuclear
     const event = resolveChoice('nervous_nancy_breach', 2, story, player)
     expect(event.correct).toBe('nuclear')
@@ -321,7 +334,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     const event = resolveChoice('dev_dave_flaky', 2, story, player)
     expect(event.responseDialog).toEqual(['That was the actual problem. Genius.'])
   })
@@ -330,7 +343,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice index 0 — wrong, no xp/repDelta/shameDelta specified
     const event = resolveChoice('dev_dave_flaky', 0, story, player)
     expect(event.xp).toBe(0)
@@ -342,14 +355,14 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { nonexistent: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100 }
+    const player = freshPlayer()
     const event = resolveChoice('nonexistent', 0, story, player)
     expect(event).toBeNull()
   })
 
   it('returns null when quest is not active', () => {
     const story = freshStory()
-    const player = { hp: 100, maxHp: 100 }
+    const player = freshPlayer()
     const event = resolveChoice('dev_dave_flaky', 0, story, player)
     expect(event).toBeNull()
   })
@@ -358,7 +371,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100 }
+    const player = freshPlayer()
     const event = resolveChoice('dev_dave_flaky', 99, story, player)
     expect(event).toBeNull()
   })
@@ -367,7 +380,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     const event = resolveChoice('dev_dave_flaky', 2, story, player)
     // dev_dave_flaky has 1 stage, resolving the last one should mark complete
     expect(event.questComplete).toBe(true)
@@ -378,7 +391,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { intern_ivan_roaming: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     const event = resolveChoice('intern_ivan_roaming', 1, story, player)
     expect(event.questComplete).toBe(false)
   })
@@ -387,7 +400,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { intern_ivan_roaming: { stage: 4, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // Ivan's stage 4, choice 0 is optimal
     const event = resolveChoice('intern_ivan_roaming', 0, story, player)
     expect(event.questComplete).toBe(true)
@@ -398,7 +411,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { dev_dave_flaky: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // wrong answer
     const event = resolveChoice('dev_dave_flaky', 0, story, player)
     expect(event.questComplete).toBe(false)
@@ -409,7 +422,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { margaret_website: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 5, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer({ hp: 5 })
     // choice 0 is "Have you tried restarting it?" — wrong with hpLoss: 10
     const event = resolveChoice('margaret_website', 0, story, player)
     // HP floor: penalty should be clamped so player doesn't go below 1
@@ -422,7 +435,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { margaret_website: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     const event = resolveChoice('margaret_website', 0, story, player)
     expect(event.penalty.type).toBe('hp')
     expect(event.penalty.value).toBe(-10)
@@ -432,7 +445,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { startup_steve_storage: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice 0 is "Delete the logs folder" — shortcut
     const event = resolveChoice('startup_steve_storage', 0, story, player)
     expect(event.correct).toBe('shortcut')
@@ -444,7 +457,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { startup_steve_storage: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice 1 is "Mount a bigger volume" — standard with item
     const event = resolveChoice('startup_steve_storage', 1, story, player)
     expect(event.itemReward).toEqual({ id: 'ssh_key_staging', qty: 1 })
@@ -454,7 +467,7 @@ describe('resolveChoice', () => {
     const story = freshStory({
       activeQuests: { startup_steve_storage: { stage: 0, attempts: 1 } },
     })
-    const player = { hp: 100, maxHp: 100, reputation: 50, shamePoints: 0 }
+    const player = freshPlayer()
     // choice 0 — shortcut, no itemReward
     const event = resolveChoice('startup_steve_storage', 0, story, player)
     expect(event.itemReward).toBeNull()

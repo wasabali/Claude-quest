@@ -35,20 +35,16 @@ export function isQuestAvailable(questId, storyState) {
   }
 
   // Required flags check
-  if (quest.requiresFlags) {
-    for (const flag of quest.requiresFlags) {
-      if (!storyState.flags[flag]) {
-        return { available: false, reason: `Missing required flag: ${flag}.` }
-      }
-    }
+  if (quest.requiresFlags && !quest.requiresFlags.every(flag => storyState.flags[flag])) {
+    const missing = quest.requiresFlags.find(flag => !storyState.flags[flag])
+    return { available: false, reason: `Missing required flag: ${missing}.` }
   }
 
   // Exclude flags check
   if (quest.excludeFlags) {
-    for (const flag of quest.excludeFlags) {
-      if (storyState.flags[flag]) {
-        return { available: false, reason: `Excluded by flag: ${flag}.` }
-      }
+    const blocking = quest.excludeFlags.find(flag => storyState.flags[flag])
+    if (blocking) {
+      return { available: false, reason: `Excluded by flag: ${blocking}.` }
     }
   }
 
