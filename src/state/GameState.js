@@ -68,8 +68,12 @@ export const GameState = {
   },
   stats: { ...DEFAULT_STATS },
   _session: {
-    isDirty:     false,  // true when there are unsaved changes
-    lastSavedAt: null,   // ISO timestamp of last save
+    isDirty:      false,  // true when there are unsaved changes
+    lastSavedAt:  null,   // ISO timestamp of last save
+    userMuted:    false,
+    masterVolume: 0.7,
+    bgmVolume:    0.7,
+    sfxVolume:    0.8,
   },
 }
 
@@ -195,8 +199,12 @@ export function initNewGame(name, mascot) {
   }
   GameState.stats = { ...DEFAULT_STATS }
   GameState._session = {
-    isDirty:     true,
-    lastSavedAt: null,
+    isDirty:      true,
+    lastSavedAt:  null,
+    userMuted:    false,
+    masterVolume: 0.7,
+    bgmVolume:    0.7,
+    sfxVolume:    0.8,
   }
 }
 

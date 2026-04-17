@@ -10,8 +10,9 @@ import { ServiceCatalogScene } from '#scenes/ServiceCatalogScene.js'
 import { SkillManagementScene } from '#scenes/SkillManagementScene.js'
 import { EmblemScene }          from '#scenes/EmblemScene.js'
 import { StackOverflowScene }   from '#scenes/StackOverflowScene.js'
+import { PauseScene }           from '#scenes/PauseScene.js'
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type:   Phaser.AUTO,
   width:  CONFIG.WIDTH,
   height: CONFIG.HEIGHT,
@@ -26,12 +27,20 @@ new Phaser.Game({
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene ],
+  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene, PauseScene ],
 })
 
 window.addEventListener('beforeunload', e => {
   if (GameState._session.isDirty) {
     e.preventDefault()
     e.returnValue = ''
+  }
+})
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    game.sound.mute = true
+  } else {
+    game.sound.mute = GameState._session.userMuted
   }
 })

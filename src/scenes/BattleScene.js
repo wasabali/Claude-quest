@@ -84,9 +84,16 @@ export class BattleScene extends BaseScene {
     this._setupInput()
 
     if (mode === BATTLE_MODES.INCIDENT) {
-      this.playBgm('bgm_battle_incident')
+      this.playBgm('battle_incident')
     } else {
-      this.playBgm('bgm_battle_engineer')
+      const gymBattle  = !!data.gymBattle
+      if (opponent.id === 'throttlemaster') {
+        this.playBgm('battle_throttlemaster')
+      } else if (opponent.isCursed || gymBattle) {
+        this.playBgm('battle_cursed')
+      } else {
+        this.playBgm('battle_engineer')
+      }
     }
   }
 
@@ -223,16 +230,19 @@ export class BattleScene extends BaseScene {
 
     if (Phaser.Input.Keyboard.JustDown(keys.up)) {
       this._skillIndex = Math.max(0, this._skillIndex - 1)
+      this.playSfx('sfx_cursor_move')
       this._refreshMenuCursor()
       this._refreshMenuHighlight()
     }
     if (Phaser.Input.Keyboard.JustDown(keys.down)) {
       const lastIndex  = Math.max(0, this._activeSkills.length - 1)
       this._skillIndex = Math.min(lastIndex, this._skillIndex + 1)
+      this.playSfx('sfx_cursor_move')
       this._refreshMenuCursor()
       this._refreshMenuHighlight()
     }
     if (Phaser.Input.Keyboard.JustDown(keys.confirm)) {
+      this.playSfx('sfx_confirm')
       this._useSkill(this._activeSkills[this._skillIndex])
     }
   }
@@ -279,7 +289,9 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(300, callback)
         break
 
-      case 'damage':
+      case 'damage': {
+        const isCritical = event.multiplier >= 2
+        this.playSfx(isCritical ? 'sfx_damage_critical' : 'sfx_damage_hit')
         if (event.target === 'opponent') {
           this._showLog(`Dealt ${event.value} damage!`)
         } else {
@@ -288,8 +300,10 @@ export class BattleScene extends BaseScene {
         this._refreshHUD()
         this.time.delayedCall(400, callback)
         break
+      }
 
       case 'heal':
+        this.playSfx('sfx_heal')
         this._showLog(`Restored ${event.value} HP!`)
         this._refreshHUD()
         this.time.delayedCall(400, callback)
@@ -302,11 +316,13 @@ export class BattleScene extends BaseScene {
         break
 
       case 'sla_tick':
+        this.playSfx('sfx_sla_tick')
         if (this._slaText) this._slaText.setText(this._slaLabel())
         callback()
         break
 
       case 'sla_breach':
+        this.playSfx('sfx_sla_breach')
         this._showLog('SLA BREACH! Penalty applied.')
         if (this._slaText) this._slaText.setColor('#ff0000')
         this.time.delayedCall(600, callback)
@@ -318,9 +334,11 @@ export class BattleScene extends BaseScene {
         break
 
       case 'reputation':
+        this.playSfx('sfx_reputation_change')
         this._showLog(event.value < 0
           ? `Reputation -${Math.abs(event.value)}. Shame +${event.shameDelta ?? 0}.`
           : `Reputation +${event.value}.`)
+        if (event.shameDelta > 0) this.playSfx('sfx_shame')
         this.time.delayedCall(400, callback)
         break
 
@@ -357,6 +375,7 @@ export class BattleScene extends BaseScene {
 
 
       case 'budget_drain':
+        this.playSfx('sfx_budget_drain')
         this._showLog(`Budget drained by ${event.value}!`)
         this._refreshHUD()
         this.time.delayedCall(400, callback)
