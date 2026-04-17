@@ -1,7 +1,7 @@
 // tests/stress/balanceAudit.test.js
 //
 // Monte Carlo stress test suite for Cloud Quest game balance.
-// Simulates thousands of battles, analyses skill DPT, progression curves,
+// Simulates thousands of battles, analyzes skill DPT, progression curves,
 // economy, encounter distribution, exploit vectors, and data integrity.
 //
 // Run: npm test -- tests/stress/balanceAudit.test.js
@@ -901,9 +901,8 @@ describe('Gate & Quest Integrity', () => {
     })
 
     it('every hard gate has an optimal-tier solution', () => {
-      const hardGates = allGates.filter(g => g.type === 'hard' && (gate => gate.solutions?.length > 0))
+      const hardGates = allGates.filter(g => g.type === 'hard' && g.solutions?.length > 0)
       for (const gate of hardGates) {
-        if (!gate.solutions || gate.solutions.length === 0) continue
         const hasOptimal = gate.solutions.some(s => s.tier === 'optimal')
         expect(hasOptimal,
           `hard gate ${gate.id} has no optimal solution`).toBe(true)
@@ -1135,7 +1134,7 @@ describe('Full Playthrough Simulation', () => {
 
     // After 20 cursed uses: shame should be high enough to unlock evil content
     expect(shamePoints).toBeGreaterThanOrEqual(10) // Shadow Engineer title at 10
-    expect(reputation).toBeLessThanOrEqual(-100) // reputation floored
+    expect(reputation).toBe(-100) // reputation floored at minimum
   })
 
   it('mixed play (some cursed, mostly standard) does not softlock the player', () => {
