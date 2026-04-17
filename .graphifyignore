@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.git/
+assets/sprites/
+assets/audio/
+assets/maps/
+graphify-out/cache/

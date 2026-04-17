@@ -5,6 +5,8 @@ import {
   assessQuality,
   getDomainMultiplier,
   applyShameAndReputation,
+  getReputationStatus,
+  getShameTitle,
 } from '../src/engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -241,6 +243,14 @@ describe('applyShameAndReputation', () => {
     expect(result.reputation).toBe(35)
   })
 
+  it('shortcut skill reduces reputation by 5 and does not add shame', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'shortcut', isCursed: false, sideEffect: null }
+    const result = applyShameAndReputation(player, skill)
+    expect(result.shamePoints).toBe(0)
+    expect(result.reputation).toBe(45)
+  })
+
   it('optimal skill does not add shame and increases reputation', () => {
     const player = { shamePoints: 0, reputation: 50 }
     const skill = { tier: 'optimal', isCursed: false, sideEffect: null }
@@ -269,11 +279,107 @@ describe('applyShameAndReputation', () => {
     expect(result2.reputation).toBeLessThanOrEqual(100)
   })
 
+  it('shortcut skill reduces reputation by 5 and does not add shame', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'shortcut', isCursed: false, sideEffect: null }
+    const result = applyShameAndReputation(player, skill)
+    expect(result.shamePoints).toBe(0)
+    expect(result.reputation).toBe(45)
+  })
+
+  it('optimal skill increases reputation by 10', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'optimal', isCursed: false, sideEffect: null }
+    const result = applyShameAndReputation(player, skill)
+    expect(result.reputation).toBe(60)
+  })
+
+  it('standard skill increases reputation by 3', () => {
+    const player = { shamePoints: 0, reputation: 50 }
+    const skill = { tier: 'standard', isCursed: false, sideEffect: null }
+    const result = applyShameAndReputation(player, skill)
+    expect(result.reputation).toBe(53)
+  })
+
   it('does not mutate the original player object', () => {
     const player = { shamePoints: 0, reputation: 50 }
     const skill = { tier: 'cursed', isCursed: true, sideEffect: { shame: 1, reputation: -8 } }
     applyShameAndReputation(player, skill)
     expect(player.shamePoints).toBe(0)
     expect(player.reputation).toBe(50)
+  })
+
+})
+
+// ---------------------------------------------------------------------------
+// getReputationStatus
+// ---------------------------------------------------------------------------
+
+describe('getReputationStatus', () => {
+  it('returns Distinguished Engineer for 80–100', () => {
+    expect(getReputationStatus(80)).toBe('Distinguished Engineer')
+    expect(getReputationStatus(100)).toBe('Distinguished Engineer')
+    expect(getReputationStatus(99)).toBe('Distinguished Engineer')
+  })
+
+  it('returns Competent Engineer for 60–79', () => {
+    expect(getReputationStatus(60)).toBe('Competent Engineer')
+    expect(getReputationStatus(79)).toBe('Competent Engineer')
+  })
+
+  it('returns Adequate Engineer for 40–59', () => {
+    expect(getReputationStatus(50)).toBe('Adequate Engineer')
+    expect(getReputationStatus(40)).toBe('Adequate Engineer')
+    expect(getReputationStatus(59)).toBe('Adequate Engineer')
+  })
+
+  it('returns Liability for 20–39', () => {
+    expect(getReputationStatus(20)).toBe('Liability')
+    expect(getReputationStatus(39)).toBe('Liability')
+  })
+
+  it('returns Walking Incident for 0–19', () => {
+    expect(getReputationStatus(0)).toBe('Walking Incident')
+    expect(getReputationStatus(19)).toBe('Walking Incident')
+  })
+
+  it('starting reputation (50) is Adequate Engineer', () => {
+    expect(getReputationStatus(50)).toBe('Adequate Engineer')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getShameTitle
+// ---------------------------------------------------------------------------
+
+describe('getShameTitle', () => {
+  it('returns null for 0 shame (no title earned)', () => {
+    expect(getShameTitle(0)).toBeNull()
+  })
+
+  it('returns null for shame 1–4 (no title at those thresholds)', () => {
+    expect(getShameTitle(1)).toBeNull()
+    expect(getShameTitle(4)).toBeNull()
+  })
+
+  it('returns Person of Interest at shame 5', () => {
+    expect(getShameTitle(5)).toBe('Person of Interest')
+    expect(getShameTitle(6)).toBe('Person of Interest')
+    expect(getShameTitle(9)).toBe('Person of Interest')
+  })
+
+  it('returns Shadow Engineer at shame 10', () => {
+    expect(getShameTitle(10)).toBe('Shadow Engineer')
+    // shame 15 has title:null — 'Shadow Engineer' (from shame 10) is still the active title
+    expect(getShameTitle(15)).toBe('Shadow Engineer')
+    expect(getShameTitle(100)).toBe('Shadow Engineer')
+  })
+
+  it('returns Person of Interest at shame 7 (no new title at 7, Person of Interest persists)', () => {
+    expect(getShameTitle(7)).toBe('Person of Interest')
+  })
+
+  it('returns null at shame 3 (no title earned yet — shame 3 has no title, neither does 1)', () => {
+    expect(getShameTitle(3)).toBeNull()
   })
 })

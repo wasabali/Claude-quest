@@ -113,6 +113,10 @@ describe('initNewGame', () => {
       cursedTechniquesUsed: 0,
       nuclearTechniquesUsed: 0,
       optimalSolutions: 0,
+      totalDeployments: 0,
+      longestUptime: 0,
+      clockManipulated: false,
+      devNullUseCount: 0,
       skillUseCounts: {},
     })
   })

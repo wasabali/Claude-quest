@@ -268,8 +268,26 @@ export class WorldScene extends BaseScene {
     }
 
     const entry = getStoryById(`npc_${npcName}`)
-    const lines = entry?.pages ?? ['???']
+    const lines = this._resolveNpcPages(entry)
     this.dialog.show(lines, () => { this._interacting = false })
+  }
+
+  // Evaluates NPC dialogue variants top-to-bottom against the current player
+  // reputation and shamePoints, returning the first matching variant's pages.
+  // Falls back to entry.pages when no variant matches.
+  _resolveNpcPages(entry) {
+    const { reputation, shamePoints } = GameState.player
+    if (Array.isArray(entry?.variants)) {
+      for (const variant of entry.variants) {
+        const c = variant.condition ?? {}
+        if (c.reputationMin !== undefined && reputation < c.reputationMin) continue
+        if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
+        if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
+        if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
+        return variant.pages
+      }
+    }
+    return entry?.pages ?? ['???']
   }
 
   _checkEncounterStep() {

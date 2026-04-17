@@ -9,6 +9,7 @@ import { getAll as getAllTrainers } from '../src/data/trainers.js'
 import { getAll as getAllEmblems } from '../src/data/emblems.js'
 import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
+import { getAll as getAllThreads, getByCommandId } from '../src/data/stackoverflow.js'
 import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
@@ -20,6 +21,7 @@ const DATA_FILES = [
   'emblems.js',
   'quests.js',
   'encounters.js',
+  'stackoverflow.js',
   'gates.js',
 ].map(file => path.join(process.cwd(), 'src', 'data', file))
 
@@ -68,9 +70,9 @@ describe('skills registry', () => {
 })
 
 describe('other data registries', () => {
-  it('defines all 10 cursed trainers with isCursed: true', () => {
+  it('defines all 14 cursed trainers with isCursed: true', () => {
     const cursedTrainers = getAllTrainers().filter(trainer => trainer.isCursed)
-    expect(cursedTrainers).toHaveLength(10)
+    expect(cursedTrainers).toHaveLength(14)
     cursedTrainers.forEach(trainer => expect(trainer.isCursed).toBe(true))
   })
 
@@ -105,8 +107,39 @@ describe('other data registries', () => {
       ...getAllEmblems().map(entry => entry.id),
       ...getAllQuests().map(entry => entry.id),
       ...getAllEncounters().map(entry => entry.id),
+      ...getAllThreads().map(entry => entry.id),
+      ...getAllGates().map(entry => entry.id),
     ]
     expect(new Set(allIds).size).toBe(allIds.length)
+  })
+})
+
+describe('stackoverflow registry', () => {
+  it('all threads have required fields', () => {
+    getAllThreads().forEach(thread => {
+      expect(typeof thread.id).toBe('string')
+      expect(typeof thread.commandId).toBe('string')
+      expect(typeof thread.questionTitle).toBe('string')
+      expect(Array.isArray(thread.answers)).toBe(true)
+      expect(Array.isArray(thread.comments)).toBe(true)
+      thread.answers.forEach(a => {
+        expect(typeof a.text).toBe('string')
+        expect(typeof a.author).toBe('string')
+        expect(typeof a.score).toBe('number')
+        expect(typeof a.isAccepted).toBe('boolean')
+      })
+    })
+  })
+
+  it('getByCommandId returns correct thread via O(1) index', () => {
+    const thread = getByCommandId('blame_dns')
+    expect(thread).toBeDefined()
+    expect(thread.id).toBe('so_blame_dns')
+    expect(thread.commandId).toBe('blame_dns')
+  })
+
+  it('getByCommandId returns null for unknown commandId', () => {
+    expect(getByCommandId('__nonexistent__')).toBeNull()
   })
 })
 

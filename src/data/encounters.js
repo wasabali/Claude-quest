@@ -32,6 +32,26 @@ export const ENCOUNTER_POOLS = {
     rare:   ['prod_incident', 'runaway_process', 'azure_bill_spike', 'cold_start_cascade'],
     cursed: ['sev1_at_3am'],
   },
+  server_graveyard: {
+    common: [],
+    rare:   [],
+    cursed: [],
+  },
+  node_modules_maze: {
+    common: [],
+    rare:   [],
+    cursed: [],
+  },
+  dev_null_void: {
+    common: [],
+    rare:   [],
+    cursed: [],
+  },
+  deprecated_azure_region: {
+    common: [],
+    rare:   [],
+    cursed: [],
+  },
 }
 
 const ENCOUNTERS = {
