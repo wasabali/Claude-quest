@@ -2,7 +2,7 @@
 // Owns the battle state and phase queue. Returns BattleEvent[] arrays.
 // Scenes delegate all logic here; they only render the returned events.
 
-import { calculateDamage, calculateXP, applyShameAndReputation } from './SkillEngine.js'
+import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation } from './SkillEngine.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -11,6 +11,21 @@ import { calculateDamage, calculateXP, applyShameAndReputation } from './SkillEn
 export const BATTLE_MODES = {
   INCIDENT: 'INCIDENT', // Wild encounter — SLA timer, hidden domain
   ENGINEER: 'ENGINEER', // Trainer battle — enemy telegraphs next move
+}
+
+// Maximum stacks of technical debt a player can accumulate
+const MAX_TECHNICAL_DEBT = 10
+
+// Max HP penalty per technical debt stack
+const TECHNICAL_DEBT_HP_PENALTY = 2
+
+// Reputation deltas applied at win resolution, per solution quality tier.
+const QUALITY_REP_DELTAS = {
+  optimal:  10,
+  standard: 3,
+  shortcut: -5,
+  cursed:   -15,
+  nuclear:  -30,
 }
 
 // Incident attack type identifiers (matches attacks[] entries in encounter data)
@@ -54,7 +69,7 @@ export function createBattleState(mode, player, opponent, options = {}) {
   return {
     mode,
     turn:             1,
-    player:           { ...player },
+    player:           { ...player, technicalDebt: player.technicalDebt ?? 0 },
     opponent:         { ...opponent },
     playerStatuses:   [],
     opponentStatuses: [],
@@ -107,7 +122,8 @@ export function statusTickPhase(state) {
 // ---------------------------------------------------------------------------
 // Phase 2: SkillPhase
 // Resolves the player's chosen skill.
-// Emits skill_used, damage/heal/domain_reveal, and reputation events.
+// Emits skill_used, damage/heal/domain_reveal, reputation, and
+// technical_debt events. Also updates state.winningTier.
 // ---------------------------------------------------------------------------
 export function skillPhase(state, skill) {
   const events = []
@@ -141,6 +157,19 @@ export function skillPhase(state, skill) {
   state.player.shamePoints = updated.shamePoints
   state.player.reputation  = updated.reputation
   events.push({ type: 'reputation', target: 'player', value: repDelta, shameDelta })
+
+  // Cursed/nuclear skills accumulate technical debt (capped at MAX_TECHNICAL_DEBT)
+  if (skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear') {
+    if (state.player.technicalDebt < MAX_TECHNICAL_DEBT) {
+      state.player.technicalDebt += 1
+      state.player.maxHp = Math.max(1, state.player.maxHp - TECHNICAL_DEBT_HP_PENALTY)
+      state.player.hp = Math.min(state.player.hp, state.player.maxHp)
+    }
+    events.push({ type: 'technical_debt', target: 'player', value: state.player.technicalDebt })
+  }
+
+  // Update winning tier based on the outcome of this skill
+  state.winningTier = assessQuality(skill, state.opponent, state.domainRevealed)
 
   return events
 }
@@ -337,19 +366,27 @@ export function turnEndPhase(state) {
     const tier = state.winningTier ?? 'standard'
     const xp   = calculateXP(state.opponent.difficulty ?? 1, tier)
 
-    // Bonus reputation for winning an engineer battle with an optimal solution
-    if (state.mode === BATTLE_MODES.ENGINEER && tier === 'optimal') {
-      state.player.reputation = Math.min(100, state.player.reputation + ENGINEER_WIN_REP_OPTIMAL)
-      events.push({ type: 'reputation', target: 'player', value: ENGINEER_WIN_REP_OPTIMAL, shameDelta: 0 })
+    // Apply quality-based reputation delta at win resolution
+    const repDelta    = QUALITY_REP_DELTAS[tier] ?? 0
+    const newRep      = Math.max(0, Math.min(100, state.player.reputation + repDelta))
+    const actualDelta = newRep - state.player.reputation
+    state.player.reputation = newRep
+    if (actualDelta !== 0) {
+      events.push({ type: 'reputation', target: 'player', value: actualDelta })
     }
 
     events.push({ type: 'xp_gain', target: 'player', value: xp })
 
+    // ENGINEER mode: tier-based teacher reactions
     if (state.mode === BATTLE_MODES.ENGINEER) {
       if (tier === 'optimal' && state.opponent.teachSkillId) {
         events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
-      } else if (tier === 'standard' && state.opponent.winDialog) {
-        events.push({ type: 'dialog', target: 'player', text: state.opponent.winDialog })
+      } else if (tier === 'standard' && state.opponent.teachSkillId) {
+        events.push({ type: 'teach_hint', target: 'player', value: state.opponent.teachSkillId })
+      } else if (tier === 'cursed') {
+        events.push({ type: 'trainer_disgusted', target: 'player' })
+      } else if (tier === 'nuclear') {
+        events.push({ type: 'warn_npcs', target: 'player' })
       }
     }
 
