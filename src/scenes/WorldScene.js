@@ -2,8 +2,9 @@ import Phaser from 'phaser'
 import { BaseScene } from '#scenes/BaseScene.js'
 import { DialogBox } from '#ui/DialogBox.js'
 import { CONFIG } from '../config.js'
-import { GameState, hasItem, markDirty } from '#state/GameState.js'
+import { GameState, hasItem, addItem, markDirty, grantXpOnce } from '#state/GameState.js'
 import { getById as getStoryById } from '#data/story.js'
+import { getById as getQuestById } from '#data/quests.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
@@ -189,6 +190,14 @@ export class WorldScene extends BaseScene {
   }
 
   _handleDialogInput() {
+    if (this.dialog.isChoiceMode) {
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.up))   this.dialog.moveChoice(-1)
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.down)) this.dialog.moveChoice(1)
+      const confirm = Phaser.Input.Keyboard.JustDown(this._keyZ)
+        || Phaser.Input.Keyboard.JustDown(this._keyEnter)
+      if (confirm) this.dialog.confirmChoice()
+      return
+    }
     const confirm = Phaser.Input.Keyboard.JustDown(this._keyZ)
       || Phaser.Input.Keyboard.JustDown(this._keyEnter)
     if (confirm)                                         this.dialog.advance()
@@ -219,6 +228,11 @@ export class WorldScene extends BaseScene {
 
   _interactWithNpc(npcName) {
     this._interacting = true
+
+    if (npcName === 'margaret') {
+      this._interactMargaret()
+      return
+    }
 
     if (npcName === 'azure_terminal') {
       const pages = getStoryById('npc_azure_terminal')?.pages ?? ['> AZURE TERMINAL v2.0']
@@ -301,6 +315,39 @@ export class WorldScene extends BaseScene {
 
   _checkEncounterStep() {
     // Wired to EncounterEngine once issue #9 is merged — stub prevents crash.
+  }
+
+  _interactMargaret() {
+    const quest = getQuestById('margaret_website')
+    const isCompleted = GameState.story.completedQuests.includes('margaret_website')
+
+    if (isCompleted) {
+      const lines = quest?.completedDialog ?? ["The website's been running for 3 days! Best week ever."]
+      this.dialog.show(lines, () => { this._interacting = false })
+      return
+    }
+
+    const stage   = quest.stages[0]
+    const choices = stage.choices.map(c => c.text)
+
+    this.dialog.show(stage.dialog, () => {
+      this.dialog.showChoices('What do you suggest?', choices, (idx) => {
+        const chosen = stage.choices[idx]
+        if (chosen.correct) {
+          grantXpOnce('margaret_website_xp', quest.rewards.xp)
+          for (const reward of quest.rewards.items) {
+            addItem('tools', reward.id, reward.qty)
+          }
+          GameState.story.completedQuests.push('margaret_website')
+          markDirty()
+          this.dialog.show(stage.correctDialog, () => { this._interacting = false })
+        } else {
+          GameState.player.hp = Math.max(1, GameState.player.hp - (chosen.hpLoss ?? 10))
+          markDirty()
+          this.dialog.show(stage.wrongDialog, () => { this._interacting = false })
+        }
+      })
+    })
   }
 
   shutdown() {
