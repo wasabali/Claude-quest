@@ -51,7 +51,7 @@ Readable items that grant XP or provide information.
 | Item | Effect | Description |
 |---|---|---|
 | **Outdated Runbook** | +5 XP on first read | Half the steps are wrong. Still +5 XP. |
-| **Incident Postmortem** | read_xp_if_last_battle_lost | Painful reading, but educational. |
+| **Incident Postmortem** | +20 XP if your last battle was lost | Painful reading, but educational. |
 | **Published Post-Mortem** | Reduces 1 Shame Point | You wrote a blameless post-mortem. You named your mistakes. People read it. Reduces 1 Shame Point. The damage is done, but at least you owned it. |
 
 ---

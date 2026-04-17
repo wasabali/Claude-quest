@@ -7,7 +7,7 @@
 // Usage: node scripts/create-balance-issues.js [--report game-health/latest.json] [--dry-run]
 
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'fs'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import { resolve, dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { tmpdir } from 'os'
@@ -42,13 +42,13 @@ const CATEGORY_LABELS = {
   'full-playthrough':     'playthrough',
 }
 
-function gh(argsStr) {
+function gh(args) {
   if (dryRun) {
-    console.log(`  [DRY RUN] gh ${argsStr}`)
+    console.log(`  [DRY RUN] gh ${args.join(' ')}`)
     return ''
   }
   try {
-    return execSync(`gh ${argsStr}`, { cwd: ROOT, encoding: 'utf-8', timeout: 30000 })
+    return execFileSync('gh', args, { cwd: ROOT, encoding: 'utf-8', timeout: 30000 })
   } catch (err) {
     console.error(`  ⚠️  gh command failed: ${err.message}`)
     return ''
@@ -57,7 +57,7 @@ function gh(argsStr) {
 
 // ─── Search for existing issues by title prefix ──────────────────────────────
 function findExistingIssue(titlePrefix) {
-  const result = gh(`issue list --state open --label balance,automated --search "${titlePrefix}" --json number,title --limit 10`)
+  const result = gh(['issue', 'list', '--state', 'open', '--label', 'balance', '--label', 'automated', '--search', titlePrefix, '--json', 'number,title', '--limit', '10'])
   if (!result) return null
   try {
     const issues = JSON.parse(result)
@@ -85,7 +85,6 @@ for (const finding of newFindings) {
   }
 
   const categoryLabel = CATEGORY_LABELS[finding.category] || 'balance'
-  const labels        = ['balance', 'automated', categoryLabel].join(',')
 
   const body = [
     `## Automated Balance Finding`,
@@ -109,8 +108,7 @@ for (const finding of newFindings) {
   writeFileSync(bodyFile, body)
 
   console.log(`  📝 Creating issue: ${titlePrefix}`)
-  const safeTitle = titlePrefix.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-  gh(`issue create --title "${safeTitle}" --body-file "${bodyFile}" --label "${labels}"`)
+  gh(['issue', 'create', '--title', titlePrefix, '--body-file', bodyFile, '--label', 'balance', '--label', 'automated', '--label', categoryLabel])
 }
 
 // Clean up temp dir
@@ -125,7 +123,7 @@ for (const fixedId of report.fixedFindings || []) {
   const titlePrefix = `[Balance]`
 
   // Search for matching open issue
-  const result = gh(`issue list --state open --label balance,automated --search "${testTitle}" --json number,title --limit 10`)
+  const result = gh(['issue', 'list', '--state', 'open', '--label', 'balance', '--label', 'automated', '--search', testTitle, '--json', 'number,title', '--limit', '10'])
   if (!result) continue
 
   try {
@@ -133,7 +131,7 @@ for (const fixedId of report.fixedFindings || []) {
     for (const issue of issues) {
       if (issue.title.includes(testTitle)) {
         console.log(`  ✅ Closing fixed issue #${issue.number}: ${issue.title}`)
-        gh(`issue close ${issue.number} --comment "🎉 This finding has been fixed (test now passes). Auto-closed by game-health pipeline."`)
+        gh(['issue', 'close', String(issue.number), '--comment', '🎉 This finding has been fixed (test now passes). Auto-closed by game-health pipeline.'])
       }
     }
   } catch {

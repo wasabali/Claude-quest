@@ -100,12 +100,13 @@ const END_SENTINEL   = '<!-- GAME-HEALTH-END -->'
 let readme = readFileSync(readmePath, 'utf-8')
 
 const startIdx = readme.indexOf(START_SENTINEL)
-const endIdx   = readme.indexOf(END_SENTINEL)
+const endIdx   = readme.lastIndexOf(END_SENTINEL)
 
-if (startIdx === -1 || endIdx === -1) {
-  console.error('❌ Sentinel comments not found in README.md')
-  console.error('   Add these lines to README.md:')
+if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+  console.error('❌ Sentinel comments not found in README.md or are out of order')
+  console.error('   Ensure README.md contains these lines in this order:')
   console.error(`   ${START_SENTINEL}`)
+  console.error('   ... dashboard content ...')
   console.error(`   ${END_SENTINEL}`)
   process.exit(1)
 }

@@ -34,13 +34,50 @@ if (inputFile) {
   rawJson = readFileSync(0, 'utf-8')
 }
 
-// Vitest JSON reporter may output multiple JSON objects; take the first line
-const firstLine = rawJson.split('\n').find(l => l.trim().startsWith('{'))
-if (!firstLine) {
-  console.error('❌ No JSON object found in input. Is the vitest JSON reporter output valid?')
-  process.exit(1)
+// Vitest JSON reporter may output multi-line JSON or extra text around it.
+// Try full parse first; fall back to extracting the first complete JSON object.
+function extractFirstJsonObject(text) {
+  let start = -1
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i]
+
+    if (start === -1) {
+      if (ch === '{') { start = i; depth = 1 }
+      continue
+    }
+
+    if (inString) {
+      if (escaped) { escaped = false }
+      else if (ch === '\\') { escaped = true }
+      else if (ch === '"') { inString = false }
+      continue
+    }
+
+    if (ch === '"') { inString = true; continue }
+    if (ch === '{') { depth += 1 }
+    else if (ch === '}') {
+      depth -= 1
+      if (depth === 0) return text.slice(start, i + 1)
+    }
+  }
+  return null
 }
-const vitestData = JSON.parse(firstLine)
+
+let vitestData
+try {
+  vitestData = JSON.parse(rawJson.trim())
+} catch {
+  const extracted = extractFirstJsonObject(rawJson)
+  if (!extracted) {
+    console.error('❌ No JSON object found in input. Is the vitest JSON reporter output valid?')
+    process.exit(1)
+  }
+  vitestData = JSON.parse(extracted)
+}
 
 // ─── Load previous baseline (if it exists) ───────────────────────────────────
 let baseline = null

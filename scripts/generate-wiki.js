@@ -14,9 +14,9 @@ const ROOT      = resolve(__dirname, '..')
 const WIKI_DIR  = resolve(ROOT, 'docs/wiki')
 
 // ─── Data imports ────────────────────────────────────────────────────────────
-import { getAll as getAllSkills }      from '../src/data/skills.js'
+import { getAll as getAllSkills, getById as getSkillById } from '../src/data/skills.js'
 import { getAll as getAllTrainers }    from '../src/data/trainers.js'
-import { getAll as getAllEncounters, ENCOUNTER_POOLS } from '../src/data/encounters.js'
+import { getAll as getAllEncounters, getById as getEncounterById, ENCOUNTER_POOLS } from '../src/data/encounters.js'
 import { getAll as getAllItems }       from '../src/data/items.js'
 import { getAll as getAllEmblems }     from '../src/data/emblems.js'
 
@@ -61,6 +61,22 @@ function difficultyStars(n) {
 function formatLocation(loc) {
   if (!loc) return ''
   return loc.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function resolveSkillDisplayName(skillId) {
+  if (!skillId) return '—'
+  const skill = getSkillById(skillId)
+  return skill ? `\`${skill.displayName}\`` : `\`${skillId}\``
+}
+
+function domainLabel(domain) {
+  if (!domain) return 'Random'
+  return DOMAIN_LABELS[domain] || domain
+}
+
+function domainEmoji(domain) {
+  if (!domain) return '🎲'
+  return DOMAIN_EMOJI[domain] || '❓'
 }
 
 function effectDescription(skill) {
@@ -233,10 +249,10 @@ These are the engineers who fight fair and teach you real skills.
 |---|---|---|---|---|---|
 `
   for (const t of good) {
-    const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
-    const label    = DOMAIN_LABELS[t.domain] || t.domain
+    const emoji    = domainEmoji(t.domain)
+    const label    = domainLabel(t.domain)
     const location = formatLocation(t.location || 'unknown')
-    const sig      = t.signatureSkill ? `\`${t.signatureSkill.replace(/_/g, ' ')}\`` : '—'
+    const sig      = resolveSkillDisplayName(t.signatureSkill)
     const intro    = t.introDialog ? t.introDialog.slice(0, 60) + (t.introDialog.length > 60 ? '…' : '') : ''
     md += `| **${t.name}** | ${emoji} ${label} | ${location} | ${difficultyStars(t.difficulty)} | ${sig} | ${intro} |\n`
   }
@@ -261,10 +277,10 @@ These engineers have gone to the dark side. They hang out in shady corners of th
 |---|---|---|---|---|
 `
   for (const t of cursed) {
-    const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
-    const label    = DOMAIN_LABELS[t.domain] || t.domain
+    const emoji    = domainEmoji(t.domain)
+    const label    = domainLabel(t.domain)
     const location = formatLocation(t.location || 'unknown')
-    const teach    = t.teachSkillId ? `\`${t.teachSkillId.replace(/_/g, ' ')}\`` : '—'
+    const teach    = resolveSkillDisplayName(t.teachSkillId)
     md += `| **${t.name}** | ${emoji} ${label} | ${teach} | ${t.shameRequired || 0} | ${location} |\n`
   }
 
@@ -282,8 +298,8 @@ These engineers have gone to the dark side. They hang out in shady corners of th
     md += `\n---\n\n## Wild Encounters\n\nThese trainers appear randomly in the world.\n\n`
     md += '| Name | Domain | Difficulty | Location |\n|---|---|---|---|\n'
     for (const t of wild) {
-      const emoji    = DOMAIN_EMOJI[t.domain] || '❓'
-      const label    = DOMAIN_LABELS[t.domain] || t.domain
+      const emoji    = domainEmoji(t.domain)
+      const label    = domainLabel(t.domain)
       const location = formatLocation(t.location || 'any')
       md += `| **${t.name}** | ${emoji} ${label} | ${difficultyStars(t.difficulty)} | ${location} |\n`
     }
@@ -331,10 +347,10 @@ Random encounters happen as you explore the world. Each region has its own **enc
 
     for (const [rarity, ids] of [['Common', pool.common], ['Rare', pool.rare], ['Cursed', pool.cursed]]) {
       for (const encId of ids) {
-        const enc = allEncounters.find(e => e.id === encId)
+        const enc = getEncounterById(encId)
         if (!enc) continue
-        const emoji = DOMAIN_EMOJI[enc.domain] || '❓'
-        const label = DOMAIN_LABELS[enc.domain] || enc.domain
+        const emoji = domainEmoji(enc.domain)
+        const label = domainLabel(enc.domain)
         md += `| ${rarity} | ${enc.name} | ${emoji} ${label} | ${enc.hp} | ${enc.sla} | ${difficultyStars(enc.difficulty)} |\n`
       }
     }
@@ -344,9 +360,9 @@ Random encounters happen as you explore the world. Each region has its own **enc
   md += '| Name | Domain | HP | SLA | Difficulty | Optimal Fix |\n'
   md += '|---|---|---|---|---|---|\n'
   for (const enc of allEncounters.sort((a, b) => a.difficulty - b.difficulty)) {
-    const emoji = DOMAIN_EMOJI[enc.domain] || '❓'
-    const label = DOMAIN_LABELS[enc.domain] || enc.domain
-    const fix   = enc.optimalFix ? `\`${enc.optimalFix.replace(/_/g, ' ')}\`` : '—'
+    const emoji = domainEmoji(enc.domain)
+    const label = domainLabel(enc.domain)
+    const fix   = resolveSkillDisplayName(enc.optimalFix)
     md += `| ${enc.name} | ${emoji} ${label} | ${enc.hp} | ${enc.sla} | ${difficultyStars(enc.difficulty)} | ${fix} |\n`
   }
 
@@ -416,17 +432,36 @@ Your inventory has five tabs: **Tools**, **Key Items**, **Credentials**, **Docs*
   return md
 }
 
+function titleCaseFromSnakeCase(value) {
+  if (!value) return ''
+  return String(value)
+    .split('_')
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function genericEffectDescription(effect) {
+  const label = titleCaseFromSnakeCase(effect.type)
+  const details = Object.entries(effect)
+    .filter(([key, value]) => key !== 'type' && value !== undefined && value !== null)
+    .map(([key, value]) => `${titleCaseFromSnakeCase(key).toLowerCase()}: ${value}`)
+
+  return details.length > 0 ? `${label} (${details.join(', ')})` : label
+}
+
 function effectDescriptionForItem(effect) {
   if (!effect) return '—'
   switch (effect.type) {
-    case 'heal_hp':         return `Heal ${effect.value} HP`
-    case 'restore_budget':  return `Restore ${effect.value} Budget`
-    case 'bypass_skill_check': return 'Bypass one skill check'
-    case 'status_apply':    return `Applies "${effect.status}" status`
-    case 'read_xp':         return `+${effect.value} XP on first read`
-    case 'reduce_shame':    return `Reduces ${effect.value} Shame Point`
-    case 'reduce_debt':     return `Reduces ${effect.value} Technical Debt`
-    default:                return `${effect.type}`
+    case 'heal_hp':                     return `Heal ${effect.value} HP`
+    case 'restore_budget':              return `Restore ${effect.value} Budget`
+    case 'bypass_skill_check':          return 'Bypass one skill check'
+    case 'status_apply':                return `Applies "${effect.status}" status`
+    case 'read_xp':                     return `+${effect.value} XP on first read`
+    case 'read_xp_if_last_battle_lost': return `+${effect.value} XP if your last battle was lost`
+    case 'reduce_shame':                return `Reduces ${effect.value} Shame Point${effect.value === 1 ? '' : 's'}`
+    case 'reduce_debt':                 return `Reduces ${effect.value} Technical Debt`
+    default:                            return genericEffectDescription(effect)
   }
 }
 

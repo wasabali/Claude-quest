@@ -90,28 +90,28 @@ Random encounters happen as you explore the world. Each region has its own **enc
 | Missing Semicolon | 🏗️ IaC | 26 | 5 | ⭐ | `az pipelines run` |
 | Failed Pipeline | 🏗️ IaC | 35 | 4 | ⭐⭐ | `az pipelines run` |
 | Merge Conflict | 🏗️ IaC | 32 | 4 | ⭐⭐ | `git revert` |
-| Port Conflict | 🐧 Linux | 28 | 4 | ⭐⭐ | `kill 9` |
-| Stale Ticket | 📊 Observability | 30 | 5 | ⭐⭐ | `grep logs` |
+| Port Conflict | 🐧 Linux | 28 | 4 | ⭐⭐ | `kill -9` |
+| Stale Ticket | 📊 Observability | 30 | 5 | ⭐⭐ | `grep "ERROR" /var/log/*` |
 | Missing Acceptance Criteria | 🏗️ IaC | 34 | 5 | ⭐⭐ | `terraform plan` |
-| Blocked by QA | 📊 Observability | 36 | 4 | ⭐⭐ | `grep logs` |
-| High CPU | ☁️ Cloud | 35 | 4 | ⭐⭐ | `scale out` |
-| Disk Full | 🐧 Linux | 34 | 4 | ⭐⭐ | `kill 9` |
+| Blocked by QA | 📊 Observability | 36 | 4 | ⭐⭐ | `grep "ERROR" /var/log/*` |
+| High CPU | ☁️ Cloud | 35 | 4 | ⭐⭐ | `az scale out` |
+| Disk Full | 🐧 Linux | 34 | 4 | ⭐⭐ | `kill -9` |
 | Flaky CI Pipeline | ☁️ Cloud | 36 | 4 | ⭐⭐ | `az pipelines run` |
-| NullPointerException | 🐧 Linux | 30 | 4 | ⭐⭐ | `grep logs` |
+| NullPointerException | 🐧 Linux | 30 | 4 | ⭐⭐ | `grep "ERROR" /var/log/*` |
 | Scope Creep | ☁️ Cloud | 40 | 4 | ⭐⭐⭐ | `feature flag` |
-| Infinite Sprint | ⚡ Serverless | 42 | 4 | ⭐⭐⭐ | `az func deploy` |
-| Runaway Process | 🐧 Linux | 44 | 3 | ⭐⭐⭐ | `kill 9` |
+| Infinite Sprint | ⚡ Serverless | 42 | 4 | ⭐⭐⭐ | `az functionapp deploy` |
+| Runaway Process | 🐧 Linux | 44 | 3 | ⭐⭐⭐ | `kill -9` |
 | CrashLoopBackOff | ☸️ Kubernetes | 38 | 4 | ⭐⭐⭐ | `kubectl rollout restart` |
-| OOM Kill | 🐳 Containers | 40 | 4 | ⭐⭐⭐ | `kubectl scale` |
-| Pending Pod | ☸️ Kubernetes | 37 | 4 | ⭐⭐⭐ | `kubectl scale` |
+| OOM Kill | 🐳 Containers | 40 | 4 | ⭐⭐⭐ | `kubectl scale --replicas=10` |
+| Pending Pod | ☸️ Kubernetes | 37 | 4 | ⭐⭐⭐ | `kubectl scale --replicas=10` |
 | Azure Bill Spike | ☁️ Cloud | 42 | 3 | ⭐⭐⭐ | `cost optimization` |
 | Config Drift | 🏗️ IaC | 44 | 4 | ⭐⭐⭐ | `terraform apply` |
-| Cold Start Cascade | ⚡ Serverless | 38 | 3 | ⭐⭐⭐ | `az func deploy` |
-| Leaked Secret | 🔒 Security | 35 | 3 | ⭐⭐⭐ | `vault rotate` |
+| Cold Start Cascade | ⚡ Serverless | 38 | 3 | ⭐⭐⭐ | `az functionapp deploy` |
+| Leaked Secret | 🔒 Security | 35 | 3 | ⭐⭐⭐ | `vault kv rotate` |
 | The Gantt Chart | 🏗️ IaC | 50 | 3 | ⭐⭐⭐⭐ | `terraform apply` |
-| Production Incident | ☁️ Cloud | 45 | 3 | ⭐⭐⭐⭐ | `blue green deploy` |
-| Evicted Node | ☸️ Kubernetes | 48 | 3 | ⭐⭐⭐⭐ | `kubectl drain` |
-| RBAC Denied | 🔒 Security | 46 | 3 | ⭐⭐⭐⭐ | `chmod fix` |
+| Production Incident | ☁️ Cloud | 45 | 3 | ⭐⭐⭐⭐ | `blue-green deploy` |
+| Evicted Node | ☸️ Kubernetes | 48 | 3 | ⭐⭐⭐⭐ | `kubectl drain node` |
+| RBAC Denied | 🔒 Security | 46 | 3 | ⭐⭐⭐⭐ | `chmod 644` |
 | SEV1 at 3am | 📊 Observability | 55 | 2 | ⭐⭐⭐⭐⭐ | — |
 | The YAML Labyrinth | ☸️ Kubernetes | 60 | 2 | ⭐⭐⭐⭐⭐ | `helm upgrade` |
 

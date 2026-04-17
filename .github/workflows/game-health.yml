@@ -26,12 +26,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
+          node-version: 22
 
       - name: Install graphify
-        run: pip install graphifyy
+        run: npm install --global graphify-ts
 
       - name: Run graphify update
         run: graphify update .
@@ -52,6 +52,7 @@ jobs:
   # ─── Job 2: Regenerate wiki from game data ─────────────────────────────────
   wiki-update:
     name: Wiki Update
+    needs: graphify-update
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,6 +74,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
           git add docs/wiki/
           if git diff --cached --quiet; then
             echo "No wiki changes to commit"
@@ -84,6 +86,7 @@ jobs:
   # ─── Job 3: Run stress tests ───────────────────────────────────────────────
   stress-test:
     name: Stress Test
+    needs: wiki-update
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -175,6 +178,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
           git add README.md game-health/latest.json
           if git diff --cached --quiet; then
             echo "No dashboard changes to commit"
