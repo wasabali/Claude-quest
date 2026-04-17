@@ -354,6 +354,7 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(600, callback)
         break
 
+
       case 'budget_drain':
         this._showLog(`Budget drained by ${event.value}!`)
         this._refreshHUD()

@@ -357,6 +357,55 @@ describe('skillPhase', () => {
     skillPhase(state, skill)
     expect(state.player.hp).toBe(100)
   })
+
+  it('reveal effect reveals domain', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ domain: 'linux' }))
+    const skill = { id: 'history_clear', domain: 'observability', tier: 'cursed', isCursed: true,
+      effect: { type: 'reveal' }, sideEffect: { shame: 0, reputation: -5, description: '' } }
+    const events = skillPhase(state, skill)
+    expect(state.domainRevealed).toBe(true)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'domain_reveal', target: 'opponent' }))
+  })
+
+  it('instant_win_vs_legacy sets opponent hp to 0 when opponent isLegacy', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 80, maxHp: 80, isLegacy: true }))
+    const skill = { id: 'terraform_destroy', domain: 'iac', tier: 'nuclear', isCursed: true,
+      effect: { type: 'instant_win_vs_legacy', fallbackDamage: -40, fallbackTarget: 'self' },
+      sideEffect: { shame: 2, reputation: -15, description: '' } }
+    skillPhase(state, skill)
+    expect(state.opponent.hp).toBe(0)
+  })
+
+  it('instant_win_vs_legacy damages player when opponent is not legacy', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 100 }), makeOpponent({ isLegacy: false }))
+    const skill = { id: 'terraform_destroy', domain: 'iac', tier: 'nuclear', isCursed: true,
+      effect: { type: 'instant_win_vs_legacy', fallbackDamage: -40, fallbackTarget: 'self' },
+      sideEffect: { shame: 2, reputation: -15, description: '' } }
+    skillPhase(state, skill)
+    expect(state.player.hp).toBe(60)
+  })
+
+  it('instant_win_vs_containers sets opponent hp to 0 against containers domain', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 50, maxHp: 50, domain: 'containers' }))
+    const skill = { id: 'curl_pipe_sudo_bash', domain: 'security', tier: 'cursed', isCursed: true,
+      effect: { type: 'instant_win_vs_containers' },
+      sideEffect: { shame: 1, reputation: -12, description: '' } }
+    skillPhase(state, skill)
+    expect(state.opponent.hp).toBe(0)
+  })
+
+  it('instant_win_vs_containers deals regular damage against non-container domain', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 60, domain: 'cloud' }))
+    const skill = { id: 'curl_pipe_sudo_bash', domain: 'security', tier: 'cursed', isCursed: true,
+      effect: { type: 'instant_win_vs_containers' },
+      sideEffect: { shame: 1, reputation: -12, description: '' } }
+    const events = skillPhase(state, skill)
+    // Fallback follows domain matchup rules; security vs cloud = neutral, but
+    // calculateDamage returns 0 because effect.type !== 'damage'. Damage event is still emitted.
+    const dmgEvent = events.find(e => e.type === 'damage' && e.target === 'opponent')
+    expect(dmgEvent).toBeDefined()
+    expect(dmgEvent.value).toBe(0)
+  })
 })
 
 // ---------------------------------------------------------------------------

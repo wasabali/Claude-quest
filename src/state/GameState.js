@@ -1,6 +1,23 @@
 import { Overrides } from '../overrides.js'
 import { checkLevelUp } from '#engine/ProgressionEngine.js'
 
+// Canonical stats schema — used in both the default GameState and initNewGame().
+// All fields must be present in both places to avoid undefined reads after save/load.
+export const DEFAULT_STATS = {
+  battlesWon:            0,
+  battlesLost:           0,
+  incidentsResolved:     0,
+  slaBreaches:           0,
+  cursedTechniquesUsed:  0,
+  nuclearTechniquesUsed: 0,
+  optimalSolutions:      0,
+  totalDeployments:      0,
+  longestUptime:         0,
+  clockManipulated:      false,
+  devNullUseCount:       0,
+  skillUseCounts:        {},
+}
+
 // The single mutable state object for the entire game.
 // Engines and scenes read/write this directly. Nothing else is mutable.
 // _session is never written to the save file.
@@ -49,15 +66,7 @@ export const GameState = {
     completedQuests: [],
     flags:           {},
   },
-  stats: {
-    battlesWon:           0,
-    battlesLost:          0,
-    incidentsResolved:    0,
-    cursedTechniquesUsed: 0,
-    totalDeployments:     0,
-    longestUptime:        0,
-    skillUseCounts:       {},
-  },
+  stats: { ...DEFAULT_STATS },
   _session: {
     isDirty:     false,  // true when there are unsaved changes
     lastSavedAt: null,   // ISO timestamp of last save
@@ -184,16 +193,7 @@ export function initNewGame(name, mascot) {
     completedQuests: [],
     flags:           {},
   }
-  GameState.stats = {
-    battlesWon:            0,
-    battlesLost:           0,
-    incidentsResolved:     0,
-    slaBreaches:           0,
-    cursedTechniquesUsed:  0,
-    nuclearTechniquesUsed: 0,
-    optimalSolutions:      0,
-    skillUseCounts:        {},
-  }
+  GameState.stats = { ...DEFAULT_STATS }
   GameState._session = {
     isDirty:     true,
     lastSavedAt: null,

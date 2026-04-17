@@ -137,10 +137,10 @@ const ITEMS = {
     description:    'An inexplicable dependency forest.',
     usableInBattle: false,
     battleAction:   'examine',
-    worldActions:   ['examine', 'drop'],
+    worldActions:   ['use', 'examine', 'drop'],
     canDrop:        false,
     cannotDropText: "47,000 files. Does nothing. Can't delete.",
-    effect:         null,
+    effect:         { type: 'enter_hidden_area', areaId: 'node_modules_maze', discoveryFlag: 'node_modules_maze_found' },
   },
   stale_pr: {
     id:             'stale_pr',

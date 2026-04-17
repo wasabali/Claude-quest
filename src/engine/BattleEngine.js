@@ -28,6 +28,7 @@ const QUALITY_REP_DELTAS = {
   nuclear:  -30,
 }
 
+
 // Incident attack type identifiers (matches attacks[] entries in encounter data)
 export const INCIDENT_ATTACKS = {
   UPTIME_DRAIN:    'uptime_drain',    // Accelerate SLA timer by 1 extra per turn
@@ -138,13 +139,37 @@ export function skillPhase(state, skill) {
     events.push({ type: 'damage', target: 'opponent', value: dmg })
   }
 
+  if (effect.type === 'instant_win_vs_legacy') {
+    if (state.opponent.isLegacy) {
+      const originalHp = state.opponent.hp
+      state.opponent.hp = 0
+      events.push({ type: 'damage', target: 'opponent', value: originalHp })
+    } else {
+      const backfire = Math.abs(effect.fallbackDamage ?? 40)
+      state.player.hp = Math.max(0, state.player.hp - backfire)
+      events.push({ type: 'damage', target: 'player', value: backfire })
+    }
+  }
+
+  if (effect.type === 'instant_win_vs_containers') {
+    if (state.opponent.domain === 'containers') {
+      const originalHp = state.opponent.hp
+      state.opponent.hp = 0
+      events.push({ type: 'damage', target: 'opponent', value: originalHp })
+    } else {
+      const dmg = calculateDamage(skill, state.opponent.domain)
+      state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
+      events.push({ type: 'damage', target: 'opponent', value: dmg })
+    }
+  }
+
   if (effect.type === 'heal') {
     const healed = Math.min(effect.value, state.player.maxHp - state.player.hp)
     state.player.hp = Math.min(state.player.maxHp, state.player.hp + effect.value)
     events.push({ type: 'heal', target: 'player', value: healed })
   }
 
-  if (effect.type === 'reveal_domain' || effect.type === 'reveal_and_tag_weakness') {
+  if (effect.type === 'reveal_domain' || effect.type === 'reveal_and_tag_weakness' || effect.type === 'reveal') {
     state.domainRevealed = true
     events.push({ type: 'domain_reveal', target: 'opponent', value: state.opponent.domain })
   }
@@ -236,6 +261,97 @@ export function enemyPhase(state) {
     const nextMoveId = deck[state.opponentDeckIndex]
     state.telegraphedMove = nextMoveId
     events.push({ type: 'telegraph', target: 'player', value: nextMoveId })
+  }
+
+  return events
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4b: IncidentAttackPhase
+// Incidents are passive on turn 1 (Phase 1 — symptom display only).
+// From turn 2 onward the incident performs its cyclic attack pattern.
+// Attack type is taken from opponent.attacks[] and cycled deterministically.
+// Only runs in INCIDENT mode.
+// ---------------------------------------------------------------------------
+export function incidentAttackPhase(state) {
+  if (state.mode !== BATTLE_MODES.INCIDENT) return []
+  if (state.turn === 1) return [] // Phase 1 — no attack, just symptom display
+
+  const attacks = state.opponent.attacks ?? []
+  if (attacks.length === 0) return []
+
+  const events = []
+  const attack = attacks[(state.turn - 2) % attacks.length]
+
+  switch (attack) {
+    case INCIDENT_ATTACKS.UPTIME_DRAIN:
+      if (state.slaTimer !== null && state.slaTimer > 0) {
+        state.slaTimer = Math.max(0, state.slaTimer - UPTIME_DRAIN_EXTRA)
+        events.push({ type: 'sla_tick', value: state.slaTimer, source: 'uptime_drain' })
+        if (state.slaTimer === 0 && !state.slaBreach) {
+          state.slaBreach = true
+          state.player.hp         = Math.max(0, state.player.hp - SLA_BREACH_HP_PENALTY)
+          state.player.reputation = Math.max(0, state.player.reputation - SLA_BREACH_REP_PENALTY)
+          events.push({
+            type:           'sla_breach',
+            target:         'player',
+            value:          SLA_BREACH_HP_PENALTY,
+            reputationLoss: SLA_BREACH_REP_PENALTY,
+          })
+        }
+      }
+      break
+
+    case INCIDENT_ATTACKS.BUDGET_SPIKE: {
+      const currentBudget = state.player.budget ?? 0
+      const nextBudget = Math.max(0, currentBudget - BUDGET_SPIKE_VALUE)
+      const drainedBudget = currentBudget - nextBudget
+      state.player.budget = nextBudget
+      if (drainedBudget > 0) {
+        events.push({ type: 'budget_drain', target: 'player', value: drainedBudget })
+      }
+      break
+    }
+
+    case INCIDENT_ATTACKS.REPUTATION_LEAK: {
+      const previousReputation = state.player.reputation ?? 0
+      const nextReputation = Math.max(0, previousReputation - REPUTATION_LEAK_VALUE)
+      const reputationDelta = nextReputation - previousReputation
+      state.player.reputation = nextReputation
+      if (reputationDelta !== 0) {
+        events.push({ type: 'reputation', target: 'player', value: reputationDelta })
+      }
+      break
+    }
+
+    case INCIDENT_ATTACKS.SKILL_BLOCK: {
+      const alreadyBlocked = state.playerStatuses.find(s => s.name === 'skill_block')
+      if (!alreadyBlocked) {
+        state.playerStatuses.push({ name: 'skill_block', duration: SKILL_BLOCK_DURATION })
+      }
+      events.push({ type: 'status_apply', target: 'player', statusName: 'skill_block', duration: SKILL_BLOCK_DURATION })
+      break
+    }
+
+    case INCIDENT_ATTACKS.CONFUSION: {
+      const alreadyConfused = state.playerStatuses.find(s => s.name === 'confusion')
+      if (!alreadyConfused) {
+        state.playerStatuses.push({ name: 'confusion', duration: CONFUSION_DURATION })
+      }
+      events.push({ type: 'status_apply', target: 'player', statusName: 'confusion', duration: CONFUSION_DURATION })
+      break
+    }
+
+    case INCIDENT_ATTACKS.ESCALATION: {
+      const currentDebt = state.player.technicalDebt ?? 0
+      const nextDebt = Math.min(10, currentDebt + 1)
+      const debtDelta = nextDebt - currentDebt
+      state.player.technicalDebt = nextDebt
+      if (debtDelta > 0) {
+        events.push({ type: 'escalation', target: 'player', value: debtDelta })
+      }
+      break
+    }
   }
 
   return events
