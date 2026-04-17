@@ -339,6 +339,41 @@ Engine scripts in `src/engine/` must have unit tests. Scenes do not require unit
 - [Tiled map editor](https://www.mapeditor.org/)
 - [Azure Static Web Apps docs](https://learn.microsoft.com/en-us/azure/static-web-apps/)
 
+## Available Skills
+
+Skills are invoked in Claude Code with `/skill-name`. They load specialised context or scaffold content into the codebase.
+
+| Skill | When to use |
+|---|---|
+| `/implement-issue <number>` | Implement a GitHub issue following Cloud Quest's architecture and conventions. |
+| `/add-skill "<cli command>"` | Scaffold a new skill definition in `src/data/skills.js` from a real CLI command. |
+| `/add-trainer "<concept>"` | Scaffold a new trainer definition in `src/data/trainers.js`. |
+| `/add-incident "<description>"` | Turn a real work problem into a Cloud Quest battle incident in `src/data/`. |
+| `/add-yourself "<bio>"` | Add yourself to the game as a trainer NPC with your real CLI commands as skills. |
+| `/cloud-quest-battle` | Load the complete battle system reference — use before touching `BattleEngine`, `SkillEngine`, `StatusEngine`, `BattleScene`, or any battle logic. |
+| `/game-data-registry` | Load the data layer reference — use before adding skills, items, trainers, or emblems to `src/data/`. |
+| `/phaser-scene-patterns` | Load Phaser 3 scene patterns — use before implementing or modifying any scene or UI component. |
+| `/triage-issues "<area>"` | Scan codebase and docs for contradictions, errors, and open questions, then file GitHub issues. |
+| `/resolve-question <number>` | Iterate design ideas for a `[Design Question]` issue and find the best fit. |
+| `/update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
+
+---
+
+## Available Sub-Agents
+
+Sub-agents are specialised Claude instances invoked via the `task` tool. Use them instead of doing the work yourself when the task falls in their area.
+
+| Agent | When to use |
+|---|---|
+| **`battle-engine-tdd`** | Implementing or modifying any file in `src/engine/`. Writes tests first, then minimal implementation. Enforces zero Phaser dependency. |
+| **`game-data-author`** | Adding or editing content in `src/data/` — skills, items, trainers, emblems. Validates domains, tiers, registry pattern, and cursed technique structure. |
+| **`content-contributor`** | Adding real developers as trainers, turning CLI commands into skills, or converting work incidents into game encounters. Knows the full game world and writes in-character dialog. |
+| **`phaser-reviewer`** | Reviewing scenes, UI components, or `src/main.js`. Checks engine/scene separation, GameState usage, pixel art compliance, and Phaser 3 best practices. Does **not** review engine scripts. |
+| **`issue-triager`** | Autonomously scanning the codebase and docs for contradictions, errors, and gaps, then filing well-labelled GitHub issues. |
+| **`stress-test`** | Running the Monte Carlo balance simulation suite in `tests/stress/` to find overpowered skills, broken progression, exploit paths, or empty encounter pools. |
+
+---
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.
