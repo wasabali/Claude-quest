@@ -80,7 +80,14 @@ For each page in the wiki structure table:
 
 The `docs/wiki/README.md` must list all wiki pages with descriptions and links. Update it last so it reflects any new pages.
 
-### Step 4 — Verify
+### Step 4 — GitHub Wiki publishing
+
+The wiki pages in `docs/wiki/` are automatically published to the repository's GitHub Wiki by the `.github/workflows/wiki-sync.yml` workflow whenever a push to `main` touches `docs/wiki/**`. In the normal case, committing updated `docs/wiki/` files is sufficient and no manual trigger is needed. However, for the very first sync after introducing this workflow, there may be no `docs/wiki/` changes in the merge that adds it, so the initial publish may require either a manual `workflow_dispatch` run or a follow-up commit that touches `docs/wiki/`.
+
+- `docs/wiki/README.md` is renamed to `Home.md` in the GitHub Wiki (GitHub's required name for the landing page).
+- All other `.md` files land at the current repository's GitHub Wiki URL pattern: `https://github.com/<owner>/<repo>/wiki/<filename-without-extension>`.
+
+### Step 5 — Verify
 
 - [ ] Every skill in `skills.js` appears in `skills-reference.md`
 - [ ] Every trainer in `trainers.js` appears in `trainers.md`

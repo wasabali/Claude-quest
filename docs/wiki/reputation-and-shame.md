@@ -70,9 +70,9 @@ Shame Points are semi-permanent. They go up when you use cursed or nuclear techn
 | 0 | Clean record. NPCs trust you. |
 | 1–2 | Minor flavour dialog changes. Pedersen sighs. Cursed locations become faintly visible. |
 | 3–4 | NPCs start dropping **random one-liners** about what you did — different every visit. The intern looked at your commit history and closed the tab pretty fast. |
-| 5 | **Person of Interest** title. Access to the full cursed trainer network. Three AM Tavern fully active. |
-| 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. |
-| 10 | **Shadow Engineer** title. Visual change: you now look permanently tired and you always want coffee. Unlocks the holy grail skill: `kubectl delete ns production --grace-period=0 --force`. |
+| 5 | **Person of Interest** title. Access to the full cursed trainer network. Three AM Tavern fully active. Trainers start mirroring cursed techniques back at you. |
+| 7 | **THROTTLEMASTER makes contact.** He's been watching. He's impressed. Cursed outcast network opens fully. |
+| 10 | **Shadow Engineer** title. Visual change: you now look permanently tired and always want coffee. Gym leaders refuse to teach their signature skills after defeat. Unlocks the holy grail skill: `kubectl delete ns production --grace-period=0 --force`. |
 | 15 | **Alternate ending unlocked.** THROTTLEMASTER offers to recruit you. The evil path is complete. |
 
 ### Shame Threshold: 3–4 — The One-Liner Pool
@@ -178,15 +178,23 @@ Think of Reputation as your career record and Uptime as your shift performance. 
 
 See [Hidden Areas](hidden-areas.md) for details on the Outcast Network and THROTTLEMASTER's storyline.
 
-At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "Fork the Company" ending. This is a fully viable path — the game never blocks you. It just asks: at what cost?
+At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate **"Fork the Company"** ending. This is a fully viable path — the game never blocks you. It just asks: at what cost?
+
+### Three Endings
+
+| Ending | Condition | What Happens |
+|---|---|---|
+| **"The Post-Mortem"** | Shame < 10 | Beat The CTO. Promoted to Principal Engineer. Confluence page generated (0 views). 47 Azure Monitor alerts await. |
+| **"The Shadow Post-Mortem"** | Shame 10–14 | Beat The CTO. Promoted, but: "There are also some audit findings. We'll discuss those in a separate meeting." Minor-key credits. 47 compliance findings pending. |
+| **"Fork the Company"** | Shame ≥ 15 | Skip The CTO. Join THROTTLEMASTER. TechThrottle Consulting AS. Monthly Azure bill: €47,000. Title: **Principal Villain.** |
 
 ### Key Evil Path Moments
 
-1. **Shame 1** — Professor Pedersen starts sighing around you
-2. **Shame 3** — Outcast Network locations begin to appear; NPCs drop one-liners
-3. **Shame 5** — Person of Interest title; trainers start fighting dirty
+1. **Shame 1** — Cursed areas become faintly visible on the map; Professor Pedersen starts sighing around you
+2. **Shame 3** — Outcast Network locations begin to appear; NPCs drop one-liners about what you did
+3. **Shame 5** — Person of Interest title; trainers start fighting dirty (mirroring cursed techniques)
 4. **Shame 7** — THROTTLEMASTER contacts you directly
-5. **Shame 10** — Shadow Engineer title; holy grail skill unlocked; you look tired
+5. **Shame 10** — Shadow Engineer title; gym leaders won't teach; holy grail skill unlocked; you look tired
 6. **Shame 15** — THROTTLEMASTER offers recruitment; alternate ending available
 
 ---
@@ -197,7 +205,9 @@ At Shame 15, you can choose to join THROTTLEMASTER and pursue the alternate "For
 - Better XP multipliers from Optimal solutions (×2 XP)
 - No Technical Debt means full HP
 - Better story outcomes and NPC interactions
+- Gym leaders teach you their skills
 - No emblem grime accumulation
+- Avoid permanent Shame accumulation
 - Professor Pedersen stops sighing
 
 **Arguments for the dark side:**

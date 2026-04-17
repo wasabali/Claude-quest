@@ -20,10 +20,15 @@ A single reference issue consolidating all content decisions scattered across #3
 
 ### Open story questions to resolve
 
-- [ ] What triggers act transitions — quest completion, gym count, or story flags?
-- [ ] Are there cutscenes between acts or just dialogue + world changes?
+- [x] What triggers act transitions — quest completion, gym count, or story flags? → **Story flag combinations** (quest complete + gym beaten). Automatic, no manual step. See `docs/resolutions/issue-34-act-transitions.md`.
+- [x] Are there cutscenes between acts or just dialogue + world changes? → **Title card + 3-line narration** (DialogBox reuse, no new scene). NPC dialog pools keyed by `dialogByAct`. New NPCs appear per act.
 - [ ] Does the player get a "point of no return" warning before the finale?
-- [ ] Is there post-game content after beating The CTO? (gym rematches, harder encounters, new areas)
+- [x] Is there post-game content after beating The CTO? → **Full post-game**: save preserved, gym rematches (+10 levels), Principal Engineer Mode encounter pools, missed quests available. See `docs/resolutions/issue-38-ending-postgame.md`.
+
+### Resolved story decisions
+
+- ✅ **Act transitions (#34):** Flag-triggered. `story.act` advances when `completedQuest` + gym flags match. Title card + 3-line narration. World changes via `dialogByAct`. Scripted viral encounter wave in Act 2. 3:17am forced sequence. See `docs/resolutions/issue-34-act-transitions.md`.
+- ✅ **Endings (#38):** Three endings — *The Post-Mortem* (Shame < 10), *The Shadow Post-Mortem* (Shame 10–14, audit findings, minor-key credits), *Fork the Company* (Shame ≥ 15, join THROTTLEMASTER, "Principal Villain"). Post-credits interactive pager: "47 more alerts pending." See `docs/resolutions/issue-38-ending-postgame.md`.
 
 ---
 
@@ -73,10 +78,14 @@ A single reference issue consolidating all content decisions scattered across #3
 
 ### Open world questions to resolve
 
-- [ ] How many maps total for MVP? (proposal: 6 main + 2 hidden = 8 for MVP)
-- [ ] Region transitions: edge-scroll, world map, or fast-travel terminals?
-- [ ] Does the world change between acts? (e.g., Production Plains catches fire in Act 2)
-- [ ] Are there day/night cycles or just the real-clock 3am Tavern trick?
+- [x] How many maps total for MVP? → **3 maps for MVP** (Localhost Town, Pipeline Pass, Jira Dungeon Room 1). 22 total maps full game. See `docs/resolutions/issue-15-world-scope.md`.
+- [x] Region transitions: edge-scroll, world map, or fast-travel terminals? → **Edge-scroll** + **Azure Terminal fast travel** (unlocked by visiting). See `docs/resolutions/issue-15-world-scope.md`.
+- [x] Does the world change between acts? → **NPC `dialogByAct` pools** + new NPCs appear per act. No tile redraws for MVP. See `docs/resolutions/issue-34-act-transitions.md`.
+- [ ] Are there day/night cycles or just the real-clock 3am Tavern trick? → **No day/night cycle**. Only the real-clock 3am Tavern trick.
+
+### Resolved world decisions
+
+- ✅ **DO_NOT_TOUCH.exe (#37):** Two-path quest (open = +1 shame + VB6 Billing Horror battle + `EXEC xp_cmdshell` learned; migrate = quiz + `legacy_migration_badge` from Dagny). OldCorp CTO closing line: "Can you also fix my home Wi-Fi?" — joke only, no mechanic. 7 environmental storytelling moments defined. See `docs/resolutions/issue-37-do-not-touch.md`.
 
 ---
 
@@ -110,10 +119,25 @@ A single reference issue consolidating all content decisions scattered across #3
 
 ### Open gym questions to resolve
 
-- [ ] Resolve the Function Witch conflict — is she a gym leader or a field trainer? (Currently Fatima is a field trainer in Pipeline Pass)
-- [ ] How many apprentice fights before each leader? (proposal: 2 apprentices + 1 sub-leader + boss)
-- [ ] Can gyms be re-challenged after beating them? At higher difficulty?
-- [ ] Do gym leaders have dialogue that changes based on reputation/shame?
+- [x] Resolve the Function Witch conflict → **Fatima is field trainer only.** "Developer Gym" is a stale reference — removed. The current 8-gym layout (Captain Nines leads Gym 2) supersedes it. See `docs/resolutions/issue-35-gym-leaders.md`.
+- [x] How many apprentice fights before each leader? → **2 generic apprentices + 1 named sub-leader + boss.** Sub-leaders teach a skill on defeat. See `docs/resolutions/issue-17-gym-system.md`.
+- [x] Can gyms be re-challenged after beating them? → **Post-game only.** All gym leaders offer harder rematches after the finale (+10 level equivalent). See `docs/resolutions/issue-38-ending-postgame.md`.
+- [x] Do gym leaders have dialogue that changes based on reputation/shame? → **Yes.** Shame ≥ 5: wary pre-battle line. Shame ≥ 10: leader refuses to teach signature skill on defeat. See `docs/resolutions/issue-35-gym-leaders.md`.
+
+### Resolved gym decisions
+
+- ✅ **Gym leaders (#35):** All 8 now have personality, pre/post-battle dialog, sub-leaders, and mechanic configs. Legacy Monolith is a literal 1994 server rack (special incident boss in OldCorp Basement, communicates via BSOD, immune to Cloud/IaC/K8s). See `docs/resolutions/issue-35-gym-leaders.md`.
+
+| # | Gym | Leader | Domain | Sub-leader |
+|---|-----|--------|--------|------------|
+| 1 | Pipeline Dojo | Bjørn the Build Breaker | IaC | Pipeline Per |
+| 2 | Uptime Arena | Captain Nines | Cloud | SLA Signe |
+| 3 | Sprint Sanctum | Scrum Siri | Observability | Story Point Søren |
+| 4 | Container Yard | Docker Dag | Containers | Layer Lars |
+| 5 | Cluster Ring | The Kube-rnetes Master | Kubernetes | Replica Set Ragnhild |
+| 6 | Vault Chamber | Ingrid the IAM Inspector | Security | Firewall Frida |
+| 7 | Whiteboard Summit | The Solutions Oracle | Observability | Architect Aleksander |
+| 8 | Executive Suite | The CTO | All | (On-Call Champion as sub-leader) |
 
 ---
 
@@ -211,10 +235,16 @@ A single reference issue consolidating all content decisions scattered across #3
 
 ### Open NPC questions to resolve
 
-- [ ] Do NPCs move between locations as the story progresses?
-- [ ] Do NPC dialogues change based on reputation/shame level? (proposal: yes, at thresholds 20/40/60/80)
-- [ ] Can NPCs be re-talked-to for hints?
-- [ ] Is Kristoffer ever fightable? (proposal: optional battle if player confronts him in Act 3)
+- [x] Do NPCs move between locations as the story progresses? → **Yes, key story NPCs.** Kristoffer roams to relevant regions per act. Professor Pedersen does one-off scripted appearances. See `docs/resolutions/issue-34-act-transitions.md`.
+- [x] Do NPC dialogues change based on reputation/shame level? → **Yes.** Shame reactions from personal NPCs only (Pedersen, Kristoffer, Ola, beaten gym leaders, cursed trainers). Reputation affects shop prices. See `docs/resolutions/issue-36-npc-reactivity.md`.
+- [x] Can NPCs be re-talked-to for hints? → **Yes.** `reminderDialog` field on all quest NPCs, shorter re-explanation. See `docs/resolutions/issue-29-quest-system.md`.
+- [ ] Is Kristoffer ever fightable? → **Optional confrontation battle in Act 4** (Architecture District) if player asks "Was it worth it?" — resolved in #34 but fight mechanics TBD.
+
+### Resolved NPC decisions
+
+- ✅ **NPC reactivity (#36):** All NPCs support `dialogByAct`, `followUpDialog`, `shameDialog` (threshold-keyed, personal NPCs only), `rematchDeck` (post-game), `techniqueUsedDialog` (cursed trainers). Rep ≥ 80 = −15% shop prices; rep < 40 = +15%; rep < 20 = refused service. Post-finale: all completed side-quest NPCs have a one-liner callback. See `docs/resolutions/issue-36-npc-reactivity.md`.
+- ✅ **THROTTLEMASTER (#33):** Real name Karsten Ottesen. Dark hoodie + OmniCloud Corp lanyard (plot clue). Act 2 phantom battle (3 turns, can't be won). Two reveal paths: workstation notes (high-shame) + Kristoffer confession (everyone). Act 4 boss 2-phase fight. Low shame: fight + Compliance Carina arrest (played for laughs). Shame ≥ 10: option to let him go or join him. Recruitment via phantom battle dialog + direct message at Shame 7. See `docs/resolutions/issue-33-throttlemaster.md`.
+- ✅ **Side quests (#32):** All 6 quests designed with 3-choice format and domain-appropriate wrong-answer penalties. Intern Ivan roams 5 acts (escalating questions). Architect Alice is a 4-stage chain (Blueprints v1–v3 key items). See `docs/resolutions/issue-32-side-quests.md`.
 
 ---
 
@@ -387,25 +417,28 @@ A single reference issue consolidating all content decisions scattered across #3
 
 ---
 
-## 9 · THROTTLEMASTER — Villain Detail Proposals
+## 9 · THROTTLEMASTER — Villain Design ✅ RESOLVED
 
-**Real Name:** Proposals (pick one):
-- **Karsten** — "Karsten was your colleague once. Now he's everyone's problem."
-- **Klaus** — Short, sharp, slightly sinister.
-- **Kåre** — Traditional Norwegian, ironic for a disruptive villain.
+> See full resolution: `docs/resolutions/issue-33-throttlemaster.md`
 
-**Appearance ideas:**
-- Hooded figure with a glowing terminal for a face
-- Normal-looking engineer in a hoodie, but everything around them is rate-limited
-- Wears a lanyard from "OmniCloud Corp" — a company that was shut down
+**Real Name:** ✅ **Karsten Ottesen** — "Karsten was your colleague once. Now he's everyone's problem."
 
-**Motivation:** Was passed over for promotion at OmniCloud despite being the best engineer. Became disillusioned. Decided if the cloud can't be fair, he'll throttle everyone to his level. His tools: rate limiting, resource exhaustion, artificial scarcity.
+**Appearance:** ✅ Dark hoodie + OmniCloud Corp lanyard (plot clue for sharp-eyed players). Backlit terminal glow on face. Post-reveal: hood removed, just a tired guy with a coffee. 2-frame idle: shoulder slump → slightly less slump.
 
-**World presence ideas:**
-- Sabotaged terminals found in various regions (flavour text)
-- Rate-limited encounters (enemy gets extra turns) in areas he's tampered with
-- NPCs mention "someone's been throttling the network" as early as Act 1
-- Leaves calling cards: `/* THROTTLEMASTER WAS HERE */` comments in code terminals
+**Motivation:** ✅ Was passed over for promotion at OmniCloud despite being the best engineer. Promoted Kristoffer instead. Became disillusioned. "If the cloud can't be fair, I'll throttle everyone to my level."
+
+**World presence:** ✅
+- `/* THROTTLEMASTER WAS HERE */` terminal comments from Act 1
+- Rate-limited encounters in tampered regions (enemy gets extra turn)
+- Mid-battle text popup in tampered areas: "Your latency has been increased. — T"
+- Brief ghostly 2-tile flicker sprite at Act 2 crisis scene
+- Act 2: scripted 3-turn phantom battle (CANNOT be won — he disconnects)
+
+**Reveal:** ✅ Two paths — high-shame players find his workstation notes (H7); everyone else gets Kristoffer's confession in Act 4 Architecture District.
+
+**Act 4 boss:** ✅ 2-phase fight. Low shame: fight + Compliance Carina arrest (played for laughs). Shame ≥ 10: option to let him go or join him.
+
+**Key line:** "If the cloud can't be fair, I'll throttle everyone to my level."
 
 ---
 
@@ -427,16 +460,16 @@ The player picks their starting domain in the prologue. Each choice gives a diff
 
 ---
 
-## Summary of Conflicts to Resolve
+## Summary of Conflicts — Resolved ✅
 
-| Conflict | Options |
-|----------|---------|
-| **Fatima the Function Witch** vs **Developer Gym Leader "The Function Witch"** | A) Same character (Fatima IS the gym leader) · B) Different characters (rename one) · C) Remove gym, Fatima stays as field trainer |
-| **Bjørn's domain** | Currently listed as `iac` in trainers.js but described as cloud/CI-CD in gym context. Pick one. |
-| **The Solutions Oracle's domain** | Listed as `observability` but placed in Architecture District. Is this an observability gym or a cross-domain design gym? |
-| **On-Call Champion vs The CTO** | Who is the final gym leader? (Proposal: The CTO is final boss, On-Call Champion is sub-leader) |
-| **Budget = Azure Credits?** | Are they the same resource? (Proposal: yes, budget IS Azure credits, displayed as "💰 Budget" in HUD) |
-| **Legacy Monolith** | Is it an NPC trainer or a literal machine/incident? (Proposal: It's a special incident boss — a server rack that fights back) |
+| Conflict | Resolution |
+|----------|-----------|
+| **Fatima the Function Witch** vs **Developer Gym Leader** | ✅ **"Developer Gym" is a stale entry — removed.** Fatima stays as field trainer in Pipeline Pass. Captain Nines leads Gym 2 (Uptime Arena). |
+| **Bjørn's domain** | ✅ **`iac`** — confirmed. He's a DevOps/CI-CD character; IaC is the closest domain. |
+| **The Solutions Oracle's domain** | ✅ **Observability** — the Architecture District gym (Gym 7) is an observability/cross-domain design review. The "Review Board" mechanic (design question trivia) reflects this. |
+| **On-Call Champion vs The CTO** | ✅ **The CTO is the final boss (Gym 8). On-Call Champion is the sub-leader.** |
+| **Budget = Azure Credits?** | ✅ **Yes** — single currency, displayed as "💰 Budget" in HUD. See `docs/resolutions/issue-14-economy.md`. |
+| **Legacy Monolith** | ✅ **A literal 1994 server rack.** Special incident boss in OldCorp Basement. Communicates via BSOD. Immune to Cloud/IaC/K8s. Not a gym — special Act 3 encounter. |
 
 ---
 

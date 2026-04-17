@@ -71,6 +71,45 @@ These trainers appear randomly in the world.
 | **Rival Cloud Engineer** | ❓ null | ⭐⭐ | Any |
 | **Sales Rep** | ☁️ Cloud | ⭐⭐ | Any |
 | **Senior Engineer** | ❓ null | ⭐⭐⭐⭐ | Any |
+## Gym Leaders
+
+Eight gym leaders guard the path to Principal Engineer. Each gym typically has **2 generic apprentices** + **1 named sub-leader** (who teaches a skill on defeat) + the boss. *(Exception: The Executive Suite — CTO gym — has 3 apprentices + 2 sub-leaders, reflecting the gauntlet nature of the final gym.)* Every leader has unique pre/post-battle dialog that changes based on your Shame level.
+
+> **Shame ≥ 5:** Leaders add a wary pre-battle line ("I've heard about you…")
+> **Shame ≥ 10:** Leaders **refuse to teach** their signature skill after defeat.
+
+| # | Gym | Leader | Domain | Sub-leader | Gimmick |
+|---|---|---|---|---|---|
+| 1 | **The Pipeline Dojo** | Bjørn the Build Breaker | 🏗️ IaC | Pipeline Per | Build queue — telegraphs 3 moves ahead |
+| 2 | **The Uptime Arena** | Captain Nines | ☁️ Cloud | SLA Signe | SLA timer — must win within 8 turns or −15 rep |
+| 3 | **The Sprint Sanctum** | Scrum Siri | 📊 Observability | Story Point Søren | Kanban tracker — +5 ATK per turn you deal no damage |
+| 4 | **The Container Yard** | Docker Dag | 🐳 Containers | Layer Lars | Layered defence — 3 HP bars (strip each image layer) |
+| 5 | **The Cluster Ring** | The Kube-rnetes Master | ☸️ Kubernetes | Replica Set Ragnhild | Respawn — pods return 3× at 50% HP, different domain each time |
+| 6 | **The Vault Chamber** | Ingrid the IAM Inspector | 🔒 Security | Firewall Frida | Auth challenge — wrong answer wastes your turn |
+| 7 | **The Whiteboard Summit** | The Solutions Oracle | 📊 Observability | Architect Aleksander | Review board — must answer design trivia before damage applies |
+| 8 | **The Executive Suite** | The CTO | All domains | The On-Call Champion | Three phases: Cloud → FinOps → Excel. Adapts to Shame level. |
+
+### Gym Leader Quotes
+
+| Leader | Pre-battle | Post-defeat |
+|---|---|---|
+| **Bjørn** | "You want to learn? First I'll show you how badly things can fail." | "You fixed it in 3 tries. I usually need 7. You might be better than me." |
+| **Captain Nines** | "99.999% uptime. That's my religion. Can you match it?" | "You actually won within SLA. I respect that." |
+| **Scrum Siri** | "Let's time-box this fight to 14 minutes. That's the sprint." | "The velocity data supports your win. I'll update the board." |
+| **Docker Dag** | "My image is 12 megabytes. Scratch-based. Distroless. Perfect. Let's see yours." | "Your build times are better than mine. I don't want to talk about it." |
+| **The Kube-rnetes Master** | "A pod is not dead until its restartPolicy says so." | "You have achieved desired state." |
+| **Ingrid** | "Authenticate first. I'll wait. I have time. I have logs." | "Access granted. Your policies are… acceptable. Barely." |
+| **The Solutions Oracle** | "Before we begin — what are your non-functional requirements?" | "Good. You knew the answer. You just needed to hear yourself say it." |
+| **The CTO** | "Why is the site down?!" *(Phase 1)* | "You're actually good at this. I'm promoting you." |
+
+### The Legacy Monolith *(Special)*
+
+Found in the OldCorp Basement during Act 3. **Not a gym leader** — a special incident boss.
+
+- A literal 1994 server rack. Communicates only via BSOD error codes.
+- Immune to Cloud, IaC, Kubernetes, and Containers domain skills. Only Linux and Security work ("the old ways").
+- Drops the `oldcorp_keycard` key item on defeat. Required to access `DO_NOT_TOUCH.exe`.
+- "FATAL ERROR 0x0000007B. KERNEL_DATA_INPAGE_ERROR."
 
 ---
 
