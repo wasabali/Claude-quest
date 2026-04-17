@@ -17,6 +17,8 @@ const FONT_SIZE       = '22px'
 const CHARS_PER_SEC   = 40
 const BLINK_MS        = 400
 const PANEL_KEY       = 'dialog_window_9slice'
+const CHOICE_OFFSET_Y   = 36
+const CHOICE_LINE_HEIGHT = 32
 
 export class DialogBox {
   /**
@@ -112,12 +114,12 @@ export class DialogBox {
 
     this._text.setText(prompt)
 
-    const startY = BOX_Y + BOX_PADDING_Y + 36
+    const startY = BOX_Y + BOX_PADDING_Y + CHOICE_OFFSET_Y
     this._choiceTexts = choices.map((label, i) => {
       const prefix = i === 0 ? '► ' : '  '
       return this.scene.add.text(
         BOX_PADDING_X,
-        startY + i * 32,
+        startY + i * CHOICE_LINE_HEIGHT,
         prefix + label,
         {
           fontFamily:  CONFIG.FONT,

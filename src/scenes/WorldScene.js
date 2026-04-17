@@ -12,6 +12,7 @@ const TILE_SIZE   = CONFIG.TILE_SIZE   // 48px
 
 const WALK_SPEED  = TILE_SIZE * 2     // 96 px/sec
 const RUN_SPEED   = TILE_SIZE * 4     // 192 px/sec
+const WRONG_ANSWER_HP_LOSS = 10
 
 export class WorldScene extends BaseScene {
   constructor() {
@@ -342,7 +343,7 @@ export class WorldScene extends BaseScene {
           markDirty()
           this.dialog.show(stage.correctDialog, () => { this._interacting = false })
         } else {
-          GameState.player.hp = Math.max(1, GameState.player.hp - (chosen.hpLoss ?? 10))
+          GameState.player.hp = Math.max(1, GameState.player.hp - (chosen.hpLoss ?? WRONG_ANSWER_HP_LOSS))
           markDirty()
           this.dialog.show(stage.wrongDialog, () => { this._interacting = false })
         }
