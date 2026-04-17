@@ -112,9 +112,11 @@ describe('BATTLE_BACKGROUNDS', () => {
   const REGIONS = [
     'localhost_town', 'pipeline_pass', 'jira_dungeon',
     'production_plains', 'kubernetes_colosseum', 'three_am_tavern',
+    'server_graveyard', 'node_modules_maze', 'dev_null_void',
+    'deprecated_azure_region',
   ]
 
-  it('maps all core regions to an arena', () => {
+  it('maps all regions to an arena', () => {
     REGIONS.forEach(region => {
       expect(BATTLE_BACKGROUNDS).toHaveProperty(region)
       expect(BATTLE_BACKGROUNDS[region].arena).toBeTruthy()
