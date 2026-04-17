@@ -213,6 +213,16 @@ const ITEMS = {
     worldActions:   ['use', 'examine'],
     effect:         { type: 'reduce_shame', value: 1, onceFlag: null },
   },
+  sudo_running_shoes: {
+    id:             'sudo_running_shoes',
+    displayName:    'sudo Running Shoes',
+    tab:            'keyItems',
+    description:    'sudo chmod +x legs.sh. 2x movement speed while holding Z. Encounter rate +50%.',
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['examine'],
+    effect:         null,
+  },
 }
 
 export const getById = (id)           => ITEMS[id]

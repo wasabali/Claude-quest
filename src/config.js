@@ -56,6 +56,18 @@ export const WORLD_SCENE = {
   ORIGIN_CENTER:     0.5,
 }
 
+export const MOVEMENT = {
+  STEP_DURATION_MS:       500,
+  RUN_STEP_DURATION_MS:   250,
+  INPUT_BUFFER_WINDOW_MS: 150,
+  BUMP_DURATION_MS:       100,
+  BUMP_DISTANCE_PX:       2,
+}
+
+export const ENCOUNTER_BASE_CHANCE    = 0.08
+export const ENCOUNTER_RUN_MULTIPLIER = 1.5
+export const ENCOUNTER_COOLDOWN_STEPS = 4
+
 // Reputation thresholds — sorted highest first for threshold lookups.
 // Range is -100 to 100. Starts at 50. Fully rebuildable.
 // Use getReputationStatus() in SkillEngine to resolve the current label.

@@ -12,4 +12,5 @@ export const Overrides = {
   OPPONENT_DOMAIN_OVERRIDE:  null,
   STARTER_DECK:              null,
   STARTER_ITEMS:             null,
+  RUN_OVERRIDE:              null,
 }

@@ -3,6 +3,10 @@ import {
   CONFIG,
   COLORS,
   DOMAIN_MATCHUPS,
+  ENCOUNTER_BASE_CHANCE,
+  ENCOUNTER_COOLDOWN_STEPS,
+  ENCOUNTER_RUN_MULTIPLIER,
+  MOVEMENT,
   STRONG_MULTIPLIER,
   TITLE_SCREEN,
   WEAK_MULTIPLIER,
@@ -104,5 +108,41 @@ describe('XP_TABLE', () => {
 
   it('defines at least 20 levels', () => {
     expect(XP_TABLE.length).toBeGreaterThanOrEqual(20)
+  })
+})
+
+describe('MOVEMENT', () => {
+  it('defines walk step duration of 500ms', () => {
+    expect(MOVEMENT.STEP_DURATION_MS).toBe(500)
+  })
+
+  it('defines run step duration of 250ms (2x walk speed)', () => {
+    expect(MOVEMENT.RUN_STEP_DURATION_MS).toBe(250)
+  })
+
+  it('defines input buffer window of 150ms', () => {
+    expect(MOVEMENT.INPUT_BUFFER_WINDOW_MS).toBe(150)
+  })
+
+  it('defines bump animation duration of 100ms', () => {
+    expect(MOVEMENT.BUMP_DURATION_MS).toBe(100)
+  })
+
+  it('defines bump distance of 2px', () => {
+    expect(MOVEMENT.BUMP_DISTANCE_PX).toBe(2)
+  })
+})
+
+describe('Encounter constants', () => {
+  it('defines base encounter chance of 8%', () => {
+    expect(ENCOUNTER_BASE_CHANCE).toBe(0.08)
+  })
+
+  it('defines run multiplier of 1.5', () => {
+    expect(ENCOUNTER_RUN_MULTIPLIER).toBe(1.5)
+  })
+
+  it('defines cooldown of 4 steps between encounters', () => {
+    expect(ENCOUNTER_COOLDOWN_STEPS).toBe(4)
   })
 })

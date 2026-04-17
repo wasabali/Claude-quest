@@ -48,4 +48,13 @@ describe('items registry', () => {
     expect(item.usableInBattle).toBe(false)
     expect(item.description).toBe("Value: require-corp. Nobody knows why this is needed. It just is.")
   })
+
+  it('defines sudo_running_shoes as a passive key item for 2x movement speed', () => {
+    const item = getById('sudo_running_shoes')
+    expect(item.tab).toBe('keyItems')
+    expect(item.usableInBattle).toBe(false)
+    expect(item.effect).toBeNull()
+    expect(item.description).toContain('2x movement speed')
+    expect(item.description).toContain('Encounter rate +50%')
+  })
 })

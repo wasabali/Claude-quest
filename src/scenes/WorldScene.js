@@ -1,16 +1,26 @@
 import Phaser from 'phaser'
 import { BaseScene } from '#scenes/BaseScene.js'
 import { DialogBox } from '#ui/DialogBox.js'
-import { CONFIG } from '../config.js'
+import { CONFIG, MOVEMENT, ENCOUNTER_BASE_CHANCE, ENCOUNTER_RUN_MULTIPLIER, ENCOUNTER_COOLDOWN_STEPS } from '../config.js'
 import { GameState, hasItem, markDirty } from '#state/GameState.js'
+import { Overrides } from '../overrides.js'
 import { getById as getStoryById } from '#data/story.js'
+import { seedRandom } from '#utils/random.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
-const TILE_SIZE   = CONFIG.TILE_SIZE   // 48px
+const TILE_SIZE   = CONFIG.TILE_SIZE
 
-const WALK_SPEED  = TILE_SIZE * 2     // 96 px/sec
-const RUN_SPEED   = TILE_SIZE * 4     // 192 px/sec
+function lerp(a, b, t) {
+  return a + (b - a) * t
+}
+
+const DIR_OFFSETS = {
+  up:    { dx:  0, dy: -1 },
+  down:  { dx:  0, dy:  1 },
+  left:  { dx: -1, dy:  0 },
+  right: { dx:  1, dy:  0 },
+}
 
 export class WorldScene extends BaseScene {
   constructor() {
@@ -76,8 +86,26 @@ export class WorldScene extends BaseScene {
     this._interacting = false
     this._facing      = 'down'
     this._stepCount   = 0
-    this._lastTileX   = -1
-    this._lastTileY   = -1
+    this._stepsSinceEncounter = 0
+
+    // Tile-step state machine
+    this._moveState    = 'idle'  // 'idle' | 'stepping' | 'bumping'
+    this._moveProgress = 0
+    this._fromX        = 0
+    this._fromY        = 0
+    this._toX          = 0
+    this._toY          = 0
+    this._bufferedDir  = null
+
+    // Bump state
+    this._bumpProgress = 0
+    this._bumpFromX    = 0
+    this._bumpFromY    = 0
+    this._bumpToX      = 0
+    this._bumpToY      = 0
+
+    // Transition state
+    this._transitioning = false
 
     this._setupMap()
     this._setupNpcSprites()
@@ -124,16 +152,16 @@ export class WorldScene extends BaseScene {
   }
 
   _setupPlayer() {
-    const startX = 5 * TILE_SIZE + TILE_SIZE / 2
-    const startY = 10 * TILE_SIZE + TILE_SIZE / 2
+    const tileX  = GameState.player.tileX
+    const tileY  = GameState.player.tileY
+    const startX = tileX * TILE_SIZE + TILE_SIZE / 2
+    const startY = tileY * TILE_SIZE + TILE_SIZE / 2
 
-    this._player = this.physics.add.sprite(startX, startY, 'player')
+    this._player = this.add.sprite(startX, startY, 'player')
     this._player.setDepth(5)
-    this._player.setCollideWorldBounds(true)
-    this._player.body.setSize(28, 28).setOffset(2, 4)
 
-    this.physics.add.collider(this._player, this._collisionLayer)
-    this.physics.world.setBounds(0, 0, this._map.widthInPixels, this._map.heightInPixels)
+    this._tileX = tileX
+    this._tileY = tileY
   }
 
   _setupInput() {
@@ -145,47 +173,137 @@ export class WorldScene extends BaseScene {
 
   _setupCamera() {
     this.cameras.main.setBounds(0, 0, this._map.widthInPixels, this._map.heightInPixels)
-    this.cameras.main.startFollow(this._player, true, 0.15, 0.15)
+    this.cameras.main.startFollow(this._player, true)
   }
 
-  update() {
+  update(time, delta) {
+    if (this._transitioning) return
     if (this._interacting || this.dialog.isActive) {
-      this._player.setVelocity(0, 0)
       this._handleDialogInput()
       return
     }
-    this._handleMovement()
-    this._checkEncounterStep()
+    this._updateMovement(delta)
   }
 
-  _handleMovement() {
-    const running = this._keyZ.isDown
-    const speed   = running ? RUN_SPEED : WALK_SPEED
-    let vx = 0
-    let vy = 0
+  get _isRunning() {
+    const canRun = Overrides.RUN_OVERRIDE != null
+      ? Overrides.RUN_OVERRIDE
+      : hasItem('keyItems', 'sudo_running_shoes')
+    return this._keyZ.isDown && canRun
+  }
 
-    if (this._cursors.left.isDown)  { vx = -speed; this._facing = 'left'  }
-    if (this._cursors.right.isDown) { vx =  speed; this._facing = 'right' }
-    if (this._cursors.up.isDown)    { vy = -speed; this._facing = 'up'    }
-    if (this._cursors.down.isDown)  { vy =  speed; this._facing = 'down'  }
+  _getInputDirection() {
+    if (this._cursors.up.isDown)    return 'up'
+    if (this._cursors.down.isDown)  return 'down'
+    if (this._cursors.left.isDown)  return 'left'
+    if (this._cursors.right.isDown) return 'right'
+    return null
+  }
 
-    if (vx !== 0 && vy !== 0) { vx *= 0.707; vy *= 0.707 }
+  _isTileWalkable(tileX, tileY) {
+    if (tileX < 0 || tileY < 0) return false
+    if (tileX >= this._map.width || tileY >= this._map.height) return false
+    const tile = this._collisionLayer.getTileAt(tileX, tileY)
+    if (tile && tile.index !== 0) return false
+    return true
+  }
 
-    this._player.setVelocity(vx, vy)
+  _startStep(targetTileX, targetTileY) {
+    this._moveState    = 'stepping'
+    this._moveProgress = 0
+    this._fromX        = this._player.x
+    this._fromY        = this._player.y
+    this._toX          = targetTileX * TILE_SIZE + TILE_SIZE / 2
+    this._toY          = targetTileY * TILE_SIZE + TILE_SIZE / 2
+    this._tileX        = targetTileX
+    this._tileY        = targetTileY
+    GameState.player.tileX = targetTileX
+    GameState.player.tileY = targetTileY
+  }
 
-    if (vx !== 0 || vy !== 0) {
-      const tx = Math.floor(this._player.x / TILE_SIZE)
-      const ty = Math.floor(this._player.y / TILE_SIZE)
-      if (tx !== this._lastTileX || ty !== this._lastTileY) {
-        this._lastTileX = tx
-        this._lastTileY = ty
-        this._stepCount++
+  _updateMovement(delta) {
+    if (this._moveState === 'bumping') {
+      this._bumpProgress += delta
+      const t = Math.min(this._bumpProgress / MOVEMENT.BUMP_DURATION_MS, 1)
+      const bumpT = t < 0.5 ? t * 2 : 2 - t * 2
+      this._player.x = Math.round(lerp(this._bumpFromX, this._bumpToX, bumpT))
+      this._player.y = Math.round(lerp(this._bumpFromY, this._bumpToY, bumpT))
+      if (t >= 1) {
+        this._moveState = 'idle'
+        this._player.x = Math.round(this._bumpFromX)
+        this._player.y = Math.round(this._bumpFromY)
       }
+      return
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this._keyZ) && vx === 0 && vy === 0) {
+    if (this._moveState === 'stepping') {
+      this._moveProgress += delta
+      const duration = this._isRunning ? MOVEMENT.RUN_STEP_DURATION_MS : MOVEMENT.STEP_DURATION_MS
+      const t = Math.min(this._moveProgress / duration, 1)
+      this._player.x = Math.round(lerp(this._fromX, this._toX, t))
+      this._player.y = Math.round(lerp(this._fromY, this._toY, t))
+
+      const remaining = duration - this._moveProgress
+      if (remaining <= MOVEMENT.INPUT_BUFFER_WINDOW_MS) {
+        const dir = this._getInputDirection()
+        if (dir) this._bufferedDir = dir
+      }
+
+      if (t >= 1) {
+        this._moveState = 'idle'
+        this._onStepComplete()
+        if (this._bufferedDir) {
+          const dir = this._bufferedDir
+          this._bufferedDir = null
+          this._facing = dir
+          const { dx, dy } = DIR_OFFSETS[dir]
+          const targetX = this._tileX + dx
+          const targetY = this._tileY + dy
+          if (this._isTileWalkable(targetX, targetY)) {
+            this._startStep(targetX, targetY)
+          } else {
+            this._playBumpAnimation(dir)
+          }
+        }
+      }
+      return
+    }
+
+    // 'idle' — check for new input
+    const dir = this._getInputDirection()
+    if (dir) {
+      this._facing = dir
+      const { dx, dy } = DIR_OFFSETS[dir]
+      const targetX = this._tileX + dx
+      const targetY = this._tileY + dy
+      if (this._isTileWalkable(targetX, targetY)) {
+        this._startStep(targetX, targetY)
+      } else {
+        this._playBumpAnimation(dir)
+      }
+      return
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this._keyZ)) {
       this._tryInteract()
     }
+  }
+
+  _playBumpAnimation(dir) {
+    const { dx, dy } = DIR_OFFSETS[dir]
+    this._moveState    = 'bumping'
+    this._bumpProgress = 0
+    this._bumpFromX    = this._player.x
+    this._bumpFromY    = this._player.y
+    this._bumpToX      = this._player.x + dx * MOVEMENT.BUMP_DISTANCE_PX
+    this._bumpToY      = this._player.y + dy * MOVEMENT.BUMP_DISTANCE_PX
+  }
+
+  _onStepComplete() {
+    this._stepCount++
+    this._stepsSinceEncounter++
+    this._checkEncounterStep()
+    this._checkTransitionTile()
   }
 
   _handleDialogInput() {
@@ -196,21 +314,16 @@ export class WorldScene extends BaseScene {
   }
 
   _tryInteract() {
-    const reach = TILE_SIZE * 1.5
-    const OFFSETS = {
-      up:    [  0,     -reach ],
-      down:  [  0,      reach ],
-      left:  [ -reach,  0     ],
-      right: [  reach,  0     ],
-    }
-    const [dx, dy] = OFFSETS[this._facing]
-    const checkX   = this._player.x + dx
-    const checkY   = this._player.y + dy
+    const { dx, dy } = DIR_OFFSETS[this._facing]
+    const targetTileX  = this._tileX + dx
+    const targetTileY  = this._tileY + dy
+    const targetWorldX = targetTileX * TILE_SIZE + TILE_SIZE / 2
+    const targetWorldY = targetTileY * TILE_SIZE + TILE_SIZE / 2
 
     for (const { def } of this._npcSprites) {
-      const cx   = def.x + def.width  / 2
-      const cy   = def.y + def.height / 2
-      if (Math.hypot(checkX - cx, checkY - cy) < TILE_SIZE * 1.8) {
+      const cx = def.x + def.width  / 2
+      const cy = def.y + def.height / 2
+      if (Math.abs(targetWorldX - cx) < TILE_SIZE && Math.abs(targetWorldY - cy) < TILE_SIZE) {
         this._interactWithNpc(def.name)
         return
       }
@@ -300,7 +413,78 @@ export class WorldScene extends BaseScene {
   }
 
   _checkEncounterStep() {
-    // Wired to EncounterEngine once issue #9 is merged — stub prevents crash.
+    if (this._stepsSinceEncounter < ENCOUNTER_COOLDOWN_STEPS) return
+
+    const runMultiplier = this._isRunning ? ENCOUNTER_RUN_MULTIPLIER : 1.0
+    const chance = ENCOUNTER_BASE_CHANCE * runMultiplier
+    const rng = seedRandom(Date.now() ^ this._stepCount)
+    if (rng() < chance) {
+      this._stepsSinceEncounter = 0
+      // Wired to EncounterEngine.selectFromPool() — triggers battle scene transition
+    }
+  }
+
+  _checkTransitionTile() {
+    const objectLayer = this._map.getObjectLayer('Transitions')
+    if (!objectLayer) return
+
+    const px = this._tileX * TILE_SIZE
+    const py = this._tileY * TILE_SIZE
+
+    for (const obj of objectLayer.objects) {
+      if (obj.type !== 'transition') continue
+      if (px >= obj.x && px < obj.x + obj.width && py >= obj.y && py < obj.y + obj.height) {
+        const props = {}
+        for (const p of (obj.properties ?? [])) { props[p.name] = p.value }
+
+        if (props.requiredItem && !hasItem('keyItems', props.requiredItem)) {
+          this._interacting = true
+          this.dialog.show(
+            [`You need ${props.requiredItem} to proceed.\nThe path is blocked by a 403 Forbidden.`],
+            () => { this._interacting = false }
+          )
+          return
+        }
+        if (props.requiredFlag && !GameState.story.flags[props.requiredFlag]) {
+          this._interacting = true
+          this.dialog.show(
+            ['The path is blocked by a 403 Forbidden.'],
+            () => { this._interacting = false }
+          )
+          return
+        }
+
+        this._startTransition(props.targetRegion, props.targetSpawnX, props.targetSpawnY)
+        return
+      }
+    }
+  }
+
+  _startTransition(targetRegion, spawnX, spawnY) {
+    this._transitioning = true
+    const overlay = this.add.rectangle(
+      this.cameras.main.scrollX + CONFIG.WIDTH / 2,
+      this.cameras.main.scrollY + CONFIG.HEIGHT / 2,
+      CONFIG.WIDTH, CONFIG.HEIGHT, 0x000000
+    ).setDepth(100).setScrollFactor(0).setAlpha(0)
+
+    const steps = [0.33, 0.66, 1.0]
+    let step = 0
+    this.time.addEvent({
+      delay:    100,
+      repeat:   steps.length - 1,
+      callback: () => {
+        overlay.setAlpha(steps[step])
+        step++
+        if (step >= steps.length) {
+          GameState.player.tileX    = spawnX
+          GameState.player.tileY    = spawnY
+          GameState.player.location = targetRegion
+          markDirty()
+          this.scene.restart({ fromTransition: true })
+        }
+      },
+    })
   }
 
   shutdown() {

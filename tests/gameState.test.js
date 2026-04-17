@@ -10,4 +10,11 @@ describe('GameState shape', () => {
   it('does not include skills.tiers', () => {
     expect(GameState.skills).not.toHaveProperty('tiers')
   })
+
+  it('includes player tileX and tileY for logical tile position', () => {
+    expect(GameState.player).toHaveProperty('tileX')
+    expect(GameState.player).toHaveProperty('tileY')
+    expect(typeof GameState.player.tileX).toBe('number')
+    expect(typeof GameState.player.tileY).toBe('number')
+  })
 })

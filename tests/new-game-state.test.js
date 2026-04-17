@@ -66,6 +66,8 @@ describe('initNewGame', () => {
       technicalDebt: 0,
       title: 'Intern',
       location: 'localhost_town',
+      tileX: 5,
+      tileY: 10,
       activeSlots: 4,
     })
   })
