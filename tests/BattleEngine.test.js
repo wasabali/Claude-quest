@@ -1151,3 +1151,480 @@ describe('multi-layer incident transitions', () => {
     expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
   })
 })
+
+// ---------------------------------------------------------------------------
+// Gym mechanics
+// ---------------------------------------------------------------------------
+
+describe('gym mechanics', () => {
+  // ── createBattleState with gym options ────────────────────────────────────
+  describe('createBattleState with gym options', () => {
+    it('stores gymMechanic and gymMechanicConfig in state', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'rbac_deny',
+        gymMechanicConfig: { denyChance: 0.25 },
+      })
+      expect(state.gymMechanic).toBe('rbac_deny')
+      expect(state.gymMechanicConfig).toEqual({ denyChance: 0.25 })
+    })
+
+    it('gymMechanic defaults to null when not provided', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent())
+      expect(state.gymMechanic).toBeNull()
+      expect(state.gymMechanicConfig).toBeNull()
+    })
+
+    it('falls back to GYM_MECHANICS defaults when gymMechanicConfig is omitted', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'rbac_deny',
+      })
+      expect(state.gymMechanic).toBe('rbac_deny')
+      expect(state.gymMechanicConfig).toEqual(expect.objectContaining({ denyChance: 0.25 }))
+    })
+
+    it('stores rbac_deny config for scene access without additional state fields', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'rbac_deny',
+        gymMechanicConfig: { denyChance: 0.25 },
+      })
+      expect(state.gymMechanic).toBe('rbac_deny')
+      expect(state.gymMechanicConfig.denyChance).toBe(0.25)
+    })
+  })
+
+  // ── legacy_only ───────────────────────────────────────────────────────────
+  describe('legacy_only', () => {
+    function makeState() {
+      return createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'legacy_only',
+        gymMechanicConfig: { blockedActs: [3, 4], blockedDomains: ['cloud', 'serverless'] },
+      })
+    }
+
+    it('blocks skill whose availableInAct is in blockedActs', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ availableInAct: 3 })
+      const events = skillPhase(state, skill)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'legacy_only' }))
+    })
+
+    it('does not block skill whose availableInAct is not in blockedActs', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ domain: 'linux', availableInAct: 1 })
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked' }))
+    })
+
+    it('deals 0 damage when skill domain is in blockedDomains', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ domain: 'cloud', availableInAct: 1 })
+      const events = skillPhase(state, skill)
+      const dmgEvt = events.find(e => e.type === 'damage')
+      expect(dmgEvt).toBeDefined()
+      expect(dmgEvt.value).toBe(0)
+    })
+
+    it('deals normal damage when skill domain is not in blockedDomains', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ domain: 'linux', availableInAct: 1 })
+      const events = skillPhase(state, skill)
+      const dmgEvt = events.find(e => e.type === 'damage')
+      expect(dmgEvt.value).toBeGreaterThan(0)
+    })
+
+    it('allows skills with availableInAct = 2 (boundary check)', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ domain: 'linux', availableInAct: 2 })
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked' }))
+    })
+
+    it('blocks act 4 skills as well', () => {
+      const state  = makeState()
+      const skill  = makeDamageSkill({ availableInAct: 4 })
+      const events = skillPhase(state, skill)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'legacy_only' }))
+    })
+
+    it('does not activate without gymMechanic set', () => {
+      const state  = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent())
+      const skill  = makeDamageSkill({ availableInAct: 3 })
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked' }))
+    })
+  })
+
+  // ── sla_timer ─────────────────────────────────────────────────────────────
+  describe('sla_timer', () => {
+    it('overrides the default SLA timer', () => {
+      const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent(), {
+        gymMechanic:       'sla_timer',
+        gymMechanicConfig: { slaTimer: 6, breachHpPenalty: 30, breachRepPenalty: 15 },
+      })
+      expect(state.slaTimer).toBe(6)
+    })
+
+    it('applies custom breach HP penalty on breach', () => {
+      const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 100 }), makeOpponent(), {
+        gymMechanic:       'sla_timer',
+        gymMechanicConfig: { slaTimer: 1, breachHpPenalty: 30, breachRepPenalty: 15 },
+      })
+      slaTickPhase(state)
+      expect(state.player.hp).toBe(70)
+    })
+
+    it('applies custom breach rep penalty on breach', () => {
+      const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ reputation: 50 }), makeOpponent(), {
+        gymMechanic:       'sla_timer',
+        gymMechanicConfig: { slaTimer: 1, breachHpPenalty: 30, breachRepPenalty: 15 },
+      })
+      slaTickPhase(state)
+      expect(state.player.reputation).toBe(35)
+    })
+
+    it('uses default penalties without gym mechanic', () => {
+      const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer({ hp: 100 }), makeOpponent(), {
+        slaTimer: 1,
+      })
+      slaTickPhase(state)
+      // Default SLA_BREACH_HP_PENALTY is 20
+      expect(state.player.hp).toBe(80)
+    })
+  })
+
+  // ── flaky_pipeline ────────────────────────────────────────────────────────
+  describe('flaky_pipeline', () => {
+    it('emits skill_failed when Math.random() < failChance (player)', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'flaky_pipeline',
+        gymMechanicConfig: { failChance: 1.0 }, // always fail
+      })
+      const skill  = makeDamageSkill()
+      const events = skillPhase(state, skill)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_failed', reason: 'flaky_pipeline', target: 'player' }))
+    })
+
+    it('does not emit skill_failed when Math.random() >= failChance', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'flaky_pipeline',
+        gymMechanicConfig: { failChance: 0.0 }, // never fail
+      })
+      const skill  = makeDamageSkill()
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_failed' }))
+    })
+
+    it('emits skill_failed for enemy turn when always failing', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ deck: ['some_skill'] }), {
+        gymMechanic:       'flaky_pipeline',
+        gymMechanicConfig: { failChance: 1.0 },
+      })
+      const events = enemyPhase(state)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_failed', reason: 'flaky_pipeline', target: 'opponent' }))
+    })
+
+    it('enemy deals no damage when flaky_pipeline causes failure', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ deck: ['some_skill'] }), {
+        gymMechanic:       'flaky_pipeline',
+        gymMechanicConfig: { failChance: 1.0 },
+      })
+      const hpBefore = state.player.hp
+      enemyPhase(state)
+      expect(state.player.hp).toBe(hpBefore)
+    })
+
+    it('does not activate without gymMechanic set', () => {
+      const state  = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent())
+      const skill  = makeDamageSkill()
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_failed' }))
+    })
+  })
+
+  // ── cold_start ────────────────────────────────────────────────────────────
+  describe('cold_start', () => {
+    it('sets gymColdStartActive at battle creation', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'cold_start',
+        gymMechanicConfig: {},
+      })
+      expect(state.gymColdStartActive).toBe(true)
+    })
+
+    it('blocks first non-observability skill and emits cold_start reason', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'cold_start',
+        gymMechanicConfig: {},
+      })
+      const skill  = makeDamageSkill({ domain: 'cloud' })
+      const events = skillPhase(state, skill)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'cold_start' }))
+    })
+
+    it('clears flag after blocking so second skill is not blocked', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'cold_start',
+        gymMechanicConfig: {},
+      })
+      const skill = makeDamageSkill({ domain: 'cloud' })
+      skillPhase(state, skill) // first use — blocked
+      const events = skillPhase(state, skill) // second use — normal
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'cold_start' }))
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_used' }))
+    })
+
+    it('does not block observability skills (warm-up exception)', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'cold_start',
+        gymMechanicConfig: {},
+      })
+      const obsSkill = makeDamageSkill({ domain: 'observability', effect: { type: 'reveal_domain', value: 1 } })
+      const events   = skillPhase(state, obsSkill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'cold_start' }))
+    })
+
+    it('clears flag after observability warm-up, so next non-obs skill is free', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic: 'cold_start',
+        gymMechanicConfig: {},
+      })
+      const obsSkill   = makeDamageSkill({ domain: 'observability', effect: { type: 'reveal_domain', value: 1 } })
+      const cloudSkill = makeDamageSkill({ domain: 'linux', availableInAct: 1 })
+      skillPhase(state, obsSkill)
+      const events = skillPhase(state, cloudSkill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'cold_start' }))
+    })
+  })
+
+  // ── respawn ───────────────────────────────────────────────────────────────
+  describe('respawn', () => {
+    function makeRespawnState(respawnCount = 3, respawnHpPercent = 0.5) {
+      return createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ hp: 60, maxHp: 60 }), {
+        gymMechanic:       'respawn',
+        gymMechanicConfig: { respawnCount, respawnHpPercent },
+      })
+    }
+
+    it('initialises gymRespawnsLeft from config', () => {
+      const state = makeRespawnState(3)
+      expect(state.gymRespawnsLeft).toBe(3)
+    })
+
+    it('initialises gymRespawnHp as floor(maxHp * respawnHpPercent)', () => {
+      const state = makeRespawnState(3, 0.5)
+      expect(state.gymRespawnHp).toBe(30) // 60 * 0.5
+    })
+
+    it('emits respawn event instead of battle_end when opponent HP reaches 0', () => {
+      const state = makeRespawnState(3)
+      state.opponent.hp = 0
+      const events = turnEndPhase(state)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'respawn', target: 'opponent' }))
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'battle_end' }))
+    })
+
+    it('restores opponent HP to gymRespawnHp on respawn', () => {
+      const state = makeRespawnState(3, 0.5)
+      state.opponent.hp = 0
+      turnEndPhase(state)
+      expect(state.opponent.hp).toBe(30)
+    })
+
+    it('decrements gymRespawnsLeft on each respawn', () => {
+      const state = makeRespawnState(2)
+      state.opponent.hp = 0
+      turnEndPhase(state)
+      expect(state.gymRespawnsLeft).toBe(1)
+    })
+
+    it('emits battle_end win when gymRespawnsLeft reaches 0', () => {
+      const state = makeRespawnState(1)
+      state.opponent.hp = 0
+      turnEndPhase(state)    // first defeat — respawn, gymRespawnsLeft now 0
+      state.opponent.hp = 0
+      const events = turnEndPhase(state)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
+    })
+
+    it('does not respawn when gymMechanic is not set', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ hp: 0 }))
+      const events = turnEndPhase(state)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
+    })
+  })
+
+  // ── rbac_deny ─────────────────────────────────────────────────────────────
+  describe('rbac_deny', () => {
+    it('blocks skill and emits skill_blocked with rbac_deny reason when roll < denyChance', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'rbac_deny',
+        gymMechanicConfig: { denyChance: 1.0 }, // always deny
+      })
+      const skill  = makeDamageSkill()
+      const events = skillPhase(state, skill)
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_blocked', target: 'player', reason: 'rbac_deny' }))
+    })
+
+    it('does not block skill when roll >= denyChance', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent(), {
+        gymMechanic:       'rbac_deny',
+        gymMechanicConfig: { denyChance: 0.0 }, // never deny
+      })
+      const skill  = makeDamageSkill()
+      const events = skillPhase(state, skill)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'skill_blocked', reason: 'rbac_deny' }))
+      expect(events).toContainEqual(expect.objectContaining({ type: 'skill_used' }))
+    })
+
+    it('denied skill does not deal damage to opponent', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ hp: 60 }), {
+        gymMechanic:       'rbac_deny',
+        gymMechanicConfig: { denyChance: 1.0 },
+      })
+      const hpBefore = state.opponent.hp
+      skillPhase(state, makeDamageSkill())
+      expect(state.opponent.hp).toBe(hpBefore)
+    })
+
+    it('does not activate without gymMechanic set', () => {
+      const state  = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent())
+      const events = skillPhase(state, makeDamageSkill())
+      expect(events).not.toContainEqual(expect.objectContaining({ reason: 'rbac_deny' }))
+    })
+  })
+  describe('cost_spiral', () => {
+    function makeSpiralState(threshold = 3, hpPerTurn = 5) {
+      return createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ hp: 30, maxHp: 60 }), {
+        gymMechanic:       'cost_spiral',
+        gymMechanicConfig: { hpPerTurn, attackPerTurn: 3, spiralThreshold: threshold },
+      })
+    }
+
+    it('initialises gymSpiralTurns at 0', () => {
+      const state = makeSpiralState()
+      expect(state.gymSpiralTurns).toBe(0)
+    })
+
+    it('increments gymSpiralTurns each turn when battle continues', () => {
+      const state = makeSpiralState()
+      turnEndPhase(state)
+      expect(state.gymSpiralTurns).toBe(1)
+    })
+
+    it('opponent regains hpPerTurn HP each turn', () => {
+      const state = makeSpiralState(10, 5)
+      const hpBefore = state.opponent.hp
+      turnEndPhase(state)
+      expect(state.opponent.hp).toBe(hpBefore + 5)
+    })
+
+    it('opponent HP is capped at maxHp', () => {
+      const state = makeSpiralState(10, 100)
+      turnEndPhase(state)
+      expect(state.opponent.hp).toBe(state.opponent.maxHp)
+    })
+
+    it('emits budget_drain after reaching spiralThreshold', () => {
+      const state = makeSpiralState(2, 5) // threshold = 2
+      turnEndPhase(state) // turn 1 — gymSpiralTurns = 1, no drain
+      turnEndPhase(state) // turn 2 — gymSpiralTurns = 2, drain fires
+      const events = turnEndPhase(state) // turn 3 — still draining
+      // attackPerTurn = 3 in makeSpiralState config
+      expect(events).toContainEqual(expect.objectContaining({ type: 'budget_drain', target: 'player', value: 3 }))
+    })
+
+    it('decrements player budget by attackPerTurn on drain', () => {
+      const state = makeSpiralState(1, 5) // threshold = 1, attackPerTurn = 3
+      const budgetBefore = state.player.budget
+      turnEndPhase(state) // gymSpiralTurns = 1, threshold reached
+      expect(state.player.budget).toBe(budgetBefore - 3)
+    })
+
+    it('does not drain player budget below 0', () => {
+      const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ budget: 2 }), makeOpponent({ hp: 30, maxHp: 60 }), {
+        gymMechanic:       'cost_spiral',
+        gymMechanicConfig: { hpPerTurn: 5, attackPerTurn: 10, spiralThreshold: 1 },
+      })
+      turnEndPhase(state)
+      expect(state.player.budget).toBe(0)
+    })
+
+    it('does not emit budget_drain before reaching spiralThreshold', () => {
+      const state = makeSpiralState(10, 5) // threshold = 10
+      const events = turnEndPhase(state)
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'budget_drain' }))
+    })
+  })
+
+  // ── all_domains ───────────────────────────────────────────────────────────
+  describe('all_domains', () => {
+    function makeDomainState(switchInterval = 2) {
+      return createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent({ hp: 60, maxHp: 60 }), {
+        gymMechanic:       'all_domains',
+        gymMechanicConfig: { switchInterval, executiveModeHpPercent: 0.25, executiveDamageMultiplier: 1.5 },
+      })
+    }
+
+    it('initialises gymDomainOrder with 7 domains', () => {
+      const state = makeDomainState()
+      expect(state.gymDomainOrder).toHaveLength(7)
+      expect(state.gymDomainOrder).not.toContain('observability')
+    })
+
+    it('sets opponent domain to first domain in shuffled order', () => {
+      const state = makeDomainState()
+      expect(state.opponent.domain).toBe(state.gymDomainOrder[0])
+    })
+
+    it('switches domain every switchInterval turns', () => {
+      const state = makeDomainState(2)
+      const initialDomain = state.opponent.domain
+      turnEndPhase(state) // turn 1→2: (turn-1)=1, 1%2=1≠0, no switch
+      expect(state.opponent.domain).toBe(initialDomain)
+      turnEndPhase(state) // turn 2→3: (turn-1)=2, 2%2=0, switch
+      expect(state.opponent.domain).toBe(state.gymDomainOrder[1])
+    })
+
+    it('activates executive mode when opponent HP drops to threshold', () => {
+      const state = makeDomainState(2)
+      expect(state.gymExecutiveMode).toBe(false)
+      state.opponent.hp = Math.floor(state.opponent.maxHp * 0.25) // exactly 25%
+      turnEndPhase(state)
+      expect(state.gymExecutiveMode).toBe(true)
+    })
+
+    it('cycles through all domains without repeating until full cycle', () => {
+      const state = makeDomainState(1) // switch every turn in executive mode
+      state.gymExecutiveMode = true
+      const seen = new Set()
+      seen.add(state.opponent.domain)
+      for (let i = 0; i < 6; i++) {
+        turnEndPhase(state)
+        seen.add(state.opponent.domain)
+      }
+      expect(seen.size).toBe(7)
+    })
+
+    it('does not switch domain before first interval', () => {
+      const state = makeDomainState(3) // switch every 3 turns
+      const initialDomain = state.opponent.domain
+      turnEndPhase(state) // turn 1→2
+      expect(state.opponent.domain).toBe(initialDomain)
+    })
+
+    it('emits domain_reveal event when domain switches', () => {
+      const state = makeDomainState(2)
+      turnEndPhase(state) // turn 1→2 — no switch
+      const events = turnEndPhase(state) // turn 2→3 — switch fires
+      expect(events).toContainEqual(expect.objectContaining({ type: 'domain_reveal', target: 'opponent' }))
+      const domainEvt = events.find(e => e.type === 'domain_reveal')
+      expect(domainEvt.value).toBe(state.opponent.domain)
+    })
+
+    it('does not emit domain_reveal when no switch occurs', () => {
+      const state = makeDomainState(3) // switch every 3 turns
+      const events = turnEndPhase(state) // turn 1→2 — no switch
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'domain_reveal', target: 'opponent' }))
+    })
+  })
+})

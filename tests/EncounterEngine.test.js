@@ -42,8 +42,13 @@ describe('selectFromPool', () => {
     expect(selectFromPool('nonexistent_region', 42, 5)).toBeNull()
   })
 
-  it('returns null for localhost_town (all pools empty)', () => {
-    expect(selectFromPool('localhost_town', 42, 5)).toBeNull()
+  it('returns valid encounter for localhost_town (pools now populated)', () => {
+    const result = selectFromPool('localhost_town', 42, 5)
+    expect(result).not.toBeNull()
+    const commonIds = ['404_not_found', 'missing_semicolon', 'port_conflict']
+    const rareIds   = ['failed_pipeline', 'npm_install_hang']
+    const allowed   = [...commonIds, ...rareIds]
+    expect(allowed).toContain(result.enemyId)
   })
 
   it('handles region with no cursed pool — redistributes weight to common/rare', () => {
@@ -216,7 +221,7 @@ describe('selectFromPool — on-call hours', () => {
     }
   })
 
-  it('returns null for localhost_town regardless of isOnCallHours (all pools empty)', () => {
+  it('returns null for localhost_town with isOnCallHours: true (none of its encounters are on-call)', () => {
     expect(selectFromPool('localhost_town', 42, 5, { isOnCallHours: true })).toBeNull()
   })
 

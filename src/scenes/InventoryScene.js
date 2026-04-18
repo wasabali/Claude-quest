@@ -230,6 +230,17 @@ export class InventoryScene extends BaseScene {
       return { message: 'You fall in.', consume: false }
     }
 
+    if (effect.type === 'read_xp') {
+      const alreadyRead = GameState.story.flags[effect.onceFlag]
+      if (alreadyRead) {
+        return { message: 'You\'ve already read this.', consume: false }
+      }
+      GameState.player.xp += effect.value
+      GameState.story.flags[effect.onceFlag] = true
+      markDirty()
+      return { message: `Interesting read. +${effect.value} XP.`, consume: false }
+    }
+
     return { message: item.description, consume: false }
   }
 

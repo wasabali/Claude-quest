@@ -56,6 +56,13 @@ const EMBLEMS = {
     grimeDescription: '3am coffee ring stains',
     passiveBonus: 'Max HP +10',
   },
+  serverless: {
+    id: 'serverless',
+    name: 'Serverless Emblem',
+    domain: 'serverless',
+    grimeDescription: 'Cold start frost residue',
+    passiveBonus: 'Serverless skills +5% effectiveness',
+  },
 }
 
 export const getById = (id)           => EMBLEMS[id]

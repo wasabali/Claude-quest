@@ -289,10 +289,10 @@ export class WorldScene extends BaseScene {
   }
 
   // Evaluates NPC dialogue variants top-to-bottom against the current player
-  // reputation and shamePoints, returning the first matching variant's pages.
-  // Falls back to entry.pages when no variant matches.
+  // reputation, shamePoints, budget, and story flags, returning the first
+  // matching variant's pages. Falls back to entry.pages when no variant matches.
   _resolveNpcPages(entry) {
-    const { reputation, shamePoints } = GameState.player
+    const { reputation, shamePoints, budget } = GameState.player
     if (Array.isArray(entry?.variants)) {
       for (const variant of entry.variants) {
         const c = variant.condition ?? {}
@@ -300,6 +300,8 @@ export class WorldScene extends BaseScene {
         if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
         if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
         if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
+        if (c.budgetMax     !== undefined && budget > c.budgetMax)         continue
+        if (c.storyFlag     !== undefined && !GameState.story.flags[c.storyFlag]) continue
         if (Array.isArray(variant.pool)) {
           // NPC one-liner pools are intentionally non-deterministic — different
           // line each visit. No seeded RNG needed; this is presentation-layer only.
