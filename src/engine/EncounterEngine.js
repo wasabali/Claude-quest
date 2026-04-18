@@ -126,11 +126,13 @@ export function encounterChance(stepCount, seed, modifiers = {}) {
 // Returns null (no encounter) or an encounter object from selectFromPool.
 // Uses region-specific encounter rates from ENCOUNTER_RATES.
 // Only rolls every N steps (based on stepsPerRoll for the region).
+// Returns null on step 0 — no encounter before the player has moved.
 // Uses seeded RNG for deterministic results.
 export function roll(regionId, stepCount, seed) {
+  if (stepCount === 0) return null
   const rate = ENCOUNTER_RATES[regionId] ?? { baseRate: 0, stepsPerRoll: 4 }
   if (stepCount % rate.stepsPerRoll !== 0) return null
   const rng = seedRandom(seed + stepCount)
-  if (rng() > rate.baseRate) return null
+  if (rng() >= rate.baseRate) return null
   return selectFromPool(regionId, seed, stepCount)
 }

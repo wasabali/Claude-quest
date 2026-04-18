@@ -258,20 +258,11 @@ describe('roll', () => {
     }
   })
 
-  it('step 0 can trigger the rate check (0 % stepsPerRoll === 0)', () => {
-    // Step 0 is divisible by any stepsPerRoll, so it enters the rate check.
-    // For pipeline_pass (baseRate=0.15) most seeds will still return null,
-    // but we verify it doesn't short-circuit and that some seed does trigger.
-    const result = roll('pipeline_pass', 0, 42)
-    expect(result === null || typeof result === 'object').toBe(true)
-
-    // Find a seed where step 0 actually triggers an encounter
-    let triggered = null
-    for (let seed = 0; seed < 10000; seed++) {
-      triggered = roll('pipeline_pass', 0, seed)
-      if (triggered !== null) break
+  it('step 0 always returns null — no encounter before the player moves', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      expect(roll('pipeline_pass', 0, seed)).toBeNull()
+      expect(roll('three_am_tavern', 0, seed)).toBeNull()
     }
-    expect(triggered).not.toBeNull()
   })
 
   it('statistical rate check — pipeline_pass triggers ~15% of the time', () => {

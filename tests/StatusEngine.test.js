@@ -165,6 +165,7 @@ describe('removeStatus', () => {
       type:   'status_remove',
       target: 'player',
       value:  'throttled',
+      reason: 'manual',
       text:   'throttled removed from player',
     })
   })
@@ -233,10 +234,10 @@ describe('tickStatuses', () => {
     expect(state.player.statuses.find(s => s.id === 'cold_start')).toBeUndefined()
   })
 
-  it('emits status_expired event when status expires', () => {
+  it('emits status_remove event with reason expired when status expires', () => {
     const state  = makeBattleState([{ id: 'cold_start', remaining: 1 }])
     const events = tickStatuses(state, 'player')
-    const expiredEvt = events.find(e => e.type === 'status_expired')
+    const expiredEvt = events.find(e => e.type === 'status_remove' && e.reason === 'expired')
     expect(expiredEvt).toBeDefined()
     expect(expiredEvt.target).toBe('player')
     expect(expiredEvt.value).toBe('cold_start')
@@ -304,7 +305,7 @@ describe('status full lifecycle — apply then tick to expiry', () => {
 
     const events = tickStatuses(state, 'player') // remaining: 0 → expired
     expect(isStatusActive(state, 'player', 'throttled')).toBe(false)
-    expect(events.some(e => e.type === 'status_expired')).toBe(true)
+    expect(events.some(e => e.type === 'status_remove' && e.reason === 'expired')).toBe(true)
   })
 
   it('cold_start: apply → tick once → expired', () => {
@@ -314,7 +315,7 @@ describe('status full lifecycle — apply then tick to expiry', () => {
 
     const events = tickStatuses(state, 'player')
     expect(isStatusActive(state, 'player', 'cold_start')).toBe(false)
-    expect(events.some(e => e.type === 'status_expired')).toBe(true)
+    expect(events.some(e => e.type === 'status_remove' && e.reason === 'expired')).toBe(true)
   })
 
   it('technical_debt: apply → tick 100 times → still active', () => {
