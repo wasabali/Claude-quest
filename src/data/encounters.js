@@ -54,6 +54,15 @@ export const ENCOUNTER_POOLS = {
   },
 }
 
+export const ENCOUNTER_RATES = {
+  localhost_town:        { baseRate: 0,    stepsPerRoll: 1  },
+  pipeline_pass:         { baseRate: 0.15, stepsPerRoll: 4  },
+  jira_dungeon:          { baseRate: 0.25, stepsPerRoll: 3  },
+  production_plains:     { baseRate: 0.20, stepsPerRoll: 3  },
+  kubernetes_colosseum:  { baseRate: 0.30, stepsPerRoll: 2  },
+  three_am_tavern:       { baseRate: 0.40, stepsPerRoll: 2  },
+}
+
 const ENCOUNTERS = {
   npm_install_hang: {
     id: 'npm_install_hang',

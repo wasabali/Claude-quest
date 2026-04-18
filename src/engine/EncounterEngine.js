@@ -1,7 +1,7 @@
 // EncounterEngine.js — Pool-based random encounter selection.
 // Pure logic only — no Phaser imports. Fully unit-testable with plain Node.js.
 
-import { ENCOUNTER_POOLS, getById as getEncounterById } from '#data/encounters.js'
+import { ENCOUNTER_POOLS, ENCOUNTER_RATES, getById as getEncounterById } from '#data/encounters.js'
 import { seedRandom, randInt } from '#utils/random.js'
 
 // Base pool weights
@@ -121,4 +121,18 @@ export function encounterChance(stepCount, seed, modifiers = {}) {
   if (modifiers.hasMonitorSkill)    chance -= 0.20
 
   return Math.min(1, Math.max(0, chance))
+}
+
+// Returns null (no encounter) or an encounter object from selectFromPool.
+// Uses region-specific encounter rates from ENCOUNTER_RATES.
+// Only rolls every N steps (based on stepsPerRoll for the region).
+// Returns null on step 0 — no encounter before the player has moved.
+// Uses seeded RNG for deterministic results.
+export function roll(regionId, stepCount, seed) {
+  if (stepCount === 0) return null
+  const rate = ENCOUNTER_RATES[regionId] ?? { baseRate: 0, stepsPerRoll: 4 }
+  if (stepCount % rate.stepsPerRoll !== 0) return null
+  const rng = seedRandom(seed + stepCount)
+  if (rng() >= rate.baseRate) return null
+  return selectFromPool(regionId, seed, stepCount)
 }

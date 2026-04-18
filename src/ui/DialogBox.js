@@ -17,6 +17,8 @@ const FONT_SIZE       = '22px'
 const CHARS_PER_SEC   = 40
 const BLINK_MS        = 400
 const PANEL_KEY       = 'dialog_window_9slice'
+const CHOICE_OFFSET_Y   = 36
+const CHOICE_LINE_HEIGHT = 32
 
 export class DialogBox {
   /**
@@ -92,15 +94,80 @@ export class DialogBox {
     this._skipToEnd()
   }
 
+  /**
+   * Show a list of choices and invoke onSelect with the selected index.
+   * @param {string}   prompt   - Text shown above the choices.
+   * @param {string[]} choices  - Array of choice labels.
+   * @param {Function} onSelect - Called with the 0-based index chosen.
+   */
+  showChoices(prompt, choices, onSelect) {
+    this._choiceMode     = true
+    this._choices        = choices
+    this._choiceIndex    = 0
+    this._onChoiceSelect = onSelect
+    this._active         = true
+
+    this._container.setVisible(true)
+    this._prompt.setVisible(false)
+
+    this._destroyChoiceTexts()
+
+    this._text.setText(prompt)
+
+    const startY = BOX_Y + BOX_PADDING_Y + CHOICE_OFFSET_Y
+    this._choiceTexts = choices.map((label, i) => {
+      const prefix = i === 0 ? '► ' : '  '
+      return this.scene.add.text(
+        BOX_PADDING_X,
+        startY + i * CHOICE_LINE_HEIGHT,
+        prefix + label,
+        {
+          fontFamily:  CONFIG.FONT,
+          fontSize:    '18px',
+          color:       '#f8f8f8',
+          wordWrap:    { width: CONFIG.WIDTH - BOX_PADDING_X * 2 },
+        },
+      )
+    })
+    this._choiceTexts.forEach(t => this._container.add(t))
+  }
+
+  /** Move choice cursor. dir: -1 (up) or +1 (down). */
+  moveChoice(dir) {
+    if (!this._choiceMode || !this._choices) return
+    this._choiceIndex = Math.max(0, Math.min(this._choices.length - 1, this._choiceIndex + dir))
+    this._choiceTexts.forEach((t, i) => {
+      t.setText((i === this._choiceIndex ? '► ' : '  ') + this._choices[i])
+    })
+  }
+
+  /** Confirm the current choice selection. */
+  confirmChoice() {
+    if (!this._choiceMode) return
+    const idx = this._choiceIndex
+    this._endChoiceMode()
+    if (this._onChoiceSelect) {
+      const cb = this._onChoiceSelect
+      this._onChoiceSelect = null
+      cb(idx)
+    }
+  }
+
   /** True while the dialog box is visible. */
   get isActive() {
     return this._active
+  }
+
+  /** True when showing a choice menu. */
+  get isChoiceMode() {
+    return this._choiceMode === true
   }
 
   /** Clean up Phaser objects — call when scene shuts down. */
   destroy() {
     this._active = false
     this._stopTyping()
+    this._destroyChoiceTexts()
     if (this._blinkTimer) {
       this._blinkTimer.remove()
       this._blinkTimer = null
@@ -169,12 +236,12 @@ export class DialogBox {
     ).setOrigin(1, 1).setVisible(false)
     this._container.add(this._prompt)
 
-    // Blink timer.
+    // Blink timer — suppressed during choice mode so ▼ stays hidden.
     this._blinkTimer = this.scene.time.addEvent({
       delay:    BLINK_MS,
       loop:     true,
       callback: () => {
-        if (!this._active || this._typing) return
+        if (!this._active || this._typing || this._choiceMode) return
         this._prompt.setVisible(!this._prompt.visible)
       },
     })
@@ -224,6 +291,19 @@ export class DialogBox {
     if (this._typeTimer) {
       this._typeTimer.destroy()
       this._typeTimer = null
+    }
+  }
+
+  _endChoiceMode() {
+    this._choiceMode = false
+    this._destroyChoiceTexts()
+    this.hide()
+  }
+
+  _destroyChoiceTexts() {
+    if (this._choiceTexts) {
+      this._choiceTexts.forEach(t => t.destroy())
+      this._choiceTexts = null
     }
   }
 }
