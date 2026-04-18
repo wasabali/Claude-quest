@@ -124,11 +124,12 @@ export const ECONOMY = {
 
 // Budget debt thresholds — pushing budget negative accumulates penalties.
 export const BUDGET_DEBT = {
-  DEBT_LIMIT:           -300,
-  COST_ALERT_THRESHOLD: -100,
-  DEBT_PER_BATTLE_MOD:  0.1,
-  SUSPENSION_THRESHOLD: -300,
-  SUSPENSION_ENCOUNTER: 'azure_subscription_suspended',
+  DEBT_LIMIT:              -300,
+  COST_ALERT_THRESHOLD:    -100,
+  PAYMENT_QUEST_THRESHOLD: -200,
+  DEBT_PER_BATTLE_MOD:     0.1,
+  SUSPENSION_THRESHOLD:    -300,
+  SUSPENSION_ENCOUNTER:    'azure_subscription_suspended',
 }
 
 // Battle reward credits by outcome and solution quality tier.

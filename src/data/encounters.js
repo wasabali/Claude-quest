@@ -424,10 +424,7 @@ const ENCOUNTERS = {
     hp: 100,
     sla: 8,
     difficulty: 4,
-    attacks: [
-      { id: 'cost_spiral', effect: { type: 'budget_drain_escalating', baseValue: 5 } },
-      { id: 'reserved_instance_trap', effect: { type: 'lock_skill', duration: 2 } },
-    ],
+    attacks: ['budget_spike', 'skill_block'],
     optimalFix: 'cost_optimization',
     bossFlag: 'cost_spiral_active',
     layers: null,

@@ -3,7 +3,7 @@
 // Scenes delegate all logic here; they only render the returned events.
 
 import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
-import { REPUTATION_MIN, REPUTATION_MAX, ECONOMY, BUDGET_DEBT } from '../config.js'
+import { REPUTATION_MIN, REPUTATION_MAX, ECONOMY } from '../config.js'
 import { calculateBattleReward, calculateBudgetRestore, calculateCostSpiralSurcharge, calculateCostSpiralHpGain, calculateDebtPenalty } from './EconomyEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -64,7 +64,11 @@ export function createBattleState(mode, player, opponent, options = {}) {
   return {
     mode,
     turn:             1,
-    player:           { ...player, technicalDebt: player.technicalDebt ?? 0, maxBudget: player.maxBudget ?? player.budget ?? 500 },
+    player:           {
+                        ...player,
+                        technicalDebt: player.technicalDebt ?? 0,
+                        maxBudget: Math.max(0, player.maxBudget ?? player.budget ?? 500),
+                      },
     opponent:         { ...opponent },
     playerStatuses:   [],
     opponentStatuses: [],
@@ -373,7 +377,7 @@ export function incidentAttackPhase(state) {
 // ---------------------------------------------------------------------------
 // Phase 4c: CostSpiralPhase
 // Only runs when opponent has bossFlag === 'cost_spiral_active' (Azure Bill).
-// Turn N: boss gains +20 HP, all player skills cost +(5×N) extra budget.
+// Each turn: boss gains +20 HP, and a budget drain of (5×N) is applied.
 // Boss deals budget damage (not HP). At 0 budget player can still use 0-cost skills.
 // ---------------------------------------------------------------------------
 export function costSpiralPhase(state) {
@@ -384,9 +388,11 @@ export function costSpiralPhase(state) {
 
   // Boss gains HP each turn
   const hpGain = calculateCostSpiralHpGain()
-  state.opponent.hp += hpGain
-  state.opponent.maxHp = (state.opponent.maxHp ?? state.opponent.hp) + hpGain
-  events.push({ type: 'boss_hp_gain', target: 'opponent', value: hpGain })
+  const currentHp = state.opponent.hp
+  const currentMaxHp = state.opponent.maxHp ?? currentHp
+  state.opponent.hp = currentHp + hpGain
+  state.opponent.maxHp = currentMaxHp + hpGain
+  events.push({ type: 'heal', target: 'opponent', value: hpGain, text: `Cost spiral: boss gains ${hpGain} HP` })
 
   // Budget drain escalation — boss deals budget damage
   const surcharge = calculateCostSpiralSurcharge(turn)
@@ -447,24 +453,25 @@ export function turnEndPhase(state) {
 
     // Budget rewards: flat credit based on mode/tier + percentage restore
     const mode = state.mode === BATTLE_MODES.INCIDENT ? 'incident' : 'trainer'
-    const rewardCredits = calculateBattleReward(mode, tier)
+    const rewardKey = state.mode === BATTLE_MODES.INCIDENT ? tier : 'win'
+    const rewardCredits = calculateBattleReward(mode, rewardKey)
     const restore       = calculateBudgetRestore(true, state.player.maxBudget ?? state.player.budget ?? 500)
     const budgetGain    = rewardCredits + restore
     if (budgetGain > 0) {
       state.player.budget = (state.player.budget ?? 0) + budgetGain
-      events.push({ type: 'budget_gain', target: 'player', value: budgetGain })
+      events.push({ type: 'budget_drain', target: 'player', value: -budgetGain })
     }
 
     // Optimal win bonus (flat +25 on top of tier reward)
     if (tier === 'optimal') {
       state.player.budget = (state.player.budget ?? 0) + ECONOMY.OPTIMAL_WIN_BONUS
-      events.push({ type: 'budget_gain', target: 'player', value: ECONOMY.OPTIMAL_WIN_BONUS, text: 'Optimal solution bonus!' })
+      events.push({ type: 'budget_drain', target: 'player', value: -ECONOMY.OPTIMAL_WIN_BONUS, text: 'Optimal solution bonus!' })
     }
 
     // Debt penalty at battle end: accumulate technical_debt stacks when in budget debt
     const winDebtPenalty = calculateDebtPenalty(state.player.budget ?? 0)
     if (winDebtPenalty > 0) {
-      state.player.technicalDebt = Math.min(10, (state.player.technicalDebt ?? 0) + winDebtPenalty)
+      state.player.technicalDebt = Math.min(MAX_TECHNICAL_DEBT, (state.player.technicalDebt ?? 0) + winDebtPenalty)
       events.push({ type: 'technical_debt', target: 'player', value: state.player.technicalDebt })
     }
 
@@ -500,13 +507,13 @@ export function turnEndPhase(state) {
     const loseRestore = calculateBudgetRestore(false, state.player.maxBudget ?? state.player.budget ?? 500)
     if (loseRestore > 0) {
       state.player.budget = (state.player.budget ?? 0) + loseRestore
-      events.push({ type: 'budget_gain', target: 'player', value: loseRestore })
+      events.push({ type: 'budget_drain', target: 'player', value: -loseRestore })
     }
 
     // Debt penalty: accumulate technical_debt stacks when budget is negative
     const debtPenalty = calculateDebtPenalty(state.player.budget ?? 0)
     if (debtPenalty > 0) {
-      state.player.technicalDebt = Math.min(10, (state.player.technicalDebt ?? 0) + debtPenalty)
+      state.player.technicalDebt = Math.min(MAX_TECHNICAL_DEBT, (state.player.technicalDebt ?? 0) + debtPenalty)
       events.push({ type: 'technical_debt', target: 'player', value: state.player.technicalDebt })
     }
 

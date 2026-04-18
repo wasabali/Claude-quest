@@ -4,7 +4,7 @@ import { BaseScene } from '#scenes/BaseScene.js'
 import { GameState, markDirty, addItem } from '#state/GameState.js'
 import { getById as getShopById } from '#data/shops.js'
 import { getById as getItemById } from '#data/items.js'
-import { getPrice, isShopUnlocked, canAfford } from '#engine/EconomyEngine.js'
+import { getPrice, isShopUnlocked, purchaseItem } from '#engine/EconomyEngine.js'
 
 const TOP_PANEL_HEIGHT    = 24
 const LIST_PANEL_HEIGHT   = 96
@@ -102,23 +102,36 @@ export class ShopScene extends BaseScene {
   confirmPurchase() {
     const shop = getShopById(this.shopId)
     if (!shop) return
+    if (!isShopUnlocked(shop, GameState.player)) return
 
     const entry = shop.inventory[this.selectedItem]
     if (!entry) return
 
-    if (entry.stock === 0) return
+    const stock = this._getStock(this.shopId, entry.itemId, entry.stock)
+    if (stock === 0) return
 
-    const price = getPrice(shop, entry.itemId, GameState.player.reputation)
-    if (!canAfford(GameState.player.budget, price)) return
+    const events = purchaseItem(shop, entry.itemId, GameState.player.budget, GameState.player.reputation)
+    const purchase = events.find(e => e.type === 'shop_purchase')
+    if (!purchase) return
 
     const item = getItemById(entry.itemId)
     if (!item) return
 
-    GameState.player.budget -= price
+    GameState.player.budget -= purchase.price
     addItem(item.tab, entry.itemId, 1)
-    if (entry.stock > 0) entry.stock -= 1
+    if (stock > 0) this._setStock(this.shopId, entry.itemId, stock - 1)
     markDirty()
     this.refresh()
+  }
+
+  _getStock(shopId, itemId, defaultStock) {
+    const key = `shop_stock_${shopId}_${itemId}`
+    return GameState.story.flags[key] ?? defaultStock
+  }
+
+  _setStock(shopId, itemId, value) {
+    const key = `shop_stock_${shopId}_${itemId}`
+    GameState.story.flags[key] = value
   }
 
   exitShop() {
@@ -147,9 +160,10 @@ export class ShopScene extends BaseScene {
       const item   = getItemById(entry.itemId)
       const name   = item?.displayName ?? entry.itemId
       const price  = getPrice(shop, entry.itemId, GameState.player.reputation)
-      const stock  = entry.stock === -1 ? '' : ` [${entry.stock}]`
+      const currentStock = this._getStock(this.shopId, entry.itemId, entry.stock)
+      const stockLabel   = currentStock === -1 ? '' : ` [${currentStock}]`
       const arrow  = idx === this.selectedItem ? '>' : ' '
-      return `${arrow} ${name}${stock}  $${price}`
+      return `${arrow} ${name}${stockLabel}  $${price}`
     })
     this.itemListText.setText(lines.join('\n'))
 
@@ -158,9 +172,9 @@ export class ShopScene extends BaseScene {
       const item  = getItemById(selectedEntry.itemId)
       const price = getPrice(shop, selectedEntry.itemId, GameState.player.reputation)
       const desc  = item?.description ?? ''
-      const stock = selectedEntry.stock === -1 ? 'Unlimited' : `Stock: ${selectedEntry.stock}`
-      const affordable = canAfford(GameState.player.budget, price) ? '' : ' [CANT AFFORD]'
-      this.detailText.setText(`${desc}\n${stock}  $${price}${affordable}`)
+      const currentStock = this._getStock(this.shopId, selectedEntry.itemId, selectedEntry.stock)
+      const stockLabel   = currentStock === -1 ? 'Unlimited' : `Stock: ${currentStock}`
+      this.detailText.setText(`${desc}\n${stockLabel}  $${price}`)
     }
   }
 }

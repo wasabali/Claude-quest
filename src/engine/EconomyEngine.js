@@ -34,8 +34,8 @@ export function getPrice(shop, itemId, playerReputation) {
 
 // ---------------------------------------------------------------------------
 // canAfford
-// Returns whether the player can afford the item (budget may go negative
-// up to debt limit, but purchase requires budget > DEBT_LIMIT).
+// Returns whether the player can afford the item. Budget may go negative
+// up to debt limit; purchase is allowed when resulting budget >= DEBT_LIMIT.
 // ---------------------------------------------------------------------------
 export function canAfford(playerBudget, price) {
   return (playerBudget - price) >= BUDGET_DEBT.DEBT_LIMIT
@@ -87,7 +87,7 @@ export function calculatePostBattleBudget(currentBudget, maxBudget, isWin, mode,
 export function getBudgetDebtStatus(budget) {
   if (budget >= 0) return { inDebt: false, level: 'ok' }
   if (budget > BUDGET_DEBT.COST_ALERT_THRESHOLD) return { inDebt: true, level: 'warning' }
-  if (budget > -200) return { inDebt: true, level: 'cost_alert' }
+  if (budget > BUDGET_DEBT.PAYMENT_QUEST_THRESHOLD) return { inDebt: true, level: 'cost_alert' }
   if (budget > BUDGET_DEBT.SUSPENSION_THRESHOLD) return { inDebt: true, level: 'payment_quest' }
   return { inDebt: true, level: 'suspended' }
 }

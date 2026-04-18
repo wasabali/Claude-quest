@@ -112,6 +112,7 @@ describe('other data registries', () => {
       ...getAllEncounters().map(entry => entry.id),
       ...getAllThreads().map(entry => entry.id),
       ...getAllGates().map(entry => entry.id),
+      ...getAllShops().map(entry => entry.id),
     ]
     expect(new Set(allIds).size).toBe(allIds.length)
   })
