@@ -295,30 +295,18 @@ export class WorldScene extends BaseScene {
 
   update(time, delta) {
     if (this._transitioning) return
-    const dialogOrMenu = this._interacting || this.dialog.isActive
+    const dialogOrMenu = this._menu.isActive || this._interacting || this.dialog.isActive
     GameState._session.dialogActive = dialogOrMenu
+    if (this._menu.isActive) {
+      this._handleMenuInput()
+      return
+    }
     if (dialogOrMenu) {
       this._handleDialogInput()
       return
     }
     this._updateMovement(delta)
     this._updateThrottlemasterGhost()
-  }
-
-  update() {
-    if (this._transitioning) return
-    if (this._menu.isActive) {
-      this._handleMenuInput()
-      return
-    }
-    if (this._interacting || this.dialog.isActive) {
-      this._player.setVelocity(0, 0)
-      this._handleDialogInput()
-      return
-    }
-    this._handleMovement()
-    this._checkEdgeTransition()
-    this._checkEncounterStep()
   }
 
   get _isRunning() {
@@ -362,15 +350,13 @@ export class WorldScene extends BaseScene {
       return
     }
 
-    if (vx !== 0 || vy !== 0) {
-      const tx = Math.floor(this._player.x / TILE_SIZE)
-      const ty = Math.floor(this._player.y / TILE_SIZE)
-      if (tx !== this._lastTileX || ty !== this._lastTileY) {
-        this._lastTileX = tx
-        this._lastTileY = ty
-        this._stepCount++
-        this._checkDoorInteraction()
-      }
+    const tx = Math.floor(this._player.x / TILE_SIZE)
+    const ty = Math.floor(this._player.y / TILE_SIZE)
+    if (tx !== this._lastTileX || ty !== this._lastTileY) {
+      this._lastTileX = tx
+      this._lastTileY = ty
+      this._stepCount++
+      this._checkDoorInteraction()
     }
 
     if (this._moveState === 'stepping') {
