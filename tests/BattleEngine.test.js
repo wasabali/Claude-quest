@@ -11,6 +11,7 @@ import {
   BATTLE_MODES,
   INCIDENT_ATTACKS,
 } from '../src/engine/BattleEngine.js'
+import { EXECUTIVE_MODE_THRESHOLD, EXECUTIVE_MODE_MULTIPLIER } from '../src/config.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1191,6 +1192,254 @@ describe('multi-layer incident transitions', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 0 }), { slaTimer: 5 })
     const events = turnEndPhase(state)
     expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Boss fight helpers
+// ---------------------------------------------------------------------------
+
+function makeBossOpponent(overrides = {}) {
+  return {
+    id:         'boss_cto',
+    name:       'The CTO',
+    domain:     'cloud',
+    hp:         100,
+    maxHp:      100,
+    difficulty: 5,
+    isBoss:     true,
+    deck:       ['budget_cut', 'reorg', 'stack_migration'],
+    phases:     [
+      // Phase 0 (initial — used as the starting opponent)
+      { hp: 100, maxHp: 100, domain: 'cloud', deck: ['budget_cut', 'reorg', 'stack_migration'], name: 'The CTO' },
+      // Phase 1
+      { hp: 80, maxHp: 80, domain: 'kubernetes', deck: ['kubectl_drain', 'pod_eviction'], name: 'The CTO (Enraged)', transitionDialog: 'You think you can beat me? I wrote the original Dockerfile!', isLegacy: false },
+      // Phase 2 (final)
+      { hp: 60, maxHp: 60, domain: 'security', deck: ['zero_day', 'audit_log_wipe'], name: 'The CTO (Legacy Form)', isLegacy: true },
+    ],
+    ...overrides,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// createBattleState — boss phase initialisation
+// ---------------------------------------------------------------------------
+
+describe('createBattleState — boss phases', () => {
+  it('initialises bossPhases from opponent.phases (skipping phase 0)', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    // Phase 0 is the initial opponent data, so bossPhases should have phases 1 and 2
+    expect(state.bossPhases).toHaveLength(2)
+    expect(state.bossPhases[0].domain).toBe('kubernetes')
+    expect(state.bossPhases[1].domain).toBe('security')
+  })
+
+  it('sets bossPhases to empty array when opponent has no phases', () => {
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), makeOpponent())
+    expect(state.bossPhases).toEqual([])
+  })
+
+  it('copies opponent.isBoss to state', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    expect(state.opponent.isBoss).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Boss fight — phase transitions
+// ---------------------------------------------------------------------------
+
+describe('Boss fight — phase transitions', () => {
+  it('transitions to next boss phase when opponent HP reaches 0', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = 0 // Defeat phase 0
+
+    const events = turnEndPhase(state)
+
+    // Should NOT end the battle
+    expect(events.find(e => e.type === 'battle_end')).toBeUndefined()
+    // Opponent should now be phase 1
+    expect(state.opponent.hp).toBe(80)
+    expect(state.opponent.maxHp).toBe(80)
+    expect(state.opponent.domain).toBe('kubernetes')
+    expect(state.opponent.name).toBe('The CTO (Enraged)')
+    expect(state.opponent.deck).toEqual(['kubectl_drain', 'pod_eviction'])
+  })
+
+  it('emits boss_phase_transition and dialog events on transition', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = 0
+
+    const events = turnEndPhase(state)
+
+    // Should emit boss_phase_transition
+    const transitionEvent = events.find(e => e.type === 'boss_phase_transition')
+    expect(transitionEvent).toBeDefined()
+    expect(transitionEvent.target).toBe('opponent')
+    expect(transitionEvent.value).toMatchObject({ domain: 'kubernetes', name: 'The CTO (Enraged)' })
+
+    // Phase 1 has transitionDialog, so should also emit dialog
+    const dialogEvent = events.find(e => e.type === 'dialog')
+    expect(dialogEvent).toBeDefined()
+    expect(dialogEvent.target).toBe('player')
+    expect(dialogEvent.text).toBe('You think you can beat me? I wrote the original Dockerfile!')
+  })
+
+  it('sets isLegacy on opponent from phase data', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+
+    // Defeat phase 0 → transition to phase 1 (isLegacy: false)
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.opponent.isLegacy).toBe(false)
+
+    // Defeat phase 1 → transition to phase 2 (isLegacy: true)
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.opponent.isLegacy).toBe(true)
+  })
+
+  it('ends battle when all boss phases are exhausted', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+
+    // Defeat phase 0 → transition to phase 1
+    state.opponent.hp = 0
+    turnEndPhase(state)
+
+    // Defeat phase 1 → transition to phase 2
+    state.opponent.hp = 0
+    turnEndPhase(state)
+
+    // Defeat phase 2 → no more phases, battle should end
+    state.opponent.hp = 0
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'battle_end', value: 'win' }))
+  })
+
+  it('increments turn counter on phase transition', () => {
+    const boss = makeBossOpponent()
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    const turnBefore = state.turn
+    state.opponent.hp = 0
+    turnEndPhase(state)
+    expect(state.turn).toBe(turnBefore + 1)
+  })
+
+  it('does not emit dialog event if phase has no transitionDialog', () => {
+    // Create boss with a phase that has no transitionDialog
+    const boss = makeBossOpponent({
+      phases: [
+        { hp: 100, maxHp: 100, domain: 'cloud', deck: ['a'], name: 'Boss' },
+        { hp: 50, maxHp: 50, domain: 'linux', deck: ['b'], name: 'Boss Phase 2' },
+      ],
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = 0
+    const events = turnEndPhase(state)
+    expect(events.find(e => e.type === 'dialog')).toBeUndefined()
+    expect(events.find(e => e.type === 'boss_phase_transition')).toBeDefined()
+  })
+
+  it('boss phase transitions take priority over layer transitions', () => {
+    // Boss with both phases and layers — phases should take priority
+    const boss = makeBossOpponent({
+      layers: [{ domain: 'iac', hp: 30, maxHp: 30, name: 'Layer Fallback' }],
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = 0
+    const events = turnEndPhase(state)
+    // Should be boss_phase_transition, NOT layer_transition
+    expect(events.find(e => e.type === 'boss_phase_transition')).toBeDefined()
+    expect(events.find(e => e.type === 'layer_transition')).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Executive Mode
+// ---------------------------------------------------------------------------
+
+describe('Executive Mode', () => {
+  it('activates when boss HP drops to 25% or below', () => {
+    const boss = makeBossOpponent({ phases: [] }) // No phases to avoid transitions
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    // Boss at exactly 25% HP
+    state.opponent.hp = Math.floor(state.opponent.maxHp * EXECUTIVE_MODE_THRESHOLD)
+
+    const events = enemyPhase(state)
+    expect(state.executiveMode).toBe(true)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'executive_mode', target: 'opponent' }))
+  })
+
+  it('emits executive_mode event only once', () => {
+    const boss = makeBossOpponent({ phases: [] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = Math.floor(state.opponent.maxHp * EXECUTIVE_MODE_THRESHOLD)
+
+    const events1 = enemyPhase(state)
+    const execEvents1 = events1.filter(e => e.type === 'executive_mode')
+    expect(execEvents1).toHaveLength(1)
+
+    // Reset player HP so we can call enemyPhase again
+    state.player.hp = 100
+    const events2 = enemyPhase(state)
+    const execEvents2 = events2.filter(e => e.type === 'executive_mode')
+    expect(execEvents2).toHaveLength(0)
+    // executiveMode should still be true
+    expect(state.executiveMode).toBe(true)
+  })
+
+  it('multiplies enemy damage by 1.5x when active', () => {
+    const boss = makeBossOpponent({ phases: [] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = state.opponent.maxHp // Boss at full HP, no exec mode
+
+    const normalEvents = enemyPhase(state)
+    const normalDmg = normalEvents.find(e => e.type === 'damage' && e.target === 'player')?.value
+
+    // Reset and trigger executive mode
+    state.player.hp = 100
+    state.opponent.hp = Math.floor(state.opponent.maxHp * EXECUTIVE_MODE_THRESHOLD)
+
+    const execEvents = enemyPhase(state)
+    const execDmg = execEvents.find(e => e.type === 'damage' && e.target === 'player')?.value
+
+    expect(execDmg).toBe(Math.floor(normalDmg * EXECUTIVE_MODE_MULTIPLIER))
+  })
+
+  it('does not activate for non-boss opponents', () => {
+    const opponent = makeOpponent({ hp: 10, maxHp: 100, deck: ['basic_attack'] }) // 10% HP
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+
+    const events = enemyPhase(state)
+    expect(state.executiveMode).toBeUndefined()
+    expect(events.find(e => e.type === 'executive_mode')).toBeUndefined()
+  })
+
+  it('activates at HP below 25% threshold (not only at exactly 25%)', () => {
+    const boss = makeBossOpponent({ phases: [] })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), boss)
+    state.opponent.hp = 10 // Well below 25% of 100
+
+    const events = enemyPhase(state)
+    expect(state.executiveMode).toBe(true)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'executive_mode', target: 'opponent' }))
+  })
+
+  it('does not activate in INCIDENT mode', () => {
+    const boss = makeBossOpponent({ phases: [] })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), boss, { slaTimer: 10 })
+    state.opponent.hp = Math.floor(state.opponent.maxHp * EXECUTIVE_MODE_THRESHOLD)
+
+    const events = enemyPhase(state)
+    // enemyPhase returns [] in INCIDENT mode
+    expect(events).toHaveLength(0)
+    expect(state.executiveMode).toBeUndefined()
   })
 })
 

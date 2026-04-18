@@ -125,6 +125,16 @@ export const XP_TABLE = [
   7600, 8500, 9450, 10450,             // levels 17–20
 ]
 
+// Ending conditions — shame thresholds + required story flags
+export const ENDING_CONDITIONS = {
+  shadow_post_mortem: { minShame: 10, maxShame: 14, requiredFlag: 'cto_defeated'         },
+  fork_the_company:   { minShame: 15, requiredFlag: 'throttlemaster_recruitment_accepted' },
+}
+
+// Boss fight: Executive Mode multiplier and HP threshold
+export const EXECUTIVE_MODE_THRESHOLD   = 0.25
+export const EXECUTIVE_MODE_MULTIPLIER  = 1.5
+
 // Gym mechanic default configs — used by BattleEngine as the fallback gymMechanicConfig
 // when createBattleState is called without an explicit mechanicConfig. Gym definitions
 // in src/data/gyms.js reference these same values via mechanicConfig on each gym entry.

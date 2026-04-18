@@ -217,6 +217,144 @@ const STORY = {
     ],
   },
 
+  // =========================================================================
+  // CTO BOSS — dialog by phase
+  // =========================================================================
+
+  cto_phase_1_intro: {
+    id: 'cto_phase_1_intro',
+    pages: [
+      "Why is the site down?",
+      "I have a board meeting in 20 minutes\nand the dashboard is showing red.",
+      "Fix it. Now.",
+    ],
+  },
+  cto_phase_2_transition: {
+    id: 'cto_phase_2_transition',
+    pages: [
+      "Fine, the site is up. But LOOK at this bill.",
+      "LOOK AT IT.",
+      "This is more than my house.",
+    ],
+  },
+  cto_phase_3_transition: {
+    id: 'cto_phase_3_transition',
+    pages: [
+      "I need you to explain something.",
+      "Why. Can't. We. Use. Excel?",
+      "I built the original system in Excel.\nIt worked fine for 15 years.",
+    ],
+  },
+  cto_executive_mode: {
+    id: 'cto_executive_mode',
+    pages: [
+      "That's it. I'm taking over.",
+      "Executive Mode: ACTIVATED.",
+    ],
+  },
+  cto_defeat: {
+    id: 'cto_defeat',
+    pages: [
+      "...",
+      "You know what? You're promoted.",
+      "Principal Engineer, effective immediately.",
+    ],
+    variants: [
+      {
+        condition: { shameMin: 10 },
+        pages: [
+          "You won. I don't know how you operate,\nand I don't want to know.",
+          "You're promoted.",
+        ],
+      },
+    ],
+  },
+
+  // =========================================================================
+  // ENDINGS
+  // =========================================================================
+
+  ending_post_mortem: {
+    id: 'ending_post_mortem',
+    title: 'The Post-Mortem',
+    titleCard: '"The Post-Mortem"',
+    promotionLine: "I'm promoting you to Principal Engineer.",
+    confluenceLine: 'Page views: 0.',
+    creditsMusic: 'bgm_azure_theme_chiptune',
+    postCreditsText: 'ALERT: Production Plains — High CPU (98%).',
+    postCreditsFollowUp: '47 more alerts pending.',
+    pages: ['"The Post-Mortem"'],
+  },
+  ending_shadow_post_mortem: {
+    id: 'ending_shadow_post_mortem',
+    title: 'The Shadow Post-Mortem',
+    titleCard: '"The Shadow Post-Mortem"',
+    promotionLine: "Promoted. There are also some audit findings.\nWe'll discuss those.",
+    confluenceLine: 'Page views: 0.',
+    creditsMusic: 'bgm_azure_theme_minor',
+    postCreditsText: 'AUDIT: 47 compliance findings pending.',
+    postCreditsFollowUp: 'Have a good weekend.',
+    pages: ['"The Shadow Post-Mortem"'],
+  },
+  ending_fork_the_company: {
+    id: 'ending_fork_the_company',
+    title: 'Fork the Company',
+    titleCard: '"Fork the Company"',
+    promotionLine: 'Welcome to TechThrottle Consulting AS.',
+    creditsMusic: 'bgm_cursed_theme',
+    postCreditsText: 'Monthly Azure bill: €47,000.',
+    postCreditsFollowUp: 'Promotion: Principal Villain.',
+    pages: ['"Fork the Company"'],
+  },
+
+  // =========================================================================
+  // CREDITS NPC LIST
+  // =========================================================================
+
+  credits_npc_list: {
+    id: 'credits_npc_list',
+    pages: [],
+    entries: [
+      { name: 'Margaret',                role: 'Town Guide' },
+      { name: 'Professor Pedersen',      role: 'Ethics & Education' },
+      { name: 'Ola the Ops Guy',         role: 'Linux Fundamentals' },
+      { name: 'Tux the Terminal Wizard',  role: 'Terminal Arts' },
+      { name: 'Fatima the Function Witch', role: 'Serverless Engineering' },
+      { name: 'Bjorn the Breaker',       role: 'Security Operations' },
+      { name: 'The CTO',                 role: 'Executive Oversight' },
+      { name: 'The Random Intern',       role: 'Moral Support' },
+    ],
+  },
+
+  // =========================================================================
+  // CONFLUENCE PAGE
+  // =========================================================================
+
+  confluence_page: {
+    id: 'confluence_page',
+    pages: [
+      "Confluence — New Page Created:",
+      "Page views: 0.",
+    ],
+  },
+
+  // =========================================================================
+  // POST-CREDITS PAGER
+  // =========================================================================
+
+  pager_alert: {
+    id: 'pager_alert',
+    pages: [
+      'ALERT: Production Plains — High CPU (98%).\nClick to acknowledge.',
+    ],
+  },
+  pager_acknowledged: {
+    id: 'pager_acknowledged',
+    pages: [
+      'Thank you for acknowledging this alert.\n47 more alerts pending.',
+    ],
+  },
+
   // ── Act title cards ───────────────────────────────────────────────────────
   act_title_prologue: {
     id: 'act_title_prologue',

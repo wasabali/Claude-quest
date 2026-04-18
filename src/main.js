@@ -10,6 +10,7 @@ import { ServiceCatalogScene } from '#scenes/ServiceCatalogScene.js'
 import { SkillManagementScene } from '#scenes/SkillManagementScene.js'
 import { EmblemScene }          from '#scenes/EmblemScene.js'
 import { StackOverflowScene }   from '#scenes/StackOverflowScene.js'
+import { CreditsScene }         from '#scenes/CreditsScene.js'
 import { BattleScene }          from '#scenes/BattleScene.js'
 
 new Phaser.Game({
@@ -26,7 +27,7 @@ new Phaser.Game({
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene, BattleScene ],
+  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene, BattleScene, CreditsScene ],
 })
 
 window.addEventListener('beforeunload', e => {

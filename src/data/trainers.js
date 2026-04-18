@@ -232,31 +232,6 @@ const TRAINERS = {
     gymId: 'admin_gym',
   },
 
-  the_cto: {
-    id: 'the_cto',
-    name: 'The CTO',
-    domain: 'cloud',
-    hp: 150,
-    maxHp: 150,
-    difficulty: 7,
-    deck: ['blue_green_deploy', 'canary_release', 'terraform_apply', 'kubectl_apply', 'disaster_recovery', 'cost_optimization', 'az_role_assignment_create'],
-    teachSkillId: null,
-    signatureSkill: 'blue_green_deploy',
-    telegraphs: [
-      'Switching strategy. Try to keep up.',
-      'I\'ve managed every domain in this company.',
-      'Executive decision incoming.',
-    ],
-    introDialog: 'You made it to my office. Impressive. But I didn\'t get here by mastering one domain. I mastered them all.',
-    winDialog: 'You... actually outperformed me. The board will hear about this. In a good way.',
-    loseDialog: 'Your quarterly review will reflect this. Dismissed.',
-    isCursed: false,
-    shameRequired: 0,
-    location: 'production_plains',
-    gymRole: 'leader',
-    gymId: 'cto_office',
-  },
-
   // =========================================================================
   // GYM SUB-LEADERS — named trainers that teach skills, one per gym
   // =========================================================================
@@ -1614,6 +1589,81 @@ const TRAINERS = {
     shameRequired: 0,
     isWildEncounter: true,
     location: 'any',
+  },
+
+  // =========================================================================
+  // BOSS — CTO (3-phase final boss)
+  // =========================================================================
+
+  the_cto: {
+    id: 'the_cto',
+    name: 'The CTO',
+    domain: 'cloud',
+    hp: 120,
+    maxHp: 120,
+    difficulty: 10,
+    deck: ['az_webapp_restart', 'az_vm_deallocate', 'az_monitor_alert', 'az_webapp_deploy'],
+    teachSkillId: null,
+    signatureSkill: null,
+    telegraphs: [
+      'Can we just synergise the downtime?',
+      'I need this fixed before my 2pm.',
+      'Have you tried turning it off and on again?',
+    ],
+    introDialog: 'Ah. You. Sit down. We need to talk about the site.',
+    winDialog: null,
+    loseDialog: 'I expected more from someone at your level.',
+    isCursed: false,
+    shameRequired: 0,
+    location: 'cto_office',
+    gymRole: 'leader',
+    gymId: 'cto_office',
+    isBoss: true,
+    phases: [
+      {
+        id: 'cto_phase_1',
+        name: 'The CTO',
+        title: 'Why is the site down?',
+        domain: 'cloud',
+        hp: 120,
+        maxHp: 120,
+        deck: ['az_webapp_restart', 'az_vm_deallocate', 'az_monitor_alert', 'az_webapp_deploy'],
+        telegraphs: [
+          'Can we just synergise the downtime?',
+          'I need this fixed before my 2pm.',
+        ],
+        transitionDialog: null,
+      },
+      {
+        id: 'cto_phase_2',
+        name: 'The CTO',
+        title: 'Why does this cost so much?',
+        domain: 'cloud',
+        hp: 100,
+        maxHp: 100,
+        deck: ['cost_alert_attack', 'budget_review', 'vendor_call', 'license_audit'],
+        telegraphs: [
+          'This is more than my house.',
+          'Who approved this spend?',
+        ],
+        transitionDialog: 'Fine, the site is up. But LOOK at this bill.\nLOOK AT IT.',
+      },
+      {
+        id: 'cto_phase_3',
+        name: 'The CTO',
+        title: 'Why didn\'t we just use Excel?',
+        domain: 'cloud',
+        hp: 80,
+        maxHp: 80,
+        isLegacy: true,
+        deck: ['excel_macro', 'sharepoint_migrate', 'access_db_query', 'outlook_rule'],
+        telegraphs: [
+          'I built the original system in Excel.',
+          'It worked fine for 15 years.',
+        ],
+        transitionDialog: "I need you to explain something.\nWhy. Can't. We. Use. Excel?",
+      },
+    ],
   },
 }
 
