@@ -62,11 +62,11 @@ export class BaseScene extends Phaser.Scene {
     }
   }
 
-  // Play an SFX by ID with priority-based queue.
-  // Priority 4 always plays and interrupts everything.
-  // Priority 3 interrupts 1–2 but queues behind other 3s.
-  // Priority 1–2 are skipped if a higher-priority SFX is playing.
-  // Max 2 concurrent SFX (GBC realism).
+  // Play an SFX by ID with priority-based channel arbitration.
+  // Priority 4 always plays and interrupts lower-priority SFX to make room.
+  // Priority 3 can interrupt 1–2, but is dropped if both channels are occupied by equal/higher priority SFX.
+  // Priority 1–2 are skipped if a higher-priority SFX is playing or no channel is available.
+  // Max 2 concurrent SFX (GBC realism); excess SFX are dropped rather than queued.
   playSfx(id) {
     const preset = getSfxPreset(id)
     if (!preset) return
@@ -128,6 +128,26 @@ export class BaseScene extends Phaser.Scene {
   // Scenes must set this.dialog = new DialogBox(this) in create().
   showDialog(text, callback = null) {
     if (this.dialog) this.dialog.show(text, callback)
+  }
+
+  // Register ESC key to pause the current scene and launch PauseScene.
+  // Call in create() of any scene that should be pausable.
+  setupPauseKey() {
+    this.input.keyboard.on('keydown-ESC', () => {
+      if (this.scene.isPaused(this.scene.key)) return
+      this.scene.pause()
+      this.scene.launch('PauseScene', { returnScene: this.scene.key })
+    })
+  }
+
+  // Update currently-playing BGM volume to match latest session settings.
+  // Called by PauseScene when sliders change.
+  refreshBgmVolume() {
+    if (!this._currentBgm || !this._currentBgm.isPlaying) return
+    const session = GameState._session
+    const bgmDef  = getBgmConfig(this._currentBgm.key)
+    const baseVol = bgmDef?.volume ?? 0.5
+    this._currentBgm.setVolume(baseVol * session.masterVolume * session.bgmVolume)
   }
 
   shutdown() {

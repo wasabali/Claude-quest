@@ -82,6 +82,7 @@ export class BattleScene extends BaseScene {
     this._buildSkillMenu()
     this._buildLogBox()
     this._setupInput()
+    this.setupPauseKey()
 
     if (mode === BATTLE_MODES.INCIDENT) {
       this.playBgm('battle_incident')
@@ -290,7 +291,7 @@ export class BattleScene extends BaseScene {
         break
 
       case 'damage': {
-        const isCritical = event.multiplier >= 2
+        const isCritical = (event.multiplier ?? 1) >= 2
         this.playSfx(isCritical ? 'sfx_damage_critical' : 'sfx_damage_hit')
         if (event.target === 'opponent') {
           this._showLog(`Dealt ${event.value} damage!`)

@@ -11,7 +11,7 @@ import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
 import { getAll as getAllThreads, getByCommandId } from '../src/data/stackoverflow.js'
 import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
-import { getSfxPreset, getBgmConfig, getAllSfx, getAllBgm } from '../src/data/audio.js'
+import { getById as getAudioById, getAll as getAllAudio, getBy as getAudioBy, getSfxPreset, getBgmConfig, getAllSfx, getAllBgm } from '../src/data/audio.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
 const VALID_GATE_TYPES = ['hard', 'soft', 'knowledge', 'reputation', 'shame']
@@ -304,5 +304,19 @@ describe('audio registry', () => {
   it('victory and game_over tracks do not loop', () => {
     expect(getBgmConfig('victory').loop).toBe(false)
     expect(getBgmConfig('game_over').loop).toBe(false)
+  })
+
+  it('follows the standard registry pattern with getById, getAll, getBy', () => {
+    expect(getAudioById('sfx_confirm')).toBeDefined()
+    expect(getAudioById('sfx_confirm').id).toBe('sfx_confirm')
+    expect(getAudioById('battle_incident')).toBeDefined()
+    expect(getAudioById('battle_incident').id).toBe('battle_incident')
+
+    const all = getAllAudio()
+    expect(all.length).toBe(21 + 17)
+
+    const priority4 = getAudioBy('priority', 4)
+    expect(priority4.length).toBeGreaterThan(0)
+    priority4.forEach(sfx => expect(sfx.priority).toBe(4))
   })
 })

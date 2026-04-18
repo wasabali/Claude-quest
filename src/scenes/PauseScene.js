@@ -93,6 +93,7 @@ export class PauseScene extends Phaser.Scene {
       const current = GameState._session[slider.key]
       const next = Math.min(1, Math.max(0, Math.round((current + direction * STEP_SIZE) * SLIDER_STEPS) / SLIDER_STEPS))
       GameState._session[slider.key] = next
+      this._applyVolumeToActiveScene()
       this._refreshDisplay()
     } else if (MENU_ITEMS[idx] === 'MUTE') {
       this._toggleMute()
@@ -118,6 +119,12 @@ export class PauseScene extends Phaser.Scene {
       this.scene.resume(this._returnScene)
     }
     this.scene.stop('PauseScene')
+  }
+
+  _applyVolumeToActiveScene() {
+    if (!this._returnScene) return
+    const activeScene = this.scene.get(this._returnScene)
+    if (activeScene?.refreshBgmVolume) activeScene.refreshBgmVolume()
   }
 
   _refreshDisplay() {

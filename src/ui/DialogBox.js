@@ -196,7 +196,8 @@ export class DialogBox {
       callback: () => {
         this._charIdx++
         this._text.setText(fullText.slice(0, this._charIdx))
-        if (this.scene.playSfx) this.scene.playSfx('sfx_text_blip')
+        const ch = fullText[this._charIdx - 1]
+        if (ch && ch.trim() && this.scene.playSfx) this.scene.playSfx('sfx_text_blip')
         if (this._charIdx >= fullText.length) {
           this._finishTyping()
         }

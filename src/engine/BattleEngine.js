@@ -2,7 +2,7 @@
 // Owns the battle state and phase queue. Returns BattleEvent[] arrays.
 // Scenes delegate all logic here; they only render the returned events.
 
-import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
+import { calculateDamage, getDomainMultiplier, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
 import { REPUTATION_MIN, REPUTATION_MAX } from '../config.js'
 
 // ---------------------------------------------------------------------------
@@ -135,9 +135,11 @@ export function skillPhase(state, skill) {
   const effect = skill.effect
 
   if (effect.type === 'damage') {
+    const isBypass = skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear'
+    const multiplier = isBypass ? 1.0 : getDomainMultiplier(skill.domain, state.opponent.domain)
     const dmg = calculateDamage(skill, state.opponent.domain) // always use true domain for calculation
     state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
-    events.push({ type: 'damage', target: 'opponent', value: dmg })
+    events.push({ type: 'damage', target: 'opponent', value: dmg, multiplier })
   }
 
   if (effect.type === 'instant_win_vs_legacy') {

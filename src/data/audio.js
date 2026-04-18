@@ -204,7 +204,7 @@ const SFX_PRESETS = {
     duration: 80,
     description: 'Pitch up for gain, down for loss',
   },
-};
+}
 
 // ---------------------------------------------------------------------------
 
@@ -337,13 +337,23 @@ const BGM_CONFIG = {
     volume: 0.6,
     loop: false,
   },
-};
+}
 
 // ---------------------------------------------------------------------------
-//  Registry accessors
+//  Registry accessors — standard pattern (getById / getAll / getBy)
+//
+//  audio.js has two registries (SFX + BGM) so it exposes typed helpers
+//  alongside the standard accessors that search both registries.
 // ---------------------------------------------------------------------------
 
-export const getSfxPreset = (id) => SFX_PRESETS[id];
-export const getBgmConfig = (id) => BGM_CONFIG[id];
-export const getAllSfx     = () => Object.values(SFX_PRESETS);
-export const getAllBgm     = () => Object.values(BGM_CONFIG);
+const ALL_AUDIO = { ...SFX_PRESETS, ...BGM_CONFIG }
+
+export const getById = (id)           => ALL_AUDIO[id]
+export const getAll  = ()             => Object.values(ALL_AUDIO)
+export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
+
+// Typed helpers — convenience accessors scoped to a single registry.
+export const getSfxPreset = (id) => SFX_PRESETS[id]
+export const getBgmConfig = (id) => BGM_CONFIG[id]
+export const getAllSfx     = () => Object.values(SFX_PRESETS)
+export const getAllBgm     = () => Object.values(BGM_CONFIG)
