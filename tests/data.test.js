@@ -6,7 +6,7 @@ import { DOMAIN_MATCHUPS, GYM_SHAME_THRESHOLDS } from '../src/config.js'
 import { getById as getSkillById, getAll as getAllSkills, getBy as getSkillsBy } from '../src/data/skills.js'
 import { getById as getItemById, getAll as getAllItems } from '../src/data/items.js'
 import { getById as getTrainerById, getAll as getAllTrainers } from '../src/data/trainers.js'
-import { getAll as getAllEmblems } from '../src/data/emblems.js'
+import { getAll as getAllEmblems, getById as getEmblemById } from '../src/data/emblems.js'
 import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
 import { getAll as getAllThreads, getByCommandId } from '../src/data/stackoverflow.js'
@@ -159,11 +159,12 @@ describe('gym leaders', () => {
       })
   })
 
-  it('each gym leader with an emblemReward references a valid emblem string', () => {
+  it('each gym leader with an emblemReward references a valid emblem in the registry', () => {
     gymLeaders
       .filter(l => l.emblemReward !== null)
       .forEach(leader => {
         expect(typeof leader.emblemReward).toBe('string')
+        expect(getEmblemById(leader.emblemReward)).toBeDefined()
       })
   })
 

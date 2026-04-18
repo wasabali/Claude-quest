@@ -352,7 +352,7 @@ const TRAINERS = {
   the_cto: {
     id: 'the_cto',
     name: 'The CTO',
-    domain: null,
+    domain: 'cloud',
     role: 'gym_leader',
     gym: 'executive_suite',
     gymNumber: 8,

@@ -3,7 +3,7 @@
 // Scenes delegate all logic here; they only render the returned events.
 
 import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
-import { REPUTATION_MIN, REPUTATION_MAX } from '../config.js'
+import { REPUTATION_MIN, REPUTATION_MAX, GYM_SHAME_THRESHOLDS } from '../config.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -82,6 +82,36 @@ export function createBattleState(mode, player, opponent, options = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// getPreBattleEvents
+// Returns dialog events to show before the first turn of an ENGINEER battle.
+// Gym leaders use shame-aware dialog: high-shame players get wary lines.
+// Non-gym trainers use introDialog.
+// ---------------------------------------------------------------------------
+export function getPreBattleEvents(state) {
+  const events = []
+  const opponent = state.opponent
+
+  if (state.mode !== BATTLE_MODES.ENGINEER) return events
+
+  const shame = state.player.shamePoints ?? 0
+  const isGymLeader = opponent.role === 'gym_leader'
+
+  if (isGymLeader && shame >= GYM_SHAME_THRESHOLDS.wary && opponent.preBattleDialog_highShame) {
+    for (const line of opponent.preBattleDialog_highShame) {
+      events.push({ type: 'dialog', target: 'player', text: line })
+    }
+  } else if (isGymLeader && opponent.preBattleDialog) {
+    for (const line of opponent.preBattleDialog) {
+      events.push({ type: 'dialog', target: 'player', text: line })
+    }
+  } else if (opponent.introDialog) {
+    events.push({ type: 'dialog', target: 'player', text: opponent.introDialog })
+  }
+
+  return events
+}
+
+// ---------------------------------------------------------------------------
 // Phase 1: StatusTickPhase
 // Decrements duration of all active player and opponent statuses.
 // Permanent statuses (duration === -1) are never decremented.
@@ -135,9 +165,15 @@ export function skillPhase(state, skill) {
   const effect = skill.effect
 
   if (effect.type === 'damage') {
-    const dmg = calculateDamage(skill, state.opponent.domain) // always use true domain for calculation
-    state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
-    events.push({ type: 'damage', target: 'opponent', value: dmg })
+    // Check immuneDomains — opponent takes 0 damage from immune domains
+    const immuneDomains = state.opponent.immuneDomains ?? []
+    if (immuneDomains.includes(skill.domain)) {
+      events.push({ type: 'damage', target: 'opponent', value: 0, immune: true })
+    } else {
+      const dmg = calculateDamage(skill, state.opponent.domain)
+      state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
+      events.push({ type: 'damage', target: 'opponent', value: dmg })
+    }
   }
 
   if (effect.type === 'instant_win_vs_legacy') {
@@ -415,12 +451,34 @@ export function turnEndPhase(state) {
 
     events.push({ type: 'xp_gain', target: 'player', value: xp })
 
-    // ENGINEER mode: tier-based teacher reactions
+    // Drop item on win (e.g. Legacy Monolith drops oldcorp_keycard)
+    if (state.opponent.dropItem) {
+      events.push({ type: 'item_drop', target: 'player', value: state.opponent.dropItem })
+    }
+
+    // ENGINEER mode: tier-based teacher reactions with shame awareness
     if (state.mode === BATTLE_MODES.ENGINEER) {
-      if (tier === 'optimal' && state.opponent.teachSkillId) {
+      const shame = state.player.shamePoints ?? 0
+      const isGymLeader = state.opponent.role === 'gym_leader'
+
+      // Gym leader shame-aware dialog: use high-shame post-defeat dialog when shame ≥ teachRefusal
+      if (isGymLeader && shame >= GYM_SHAME_THRESHOLDS.teachRefusal && state.opponent.postDefeatDialog_highShame) {
+        for (const line of state.opponent.postDefeatDialog_highShame) {
+          events.push({ type: 'dialog', target: 'player', text: line })
+        }
+      } else if (isGymLeader && state.opponent.postDefeatDialog) {
+        for (const line of state.opponent.postDefeatDialog) {
+          events.push({ type: 'dialog', target: 'player', text: line })
+        }
+      }
+
+      // Teach refusal: gym leaders refuse to teach at shame ≥ teachRefusal
+      if (isGymLeader && shame >= GYM_SHAME_THRESHOLDS.teachRefusal) {
+        events.push({ type: 'teach_refused', target: 'player', reason: 'shame' })
+      } else if (tier === 'optimal' && state.opponent.teachSkillId) {
         events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
       } else if (tier === 'standard') {
-        if (state.opponent.winDialog) {
+        if (!isGymLeader && state.opponent.winDialog) {
           events.push({ type: 'dialog', target: 'player', text: state.opponent.winDialog })
         } else if (state.opponent.teachSkillId) {
           events.push({ type: 'teach_hint', target: 'player', value: state.opponent.teachSkillId })
