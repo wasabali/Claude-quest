@@ -57,6 +57,11 @@ export const ENCOUNTER_POOLS = {
     rare:   ['cold_start_cascade', 'azure_bill_spike'],
     cursed: [],
   },
+  oldcorp_basement: {
+    common: [],
+    rare:   [],
+    cursed: ['vb6_billing_horror'],
+  },
   shell_cavern: {
     common: ['zombie_process', 'dns_propagation', 'missing_semicolon'],
     rare:   ['runaway_process', 'null_pointer_exception'],
@@ -528,7 +533,23 @@ const ENCOUNTERS = {
     optimalFix: 'vault_rotate',
     layers: null,
   },
-  // ── New incidents from content bible ─────────────────────────────────────
+  vb6_billing_horror: {
+    id: 'vb6_billing_horror',
+    type: 'incident',
+    name: 'The VB6 Billing Horror',
+    symptomText: 'CRITICAL ERROR 0x80004005: Migration Detected.',
+    rootCauseText: 'A Visual Basic 6 billing system that has been running since 1998 does not want to stop.',
+    domain: 'linux',
+    immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    hp: 80,
+    sla: 5,
+    difficulty: 4,
+    attacks: ['uptime_drain', 'escalation'],
+    optimalFix: 'systemctl_restart',
+    encounterText: ['It was running since 1998.', 'It did not want to stop.'],
+    layers: null,
+  },
+  // ── New incidents from content bible ───────────────────────────────────── ─────────────────────────────────────
 
   '404_not_found': {
     id: '404_not_found',

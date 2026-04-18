@@ -68,6 +68,38 @@ const QUESTS = {
     completedDialog: ["The website's been running for 3 days! Best week ever."],
     followUp: null,
   },
+  do_not_touch: {
+    id: 'do_not_touch',
+    npc: 'dagny_dba',
+    location: 'oldcorp_basement',
+    act: 3,
+    type: 'branch',
+    requiresFlags: ['act_3_started', 'oldcorp_entered'],
+    excludeFlags: ['do_not_touch_resolved'],
+    reminderDialog: ['There\'s one service I should warn you about…'],
+    branches: {
+      open: {
+        label: 'Open it anyway',
+        triggerEncounter: 'vb6_billing_horror',
+        onWin: { shameDelta: 1, learnSkill: 'exec_xp_cmdshell', setFlag: 'do_not_touch_opened' },
+        onLoss: { hpDelta: -20, repDelta: -10, dialog: ['The invoices will be wrong for months.'] },
+      },
+      migrate: {
+        label: 'Migrate it properly',
+        quiz: [
+          { text: 'Rewrite it in Python and YOLO deploy',          result: 'wrong',    budgetLoss: 50 },
+          { text: 'Lift and shift to Azure App Service',            result: 'standard', xp: 80 },
+          { text: 'Strangler fig pattern — migrate incrementally',  result: 'optimal',  xp: 150, itemDrop: 'legacy_migration_badge' },
+        ],
+        onOptimal: {
+          setFlag: 'do_not_touch_migrated_optimal',
+          dialog: ['That\'s exactly right.', 'Take this — you\'ve earned it.', 'The migration badge. Wear it with pride.'],
+        },
+        followUpLine: 'Can you also fix my home Wi-Fi?',
+      },
+    },
+    completionFlag: 'do_not_touch_resolved',
+  },
 }
 
 export const getById = (id)           => QUESTS[id]

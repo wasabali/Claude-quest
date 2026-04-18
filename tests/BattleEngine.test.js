@@ -205,6 +205,48 @@ describe('skillPhase', () => {
     expect(state.opponent.hp).toBe(0)
   })
 
+  it('immuneDomains: deals 0 damage when skill domain is immune', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({
+      domain: 'linux', hp: 80, immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    }))
+    const skill = makeDamageSkill({ domain: 'cloud', effect: { type: 'damage', value: 30 } })
+    const events = skillPhase(state, skill)
+    const dmgEvent = events.find(e => e.type === 'damage' && e.target === 'opponent')
+    expect(dmgEvent.value).toBe(0)
+    expect(dmgEvent.isImmune).toBe(true)
+    expect(dmgEvent.domain).toBe('cloud')
+    expect(state.opponent.hp).toBe(80)
+  })
+
+  it('immuneDomains: deals normal damage from non-immune domain', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({
+      domain: 'linux', hp: 80, immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    }))
+    const skill = makeDamageSkill({ domain: 'linux', effect: { type: 'damage', value: 30 } })
+    const events = skillPhase(state, skill)
+    const dmgEvent = events.find(e => e.type === 'damage' && e.target === 'opponent')
+    expect(dmgEvent.value).toBe(30)
+    expect(dmgEvent.isImmune).toBe(false)
+    expect(state.opponent.hp).toBe(50)
+  })
+
+  it('immuneDomains: security domain deals weak damage against linux opponent', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({
+      domain: 'linux', hp: 80, immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    }))
+    const skill = makeDamageSkill({ domain: 'security', effect: { type: 'damage', value: 30 } })
+    skillPhase(state, skill)
+    // Security is weak against linux (0.5 multiplier), so 30 * 0.5 = 15 damage
+    expect(state.opponent.hp).toBe(65) // 80 - 15 = 65
+  })
+
+  it('immuneDomains: absent immuneDomains field has no effect', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ domain: 'cloud', hp: 60 }))
+    const skill = makeDamageSkill({ domain: 'cloud', effect: { type: 'damage', value: 30 } })
+    skillPhase(state, skill)
+    expect(state.opponent.hp).toBe(30)
+  })
+
   it('emits domain_reveal event for reveal_domain effect', () => {
     const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent())
     const skill = {

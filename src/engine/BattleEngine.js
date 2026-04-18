@@ -227,16 +227,20 @@ export function skillPhase(state, skill) {
   const effect = skill.effect
 
   if (effect.type === 'damage') {
+    // --- immuneDomains: encounter-level domain immunity ---
+    const immuneDomains = state.opponent.immuneDomains ?? []
+    const isImmune = immuneDomains.includes(skill.domain)
     // --- Gym mechanic: legacy_only — blocked domains deal 0 damage ---
+    const gymBlocked = state.gymMechanic === 'legacy_only' && state.gymMechanicConfig
+        && state.gymMechanicConfig.blockedDomains && state.gymMechanicConfig.blockedDomains.includes(skill.domain)
     let dmg
-    if (state.gymMechanic === 'legacy_only' && state.gymMechanicConfig
-        && state.gymMechanicConfig.blockedDomains && state.gymMechanicConfig.blockedDomains.includes(skill.domain)) {
+    if (isImmune || gymBlocked) {
       dmg = 0
     } else {
       dmg = calculateDamage(skill, state.opponent.domain)
     }
     state.opponent.hp = Math.max(0, state.opponent.hp - dmg)
-    events.push({ type: 'damage', target: 'opponent', value: dmg })
+    events.push({ type: 'damage', target: 'opponent', value: dmg, isImmune, domain: skill.domain })
   }
 
   if (effect.type === 'instant_win_vs_legacy') {

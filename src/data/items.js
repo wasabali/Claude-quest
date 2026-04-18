@@ -223,6 +223,16 @@ const ITEMS = {
     worldActions:   ['examine'],
     effect:         null,
   },
+  legacy_migration_badge: {
+    id:             'legacy_migration_badge',
+    displayName:    'Legacy Migration Badge',
+    tab:            'keyItems',
+    description:    'Awarded for choosing the strangler fig pattern. Proof you respect legacy systems.',
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['examine'],
+    effect:         null,
+  },
 
   // ── Healing items ─────────────────────────────────────────────────────────
   coffee_black: {

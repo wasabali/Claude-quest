@@ -11,6 +11,7 @@ import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
 import { getAll as getAllThreads, getByCommandId } from '../src/data/stackoverflow.js'
 import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
+import { getAll as getAllInteractions } from '../src/data/interactions.js'
 import { getById as getGymById, getAll as getAllGyms, getBy as getGymsBy } from '../src/data/gyms.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
@@ -24,6 +25,7 @@ const DATA_FILES = [
   'encounters.js',
   'stackoverflow.js',
   'gates.js',
+  'interactions.js',
   'gyms.js',
 ].map(file => path.join(process.cwd(), 'src', 'data', file))
 
@@ -113,6 +115,7 @@ describe('other data registries', () => {
       ...getAllEncounters().map(entry => entry.id),
       ...getAllThreads().map(entry => entry.id),
       ...getAllGates().map(entry => entry.id),
+      ...getAllInteractions().map(entry => entry.id),
       ...getAllGyms().map(entry => entry.id),
     ]
     expect(new Set(allIds).size).toBe(allIds.length)
@@ -236,6 +239,54 @@ describe('gates registry', () => {
           expect(VALID_TIERS).toContain(step.tier)
         })
       })
+  })
+})
+
+describe('interactions registry', () => {
+  it('has 7 environmental storytelling entries', () => {
+    expect(getAllInteractions()).toHaveLength(7)
+  })
+
+  it('all interactions have required fields', () => {
+    getAllInteractions().forEach(interaction => {
+      expect(typeof interaction.id).toBe('string')
+      expect(typeof interaction.location).toBe('string')
+      expect(typeof interaction.object).toBe('string')
+      expect(Array.isArray(interaction.text)).toBe(true)
+      expect(interaction.text.length).toBeGreaterThan(0)
+    })
+  })
+})
+
+describe('do_not_touch quest', () => {
+  it('exists with branch type', () => {
+    const quest = getAllQuests().find(q => q.id === 'do_not_touch')
+    expect(quest).toBeDefined()
+    expect(quest.type).toBe('branch')
+    expect(quest.branches.open).toBeDefined()
+    expect(quest.branches.migrate).toBeDefined()
+  })
+
+  it('open branch triggers vb6_billing_horror', () => {
+    const quest = getAllQuests().find(q => q.id === 'do_not_touch')
+    expect(quest.branches.open.triggerEncounter).toBe('vb6_billing_horror')
+  })
+
+  it('migrate branch has 3 quiz choices', () => {
+    const quest = getAllQuests().find(q => q.id === 'do_not_touch')
+    expect(quest.branches.migrate.quiz).toHaveLength(3)
+  })
+})
+
+describe('vb6_billing_horror encounter', () => {
+  it('exists with immuneDomains', () => {
+    const enc = getAllEncounters().find(e => e.id === 'vb6_billing_horror')
+    expect(enc).toBeDefined()
+    expect(enc.type).toBe('incident')
+    expect(enc.domain).toBe('linux')
+    expect(enc.immuneDomains).toEqual(['cloud', 'iac', 'kubernetes', 'containers'])
+    expect(enc.hp).toBe(80)
+    expect(enc.sla).toBe(5)
   })
 })
 
