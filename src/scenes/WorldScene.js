@@ -85,9 +85,9 @@ export class WorldScene extends BaseScene {
     this._setupPlayer()
     this._setupInput()
     this._setupCamera()
-    this._buildInteractionLookup()
 
     GameState.player.location = 'localhost_town'
+    this._buildInteractionLookup()
     this.playBgm('town')
   }
 
@@ -219,8 +219,12 @@ export class WorldScene extends BaseScene {
       }
     }
 
-    const tileX = Math.floor(checkX / TILE_SIZE)
-    const tileY = Math.floor(checkY / TILE_SIZE)
+    const TILE_OFFSETS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }
+    const playerTileX = Math.floor(this._player.x / TILE_SIZE)
+    const playerTileY = Math.floor(this._player.y / TILE_SIZE)
+    const [tdx, tdy]  = TILE_OFFSETS[this._facing]
+    const tileX = playerTileX + tdx
+    const tileY = playerTileY + tdy
     const interaction = this._interactionLookup?.get(`${tileX},${tileY}`)
     if (interaction && interaction.type !== 'door') {
       this._resolveInteraction(interaction)
@@ -250,7 +254,6 @@ export class WorldScene extends BaseScene {
       this._interacting = true
       GameState.story.flags[interaction.flagKey] = true
       addItem(interaction.item.tab, interaction.item.id, interaction.item.qty)
-      markDirty()
       this.dialog.show(interaction.dialog, () => { this._interacting = false })
       return
     }
