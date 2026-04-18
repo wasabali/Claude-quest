@@ -13,6 +13,7 @@ import {
 } from '#engine/MovementEngine.js'
 import { getById as getTrainerById } from '#data/trainers.js'
 import { resolveNpcDialog, resolveNpcPages } from '#engine/StoryEngine.js'
+import { getBy as getInteractionsBy, getById as getInteractionById } from '#data/interactions.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
@@ -121,6 +122,7 @@ export class WorldScene extends BaseScene {
     this._setupInput()
     this._setupCamera()
     this.setupPauseKey()
+    this._buildInteractionLookup()
 
     GameState.player.location = 'localhost_town'
     this.playBgm(GameState.player.location)
@@ -296,6 +298,17 @@ export class WorldScene extends BaseScene {
       return
     }
 
+    if (vx !== 0 || vy !== 0) {
+      const tx = Math.floor(this._player.x / TILE_SIZE)
+      const ty = Math.floor(this._player.y / TILE_SIZE)
+      if (tx !== this._lastTileX || ty !== this._lastTileY) {
+        this._lastTileX = tx
+        this._lastTileY = ty
+        this._stepCount++
+        this._checkDoorInteraction()
+      }
+    }
+
     if (this._moveState === 'stepping') {
       const result = updateStep(this._moveProgress, delta,
         this._fromX, this._fromY, this._toX, this._toY, this._isRunning)
@@ -404,6 +417,67 @@ export class WorldScene extends BaseScene {
         this._interactWithNpc(def.name)
         return
       }
+    }
+
+    const TILE_OFFSETS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }
+    const playerTileX = Math.floor(this._player.x / TILE_SIZE)
+    const playerTileY = Math.floor(this._player.y / TILE_SIZE)
+    const [tdx, tdy]  = TILE_OFFSETS[this._facing]
+    const tileX = playerTileX + tdx
+    const tileY = playerTileY + tdy
+    const interaction = this._interactionLookup?.get(`${tileX},${tileY}`)
+    if (interaction && interaction.type !== 'door') {
+      this._resolveInteraction(interaction)
+    }
+  }
+
+  _buildInteractionLookup() {
+    this._interactionLookup = new Map()
+    const region = GameState.player.location
+    const regionInteractions = getInteractionsBy('region', region)
+    for (const interaction of regionInteractions) {
+      this._interactionLookup.set(`${interaction.tileX},${interaction.tileY}`, interaction)
+    }
+  }
+
+  _resolveInteraction(interaction) {
+    const { type } = interaction
+
+    if (type === 'sign' || type === 'flavor') {
+      this._interacting = true
+      this.dialog.show(interaction.dialog, () => { this._interacting = false })
+      return
+    }
+
+    if (type === 'chest') {
+      if (GameState.story.flags[interaction.flagKey]) return
+      this._interacting = true
+      GameState.story.flags[interaction.flagKey] = true
+      addItem(interaction.item.tab, interaction.item.id, interaction.item.qty)
+      this.dialog.show(interaction.dialog, () => { this._interacting = false })
+      return
+    }
+
+    if (type === 'door') {
+      const { requiresItem, flagKey, lockedDialog, unlockedDialog } = interaction
+      if (GameState.story.flags[flagKey]) return
+      this._interacting = true
+      if (hasItem(requiresItem.tab, requiresItem.id)) {
+        GameState.story.flags[flagKey] = true
+        markDirty()
+        this.dialog.show(unlockedDialog, () => { this._interacting = false })
+      } else {
+        this.dialog.show(lockedDialog, () => { this._interacting = false })
+      }
+    }
+  }
+
+  _checkDoorInteraction() {
+    const tileX = Math.floor(this._player.x / TILE_SIZE)
+    const tileY = Math.floor(this._player.y / TILE_SIZE)
+    const interaction = this._interactionLookup?.get(`${tileX},${tileY}`)
+    if (interaction && interaction.type === 'door') {
+      this._resolveInteraction(interaction)
     }
   }
 

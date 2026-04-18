@@ -152,6 +152,16 @@ const ITEMS = {
     worldActions:   ['examine', 'drop'],
     effect:         null,
   },
+  stack_overflow_printout: {
+    id:             'stack_overflow_printout',
+    displayName:    'Stack Overflow Printout',
+    tab:            'tools',
+    description:    'A printed answer from 2014. Still technically correct.',
+    usableInBattle: false,
+    battleAction:   'examine',
+    worldActions:   ['read', 'examine'],
+    effect:         { type: 'read_xp', value: 5, onceFlag: 'stackOverflowPrintoutRead' },
+  },
   cold_coffee: {
     id:             'cold_coffee',
     displayName:    'Cold Coffee',
