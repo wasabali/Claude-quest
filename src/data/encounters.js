@@ -59,7 +59,7 @@ export const ENCOUNTER_POOLS = {
   },
   oldcorp_basement: {
     common: [],
-    rare:   [],
+    rare:   ['legacy_monolith'],
     cursed: ['vb6_billing_horror'],
   },
   shell_cavern: {
@@ -549,7 +549,26 @@ const ENCOUNTERS = {
     encounterText: ['It was running since 1998.', 'It did not want to stop.'],
     layers: null,
   },
-  // ── New incidents from content bible ───────────────────────────────────── ─────────────────────────────────────
+
+  legacy_monolith: {
+    id: 'legacy_monolith',
+    type: 'incident',
+    name: 'The Legacy Monolith',
+    symptomText: 'A 1994 server rack. Windows XP error dialogs. Still running VB6.',
+    rootCauseText: 'Nobody has dared touch this system in 30 years. It communicates via BSOD error codes.',
+    domain: null,
+    hp: 200,
+    sla: null,
+    difficulty: 5,
+    attacks: ['escalation', 'confusion', 'skill_block'],
+    optimalFix: null,
+    immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    vulnerableDomains: ['linux', 'security'],
+    dropItem: 'oldcorp_keycard',
+    layers: null,
+  },
+
+  // ── New incidents from content bible ─────────────────────────────────────
 
   '404_not_found': {
     id: '404_not_found',

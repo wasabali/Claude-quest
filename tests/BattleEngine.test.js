@@ -8,6 +8,7 @@ import {
   incidentAttackPhase,
   turnEndPhase,
   resolveTurn,
+  getPreBattleEvents,
   BATTLE_MODES,
   INCIDENT_ATTACKS,
 } from '../src/engine/BattleEngine.js'
@@ -1196,6 +1197,48 @@ describe('multi-layer incident transitions', () => {
 })
 
 // ---------------------------------------------------------------------------
+// immuneDomains — opponent immunity in skillPhase
+// ---------------------------------------------------------------------------
+describe('immuneDomains', () => {
+  it('deals 0 damage when skill domain is in opponent immuneDomains', () => {
+    const opponent = makeOpponent({
+      hp: 200,
+      immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), opponent, { slaTimer: 10 })
+    const skill = makeDamageSkill({ domain: 'cloud', effect: { type: 'damage', value: 30 } })
+    const events = skillPhase(state, skill)
+    const damageEvent = events.find(e => e.type === 'damage')
+    expect(damageEvent.value).toBe(0)
+    expect(damageEvent.immune).toBe(true)
+    expect(state.opponent.hp).toBe(200)
+  })
+
+  it('deals normal damage when skill domain is NOT in opponent immuneDomains', () => {
+    const opponent = makeOpponent({
+      hp: 200,
+      immuneDomains: ['cloud', 'iac', 'kubernetes', 'containers'],
+    })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), opponent, { slaTimer: 10 })
+    const skill = makeDamageSkill({ domain: 'linux', effect: { type: 'damage', value: 30 } })
+    const events = skillPhase(state, skill)
+    const damageEvent = events.find(e => e.type === 'damage')
+    expect(damageEvent.value).toBeGreaterThan(0)
+    expect(damageEvent.immune).toBeUndefined()
+    expect(state.opponent.hp).toBeLessThan(200)
+  })
+
+  it('deals normal damage when opponent has no immuneDomains', () => {
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), makeOpponent({ hp: 60 }), { slaTimer: 10 })
+    const skill = makeDamageSkill({ domain: 'cloud', effect: { type: 'damage', value: 30 } })
+    const events = skillPhase(state, skill)
+    const damageEvent = events.find(e => e.type === 'damage')
+    expect(damageEvent.value).toBe(30)
+    expect(state.opponent.hp).toBe(30)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Boss fight helpers
 // ---------------------------------------------------------------------------
 
@@ -1361,6 +1404,25 @@ describe('Boss fight — phase transitions', () => {
 })
 
 // ---------------------------------------------------------------------------
+// dropItem — item_drop event on win
+// ---------------------------------------------------------------------------
+describe('dropItem', () => {
+  it('emits item_drop when opponent has dropItem and is defeated', () => {
+    const opponent = makeOpponent({ hp: 0, dropItem: 'oldcorp_keycard' })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), opponent, { slaTimer: 5 })
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'item_drop', value: 'oldcorp_keycard' }))
+  })
+
+  it('does not emit item_drop when opponent has no dropItem', () => {
+    const opponent = makeOpponent({ hp: 0 })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), opponent, { slaTimer: 5 })
+    const events = turnEndPhase(state)
+    expect(events.find(e => e.type === 'item_drop')).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Executive Mode
 // ---------------------------------------------------------------------------
 
@@ -1440,6 +1502,110 @@ describe('Executive Mode', () => {
     // enemyPhase returns [] in INCIDENT mode
     expect(events).toHaveLength(0)
     expect(state.executiveMode).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getPreBattleEvents — shame-aware pre-battle dialog
+// ---------------------------------------------------------------------------
+describe('getPreBattleEvents', () => {
+  it('returns gym leader preBattleDialog for normal shame', () => {
+    const opponent = makeOpponent({
+      role: 'gym_leader',
+      preBattleDialog: ['Normal line 1', 'Normal line 2'],
+      preBattleDialog_highShame: ['Wary line 1'],
+      introDialog: 'Intro fallback',
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ shamePoints: 0 }), opponent)
+    const events = getPreBattleEvents(state)
+    expect(events).toHaveLength(2)
+    expect(events[0].text).toBe('Normal line 1')
+    expect(events[1].text).toBe('Normal line 2')
+  })
+
+  it('returns gym leader preBattleDialog_highShame when shame ≥ wary threshold (5)', () => {
+    const opponent = makeOpponent({
+      role: 'gym_leader',
+      preBattleDialog: ['Normal line'],
+      preBattleDialog_highShame: ['Wary line 1', 'Wary line 2'],
+      introDialog: 'Intro fallback',
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ shamePoints: 5 }), opponent)
+    const events = getPreBattleEvents(state)
+    expect(events).toHaveLength(2)
+    expect(events[0].text).toBe('Wary line 1')
+    expect(events[1].text).toBe('Wary line 2')
+  })
+
+  it('returns introDialog for non-gym trainers', () => {
+    const opponent = makeOpponent({ introDialog: 'I am a regular trainer.' })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer(), opponent)
+    const events = getPreBattleEvents(state)
+    expect(events).toHaveLength(1)
+    expect(events[0].text).toBe('I am a regular trainer.')
+  })
+
+  it('returns empty events for INCIDENT mode', () => {
+    const opponent = makeOpponent({ introDialog: 'Should not appear' })
+    const state = createBattleState(BATTLE_MODES.INCIDENT, makePlayer(), opponent, { slaTimer: 5 })
+    const events = getPreBattleEvents(state)
+    expect(events).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Gym leader shame-aware post-defeat dialog and teach refusal
+// ---------------------------------------------------------------------------
+describe('gym leader shame reactions in turnEndPhase', () => {
+  it('emits postDefeatDialog for gym leader on normal win', () => {
+    const opponent = makeOpponent({
+      hp: 0,
+      role: 'gym_leader',
+      deck: ['az_webapp_deploy'],
+      teachSkillId: 'az_webapp_deploy',
+      postDefeatDialog: ['You won.', 'Well done.'],
+      postDefeatDialog_highShame: ['You win but I refuse.'],
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ shamePoints: 0 }), opponent)
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    const dialogs = events.filter(e => e.type === 'dialog')
+    expect(dialogs).toHaveLength(2)
+    expect(dialogs[0].text).toBe('You won.')
+    expect(dialogs[1].text).toBe('Well done.')
+    expect(events).toContainEqual(expect.objectContaining({ type: 'teach_skill' }))
+  })
+
+  it('emits postDefeatDialog_highShame and teach_refused when shame ≥ 10', () => {
+    const opponent = makeOpponent({
+      hp: 0,
+      role: 'gym_leader',
+      deck: ['az_webapp_deploy'],
+      teachSkillId: 'az_webapp_deploy',
+      postDefeatDialog: ['Normal line'],
+      postDefeatDialog_highShame: ['Shame line 1', 'Shame line 2'],
+    })
+    const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ shamePoints: 10 }), opponent)
+    state.winningTier = 'optimal'
+    const events = turnEndPhase(state)
+    const dialogs = events.filter(e => e.type === 'dialog')
+    expect(dialogs).toHaveLength(2)
+    expect(dialogs[0].text).toBe('Shame line 1')
+    expect(dialogs[1].text).toBe('Shame line 2')
+    expect(events).toContainEqual(expect.objectContaining({ type: 'teach_refused', reason: 'shame' }))
+    expect(events.find(e => e.type === 'teach_skill')).toBeUndefined()
+  })
+
+  it('non-gym trainers still emit winDialog without shame logic', () => {
+    const opponent = makeOpponent({
+      hp: 0,
+      deck: ['az_webapp_deploy'],
+      winDialog: 'Good fight.',
+    })
+        const state = createBattleState(BATTLE_MODES.ENGINEER, makePlayer({ shamePoints: 15 }), opponent)
+    state.winningTier = 'standard'
+    const events = turnEndPhase(state)
+    expect(events).toContainEqual(expect.objectContaining({ type: 'dialog', text: 'Good fight.' }))
   })
 })
 
