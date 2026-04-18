@@ -1,29 +1,20 @@
 import Phaser from 'phaser'
 import { BaseScene } from '#scenes/BaseScene.js'
 import { DialogBox } from '#ui/DialogBox.js'
-import { CONFIG, MOVEMENT, ENCOUNTER_BASE_CHANCE, ENCOUNTER_RUN_MULTIPLIER, ENCOUNTER_COOLDOWN_STEPS } from '../config.js'
+import { CONFIG, MOVEMENT } from '../config.js'
 import { GameState, hasItem, addItem, markDirty, grantXpOnce } from '#state/GameState.js'
-import { Overrides } from '../overrides.js'
 import { getById as getStoryById } from '#data/story.js'
-import { getById as getItemById } from '#data/items.js'
 import { getById as getQuestById } from '#data/quests.js'
 import { resolveChoice, isQuestCompleted, getCompletedDialog } from '#engine/QuestEngine.js'
-import { seedRandom } from '#utils/random.js'
+import {
+  DIR_OFFSETS, lerp, canRun, resolveDirection, isTileWalkable,
+  updateBump, updateStep, commitStep, onStepComplete,
+  shouldTriggerEncounter, checkTransition, applyTransition,
+} from '#engine/MovementEngine.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
 const TILE_SIZE   = CONFIG.TILE_SIZE
-
-function lerp(a, b, t) {
-  return a + (b - a) * t
-}
-
-const DIR_OFFSETS = {
-  up:    { dx:  0, dy: -1 },
-  down:  { dx:  0, dy:  1 },
-  left:  { dx: -1, dy:  0 },
-  right: { dx:  1, dy:  0 },
-}
 
 export class WorldScene extends BaseScene {
   constructor() {
@@ -187,26 +178,21 @@ export class WorldScene extends BaseScene {
   }
 
   get _isRunning() {
-    const canRun = Overrides.RUN_OVERRIDE != null
-      ? Overrides.RUN_OVERRIDE
-      : hasItem('keyItems', 'sudo_running_shoes')
-    return this._keyZ.isDown && canRun
+    return this._keyZ.isDown && canRun()
   }
 
   _getInputDirection() {
-    if (this._cursors.up.isDown)    return 'up'
-    if (this._cursors.down.isDown)  return 'down'
-    if (this._cursors.left.isDown)  return 'left'
-    if (this._cursors.right.isDown) return 'right'
-    return null
+    return resolveDirection(
+      this._cursors.up.isDown,
+      this._cursors.down.isDown,
+      this._cursors.left.isDown,
+      this._cursors.right.isDown,
+    )
   }
 
   _isTileWalkable(tileX, tileY) {
-    if (tileX < 0 || tileY < 0) return false
-    if (tileX >= this._map.width || tileY >= this._map.height) return false
-    const tile = this._collisionLayer.getTileAt(tileX, tileY)
-    if (tile && tile.index !== 0) return false
-    return true
+    return isTileWalkable(tileX, tileY, this._map.width, this._map.height,
+      (tx, ty) => this._collisionLayer.getTileAt(tx, ty))
   }
 
   _startStep(targetTileX, targetTileY) {
@@ -218,40 +204,33 @@ export class WorldScene extends BaseScene {
     this._toY          = targetTileY * TILE_SIZE + TILE_SIZE / 2
     this._tileX        = targetTileX
     this._tileY        = targetTileY
-    GameState.player.tileX = targetTileX
-    GameState.player.tileY = targetTileY
-    markDirty()
+    commitStep(targetTileX, targetTileY)
   }
 
   _updateMovement(delta) {
     if (this._moveState === 'bumping') {
-      this._bumpProgress += delta
-      const t = Math.min(this._bumpProgress / MOVEMENT.BUMP_DURATION_MS, 1)
-      const bumpT = t < 0.5 ? t * 2 : 2 - t * 2
-      this._player.x = Math.round(lerp(this._bumpFromX, this._bumpToX, bumpT))
-      this._player.y = Math.round(lerp(this._bumpFromY, this._bumpToY, bumpT))
-      if (t >= 1) {
-        this._moveState = 'idle'
-        this._player.x = Math.round(this._bumpFromX)
-        this._player.y = Math.round(this._bumpFromY)
-      }
+      const result = updateBump(this._bumpProgress, delta,
+        this._bumpFromX, this._bumpFromY, this._bumpToX, this._bumpToY)
+      this._bumpProgress = result.progress
+      this._player.x = result.complete ? result.snapX : result.x
+      this._player.y = result.complete ? result.snapY : result.y
+      if (result.complete) this._moveState = 'idle'
       return
     }
 
     if (this._moveState === 'stepping') {
-      this._moveProgress += delta
-      const duration = this._isRunning ? MOVEMENT.RUN_STEP_DURATION_MS : MOVEMENT.STEP_DURATION_MS
-      const t = Math.min(this._moveProgress / duration, 1)
-      this._player.x = Math.round(lerp(this._fromX, this._toX, t))
-      this._player.y = Math.round(lerp(this._fromY, this._toY, t))
+      const result = updateStep(this._moveProgress, delta,
+        this._fromX, this._fromY, this._toX, this._toY, this._isRunning)
+      this._moveProgress = result.progress
+      this._player.x = result.x
+      this._player.y = result.y
 
-      const remaining = duration - this._moveProgress
-      if (remaining <= MOVEMENT.INPUT_BUFFER_WINDOW_MS) {
+      if (result.remaining <= MOVEMENT.INPUT_BUFFER_WINDOW_MS) {
         const dir = this._getInputDirection()
         if (dir) this._bufferedDir = dir
       }
 
-      if (t >= 1) {
+      if (result.complete) {
         this._moveState = 'idle'
         this._onStepComplete()
         if (this._transitioning) return
@@ -303,7 +282,7 @@ export class WorldScene extends BaseScene {
   }
 
   _onStepComplete() {
-    GameState.stats.stepsTaken++
+    onStepComplete()
     this._stepsSinceEncounter++
     this._checkEncounterStep()
     this._checkTransitionTile()
@@ -431,12 +410,7 @@ export class WorldScene extends BaseScene {
   }
 
   _checkEncounterStep() {
-    if (this._stepsSinceEncounter < ENCOUNTER_COOLDOWN_STEPS) return
-
-    const runMultiplier = this._isRunning ? ENCOUNTER_RUN_MULTIPLIER : 1.0
-    const chance = ENCOUNTER_BASE_CHANCE * runMultiplier
-    const rng = seedRandom(GameState.stats.stepsTaken * 0x9e3779b9)
-    if (rng() < chance) {
+    if (shouldTriggerEncounter(this._stepsSinceEncounter, this._isRunning)) {
       this._stepsSinceEncounter = 0
       // Wired to EncounterEngine.selectFromPool() — triggers battle scene transition
     }
@@ -446,38 +420,16 @@ export class WorldScene extends BaseScene {
     const objectLayer = this._map.getObjectLayer('Transitions')
     if (!objectLayer) return
 
-    const px = this._tileX * TILE_SIZE
-    const py = this._tileY * TILE_SIZE
+    const result = checkTransition(this._tileX, this._tileY, TILE_SIZE, objectLayer.objects)
+    if (!result) return
 
-    for (const obj of objectLayer.objects) {
-      if (obj.type !== 'transition') continue
-      if (px >= obj.x && px < obj.x + obj.width && py >= obj.y && py < obj.y + obj.height) {
-        const props = {}
-        for (const p of (obj.properties ?? [])) { props[p.name] = p.value }
-
-        if (props.requiredItem && !hasItem('keyItems', props.requiredItem)) {
-          const itemDef = getItemById(props.requiredItem)
-          const itemName = itemDef?.displayName ?? props.requiredItem
-          this._interacting = true
-          this.dialog.show(
-            [`You need ${itemName} to proceed.\nThe path is blocked by a 403 Forbidden.`],
-            () => { this._interacting = false }
-          )
-          return
-        }
-        if (props.requiredFlag && !GameState.story.flags[props.requiredFlag]) {
-          this._interacting = true
-          this.dialog.show(
-            ['The path is blocked by a 403 Forbidden.'],
-            () => { this._interacting = false }
-          )
-          return
-        }
-
-        this._startTransition(props.targetRegion, props.targetSpawnX, props.targetSpawnY)
-        return
-      }
+    if (result.type === 'blocked') {
+      this._interacting = true
+      this.dialog.show([result.message], () => { this._interacting = false })
+      return
     }
+
+    this._startTransition(result.targetRegion, result.spawnX, result.spawnY)
   }
 
   _startTransition(targetRegion, spawnX, spawnY) {
@@ -497,10 +449,7 @@ export class WorldScene extends BaseScene {
         overlay.setAlpha(steps[step])
         step++
         if (step >= steps.length) {
-          GameState.player.tileX    = spawnX
-          GameState.player.tileY    = spawnY
-          GameState.player.location = targetRegion
-          markDirty()
+          applyTransition(targetRegion, spawnX, spawnY)
           this.scene.restart({ fromTransition: true })
         }
       },
