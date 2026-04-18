@@ -76,7 +76,7 @@ export function createBattleState(mode, player, opponent, options = {}) {
 
   // sla_timer gym mechanic overrides the default SLA timer
   let slaTimer = null
-  if (mode === BATTLE_MODES.INCIDENT) {
+  if (mode === BATTLE_MODES.INCIDENT || mode === BATTLE_MODES.SCRIPTED) {
     if (gymMechanic === 'sla_timer' && gymMechanicConfig?.slaTimer != null) {
       slaTimer = gymMechanicConfig.slaTimer
     } else {
@@ -122,9 +122,7 @@ export function createBattleState(mode, player, opponent, options = {}) {
     playerStatuses:   [],
     opponentStatuses: [],
     domainRevealed:   mode === BATTLE_MODES.ENGINEER,
-    slaTimer:         mode === BATTLE_MODES.INCIDENT || mode === BATTLE_MODES.SCRIPTED
-                        ? (options.slaTimer ?? DEFAULT_SLA_TIMER)
-                        : null,
+    slaTimer,
     telegraphedMove:  initialTelegraph,
     opponentDeckIndex: 0,
     slaBreach:        false,

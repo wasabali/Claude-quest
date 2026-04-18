@@ -546,34 +546,6 @@ describe('gyms registry', () => {
     })
   })
 
-describe('NPC reactivity — data integrity', () => {
-  const npcEntries = getAllStory().filter(e => e.id?.startsWith('npc_'))
-    .filter(e => e.id !== 'npc_azure_terminal' && !e.id.endsWith('_post_terminal'))
-
-  it('all NPC story entries with dialogByAct have acts 1-4 and finale', () => {
-    npcEntries.forEach(entry => {
-      if (!entry.dialogByAct) return
-      for (const key of [1, 2, 3, 4, 'finale']) {
-        expect(Array.isArray(entry.dialogByAct[key]),
-          `${entry.id} missing dialogByAct[${key}]`).toBe(true)
-      }
-    })
-  })
-
-  it('shameDialog uses valid threshold keys (3, 7, 10)', () => {
-    npcEntries.forEach(entry => {
-      if (!entry.shameDialog) return
-      const keys = Object.keys(entry.shameDialog).map(Number)
-      keys.forEach(k => {
-        expect([3, 7, 10]).toContain(k)
-        const val = entry.shameDialog[k]
-        expect(val === null || Array.isArray(val),
-          `${entry.id} shameDialog[${k}] must be null or array`).toBe(true)
-
-      })
-    })
-  })
-
   it('all gym emblem rewards exist in emblems registry', () => {
     const emblemLookup = Object.fromEntries(getAllEmblems().map(e => [e.id, e]))
     getAllGyms().forEach(gym => {
@@ -609,6 +581,33 @@ describe('NPC reactivity — data integrity', () => {
       })
   })
 })
+
+describe('NPC reactivity — data integrity', () => {
+  const npcEntries = getAllStory().filter(e => e.id?.startsWith('npc_'))
+    .filter(e => e.id !== 'npc_azure_terminal' && !e.id.endsWith('_post_terminal'))
+
+  it('all NPC story entries with dialogByAct have acts 1-4 and finale', () => {
+    npcEntries.forEach(entry => {
+      if (!entry.dialogByAct) return
+      for (const key of [1, 2, 3, 4, 'finale']) {
+        expect(Array.isArray(entry.dialogByAct[key]),
+          `${entry.id} missing dialogByAct[${key}]`).toBe(true)
+      }
+    })
+  })
+
+  it('shameDialog uses valid threshold keys (3, 7, 10)', () => {
+    npcEntries.forEach(entry => {
+      if (!entry.shameDialog) return
+      const keys = Object.keys(entry.shameDialog).map(Number)
+      keys.forEach(k => {
+        expect([3, 7, 10]).toContain(k)
+        const val = entry.shameDialog[k]
+        expect(val === null || Array.isArray(val),
+          `${entry.id} shameDialog[${k}] must be null or array`).toBe(true)
+      })
+    })
+  })
 
   it('followUpDialog is null or an array', () => {
     npcEntries.forEach(entry => {
@@ -649,6 +648,5 @@ describe('NPC reactivity — data integrity', () => {
       expect(trainer.shameDialog,
         `${trainer.id} missing shameDialog`).toBeDefined()
     })
-
   })
 })

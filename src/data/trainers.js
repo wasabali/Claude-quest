@@ -1366,7 +1366,6 @@ const TRAINERS = {
     isCursed: false,
     shameRequired: 0,
     location: 'production_plains',
-=======
     rematchDeck: ['az_network_vnet_create', 'terraform_apply', 'ansible_playbook', 'bicep_deploy', 'terraform_plan'],
     shameDialog: {
       3: ["I've heard about you\u2026"],
