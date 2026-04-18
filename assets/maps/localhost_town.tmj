@@ -216,21 +216,17 @@
   "tileheight": 48,
   "tilesets": [
     {
-      "columns": 0,
+      "columns": 5,
       "firstgid": 1,
+      "image": "stub_tiles.png",
+      "imageheight": 48,
+      "imagewidth": 240,
       "margin": 0,
       "name": "stub_tiles",
       "spacing": 0,
       "tilecount": 5,
       "tileheight": 48,
-      "tilewidth": 48,
-      "tiles": [
-        { "id": 0 },
-        { "id": 1 },
-        { "id": 2 },
-        { "id": 3 },
-        { "id": 4 }
-      ]
+      "tilewidth": 48
     }
   ],
   "tilewidth": 48,
