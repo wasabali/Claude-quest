@@ -11,6 +11,7 @@ import { getAll as getAllQuests } from '../src/data/quests.js'
 import { ENCOUNTER_POOLS, getAll as getAllEncounters } from '../src/data/encounters.js'
 import { getAll as getAllThreads, getByCommandId } from '../src/data/stackoverflow.js'
 import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } from '../src/data/gates.js'
+import { getById as getGymById, getAll as getAllGyms, getBy as getGymsBy } from '../src/data/gyms.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
 const VALID_GATE_TYPES = ['hard', 'soft', 'knowledge', 'reputation', 'shame']
@@ -23,6 +24,7 @@ const DATA_FILES = [
   'encounters.js',
   'stackoverflow.js',
   'gates.js',
+  'gyms.js',
 ].map(file => path.join(process.cwd(), 'src', 'data', file))
 
 describe('skills registry', () => {
@@ -110,6 +112,7 @@ describe('other data registries', () => {
       ...getAllEncounters().map(entry => entry.id),
       ...getAllThreads().map(entry => entry.id),
       ...getAllGates().map(entry => entry.id),
+      ...getAllGyms().map(entry => entry.id),
     ]
     expect(new Set(allIds).size).toBe(allIds.length)
   })
@@ -231,6 +234,96 @@ describe('gates registry', () => {
           expect(getSkillById(step.commandId)).toBeDefined()
           expect(VALID_TIERS).toContain(step.tier)
         })
+      })
+  })
+})
+
+const VALID_GYM_MECHANICS = ['legacy_only', 'sla_timer', 'flaky_pipeline', 'cold_start', 'respawn', 'rbac_deny', 'cost_spiral', 'all_domains']
+const VALID_GYM_ROLES = ['leader', 'sub_leader', 'apprentice']
+
+describe('gyms registry', () => {
+  it('follows the registry pattern with getById, getAll, getBy', () => {
+    const gym = getGymById('fundamentals_gym')
+    expect(gym).toBeDefined()
+    expect(gym.id).toBe('fundamentals_gym')
+
+    const allGyms = getAllGyms()
+    expect(allGyms.length).toBe(8)
+
+    const linuxGyms = getGymsBy('domain', 'linux')
+    expect(linuxGyms.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('all gyms have required fields', () => {
+    getAllGyms().forEach(gym => {
+      expect(typeof gym.id).toBe('string')
+      expect(typeof gym.name).toBe('string')
+      expect(typeof gym.leader).toBe('string')
+      expect(Array.isArray(gym.subLeaders)).toBe(true)
+      expect(typeof gym.apprenticeCount).toBe('number')
+      expect(typeof gym.requiredBadges).toBe('number')
+      expect(VALID_GYM_MECHANICS).toContain(gym.mechanic)
+      expect(typeof gym.mechanicConfig).toBe('object')
+      expect(typeof gym.emblemReward).toBe('string')
+      expect(typeof gym.region).toBe('string')
+    })
+  })
+
+  it('all gym leaders exist in trainers registry with correct gymRole', () => {
+    const trainerLookup = Object.fromEntries(getAllTrainers().map(t => [t.id, t]))
+    getAllGyms().forEach(gym => {
+      const leader = trainerLookup[gym.leader]
+      expect(leader).toBeDefined()
+      expect(leader.gymRole).toBe('leader')
+      expect(leader.gymId).toBe(gym.id)
+    })
+  })
+
+  it('all gym sub-leaders exist in trainers registry with teachSkillId', () => {
+    const trainerLookup = Object.fromEntries(getAllTrainers().map(t => [t.id, t]))
+    getAllGyms().forEach(gym => {
+      gym.subLeaders.forEach(subId => {
+        const sub = trainerLookup[subId]
+        expect(sub).toBeDefined()
+        expect(sub.gymRole).toBe('sub_leader')
+        expect(sub.gymId).toBe(gym.id)
+        expect(sub.teachSkillId).toBeTruthy()
+      })
+    })
+  })
+
+  it('all gym emblem rewards exist in emblems registry', () => {
+    const emblemLookup = Object.fromEntries(getAllEmblems().map(e => [e.id, e]))
+    getAllGyms().forEach(gym => {
+      expect(emblemLookup[gym.emblemReward]).toBeDefined()
+    })
+  })
+
+  it('gym trainers have valid gymRole values', () => {
+    getAllTrainers()
+      .filter(t => t.gymRole)
+      .forEach(t => {
+        expect(VALID_GYM_ROLES).toContain(t.gymRole)
+        expect(typeof t.gymId).toBe('string')
+      })
+  })
+
+  it('has 8 gym leaders, 9 sub-leaders, and 17 apprentices', () => {
+    const gymTrainers = getAllTrainers().filter(t => t.gymRole)
+    const leaders    = gymTrainers.filter(t => t.gymRole === 'leader')
+    const subLeaders = gymTrainers.filter(t => t.gymRole === 'sub_leader')
+    const apprentices = gymTrainers.filter(t => t.gymRole === 'apprentice')
+
+    expect(leaders).toHaveLength(8)
+    expect(subLeaders).toHaveLength(9)
+    expect(apprentices).toHaveLength(17)
+  })
+
+  it('sub-leader teachSkillIds reference valid skills', () => {
+    getAllTrainers()
+      .filter(t => t.gymRole === 'sub_leader')
+      .forEach(t => {
+        expect(getSkillById(t.teachSkillId)).toBeDefined()
       })
   })
 })
