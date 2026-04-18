@@ -32,14 +32,27 @@
       :root {
         --gbc-screen-width: 160px;
         --gbc-screen-height: 144px;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
       }
 
       body {
-        padding: 12px;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding-top: calc(12px + var(--safe-top));
+        padding-right: calc(12px + var(--safe-right));
+        padding-bottom: calc(12px + var(--safe-bottom));
+        padding-left: calc(12px + var(--safe-left));
         align-items: center;
       }
 
       #app {
+        width: 100%;
+        height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -47,7 +60,7 @@
 
       .gbc-shell {
         display: block;
-        width: min(100%, 420px);
+        width: min(100%, 430px);
         padding: clamp(14px, 2.4vh, 22px);
         border-radius: 26px;
         background:
@@ -188,9 +201,50 @@
         color: #1a1f2d;
       }
 
-      @media (orientation: landscape) {
+      @media (max-width: 430px) {
         .gbc-shell {
-          transform: scale(0.88);
+          border-radius: 22px;
+          padding: 12px;
+        }
+
+        .gbc-controls {
+          gap: 12px;
+        }
+
+        .gbc-dpad {
+          width: 108px;
+          height: 108px;
+        }
+
+        .gbc-dpad-shape {
+          width: 34px;
+          height: 102px;
+        }
+
+        .gbc-dpad-shape::after {
+          width: 102px;
+          height: 34px;
+        }
+
+        .gbc-dpad-btn {
+          width: 34px;
+          height: 34px;
+        }
+
+        .gbc-dpad-btn.up { left: 37px; }
+        .gbc-dpad-btn.down { left: 37px; }
+        .gbc-dpad-btn.left { top: 37px; }
+        .gbc-dpad-btn.right { top: 37px; }
+
+        .gbc-ab .gbc-btn {
+          width: 52px;
+          height: 52px;
+        }
+      }
+
+      @media (orientation: landscape) and (max-height: 430px) {
+        .gbc-shell {
+          transform: scale(0.8);
           transform-origin: center;
         }
       }
@@ -278,16 +332,28 @@
         if (!key) return
         button.classList.add('is-pressed')
         dispatchGameKey('keydown', key)
-      })
+      });
       ['pointerup', 'pointerleave', 'pointercancel'].forEach((eventName) => {
         button.addEventListener(eventName, onRelease)
       })
     })
 
-    MOBILE_QUERY.addEventListener('change', syncCanvasHost)
+    const handleMobileQueryChange = () => syncCanvasHost()
+    if (typeof MOBILE_QUERY.addEventListener === 'function') {
+      MOBILE_QUERY.addEventListener('change', handleMobileQueryChange)
+    } else if (typeof MOBILE_QUERY.addListener === 'function') {
+      MOBILE_QUERY.addListener(handleMobileQueryChange)
+    }
     const observer = new MutationObserver(syncCanvasHost)
     observer.observe(app, { childList: true })
-    window.addEventListener('beforeunload', () => observer.disconnect())
+    window.addEventListener('beforeunload', () => {
+      observer.disconnect()
+      if (typeof MOBILE_QUERY.removeEventListener === 'function') {
+        MOBILE_QUERY.removeEventListener('change', handleMobileQueryChange)
+      } else if (typeof MOBILE_QUERY.removeListener === 'function') {
+        MOBILE_QUERY.removeListener(handleMobileQueryChange)
+      }
+    })
     syncCanvasHost()
   </script>
   <script type="module" src="/src/main.js"></script>
