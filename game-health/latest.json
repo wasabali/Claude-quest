@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-18T18:39:43.715Z",
+  "timestamp": "2026-04-18T18:53:58.092Z",
   "success": false,
   "summary": {
     "totalTests": 90,
@@ -191,19 +191,6 @@
       "message": "AssertionError: story npc_dagny_dba variant uses unknown condition field 'storyFlag': expected [ 'reputationMin', …(3) ] to include 'storyFlag'\n    at Proxy.<anonymous> (file:///home/runner/work/Claude-quest/Claude-quest/node_modules/@vitest/expect/dist/index.js:1196:17)\n    at Proxy.<anonymous> (file:///home/runner/work/Claude-quest/Claude-quest/node_modules/@vitest/expect/dist/index.js:972:17)\n    at Proxy.methodWrapper (file:///home/runner/work/Claude-quest/Claude-quest/node_modules/chai/inde"
     }
   ],
-  "newFindings": [
-    "data-integrity::every trainer deck references valid skill IDs",
-    "data-integrity::every trainer teachSkillId references a valid skill",
-    "data-integrity::every encounter has a valid domain",
-    "data-integrity::every encounter has hp > 0 and sla > 0",
-    "battle-simulations::early encounters (difficulty 1-2) have win rate > 20% with starter deck",
-    "battle-simulations::high-difficulty trainers (4-5) are not impossible for a mid-game deck",
-    "battle-simulations::encounter HP scales with difficulty",
-    "battle-simulations::encounter SLA shrinks with difficulty",
-    "encounter-distribution::active regions (with encounters) have at least 2 common encounters",
-    "gate-quest-integrity::every quest has at least one stage",
-    "story-npc-consistency::every story entry has at least one page of dialog",
-    "story-npc-consistency::dialog variant conditions use valid threshold fields"
-  ],
+  "newFindings": [],
   "fixedFindings": []
 }
