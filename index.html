@@ -96,8 +96,9 @@
       }
 
       .gbc-screen {
-        width: var(--gbc-screen-width);
-        height: var(--gbc-screen-height);
+        width: min(100%, var(--gbc-screen-width));
+        height: auto;
+        aspect-ratio: 16 / 9;
         margin: 0 auto;
         background: #05070d;
         border: 2px solid #2f3f4f;
@@ -109,8 +110,9 @@
       }
 
       #app canvas {
-        width: var(--gbc-screen-width) !important;
-        height: var(--gbc-screen-height) !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
       }
