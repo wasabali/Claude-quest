@@ -118,14 +118,12 @@ export function createBattleState(mode, player, opponent, options = {}) {
   const state = {
     mode,
     turn:             1,
-    player:           { ...player, technicalDebt: player.technicalDebt ?? 0 },
-    opponent:         opponentCopy,
     player:           {
                         ...player,
                         technicalDebt: player.technicalDebt ?? 0,
                         maxBudget: Math.max(0, player.maxBudget ?? player.budget ?? 500),
                       },
-    opponent:         { ...opponent },
+    opponent:         opponentCopy,
     playerStatuses:   [],
     opponentStatuses: [],
     domainRevealed:   mode === BATTLE_MODES.ENGINEER,

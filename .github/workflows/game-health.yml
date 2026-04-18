@@ -74,7 +74,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
+          git pull --rebase --autostash
           git add docs/wiki/
           if git diff --cached --quiet; then
             echo "No wiki changes to commit"
@@ -178,7 +178,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
+          git pull --rebase --autostash
           git add README.md game-health/latest.json
           if git diff --cached --quiet; then
             echo "No dashboard changes to commit"
