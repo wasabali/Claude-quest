@@ -362,6 +362,12 @@ export class BattleScene extends BaseScene {
         this.time.delayedCall(400, callback)
         break
 
+      case 'budget_gain':
+        this._showLog(event.text ?? `Budget +${event.value}`)
+        this._refreshHUD()
+        this.time.delayedCall(400, callback)
+        break
+
       case 'escalation':
         this._showLog('Technical debt increased! The incident is escalating.')
         this.time.delayedCall(500, callback)

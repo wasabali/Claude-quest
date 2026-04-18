@@ -911,7 +911,7 @@ describe('BattleEvent shape', () => {
     'status_apply', 'reputation', 'xp_gain', 'teach_skill', 'teach_hint',
     'technical_debt', 'trainer_disgusted', 'warn_npcs', 'battle_end',
     'telegraph', 'dialog',
-    'budget_drain', 'escalation', 'layer_transition',
+    'budget_drain', 'budget_gain', 'escalation', 'layer_transition',
   ]
 
   it('all emitted events have recognised type strings', () => {

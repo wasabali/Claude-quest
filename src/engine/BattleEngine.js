@@ -459,13 +459,13 @@ export function turnEndPhase(state) {
     const budgetGain    = rewardCredits + restore
     if (budgetGain > 0) {
       state.player.budget = (state.player.budget ?? 0) + budgetGain
-      events.push({ type: 'budget_drain', target: 'player', value: -budgetGain })
+      events.push({ type: 'budget_gain', target: 'player', value: budgetGain })
     }
 
     // Optimal win bonus (flat +25 on top of tier reward)
     if (tier === 'optimal') {
       state.player.budget = (state.player.budget ?? 0) + ECONOMY.OPTIMAL_WIN_BONUS
-      events.push({ type: 'budget_drain', target: 'player', value: -ECONOMY.OPTIMAL_WIN_BONUS, text: 'Optimal solution bonus!' })
+      events.push({ type: 'budget_gain', target: 'player', value: ECONOMY.OPTIMAL_WIN_BONUS, text: 'Optimal solution bonus!' })
     }
 
     // Debt penalty at battle end: accumulate technical_debt stacks when in budget debt
@@ -507,7 +507,7 @@ export function turnEndPhase(state) {
     const loseRestore = calculateBudgetRestore(false, state.player.maxBudget ?? state.player.budget ?? 500)
     if (loseRestore > 0) {
       state.player.budget = (state.player.budget ?? 0) + loseRestore
-      events.push({ type: 'budget_drain', target: 'player', value: -loseRestore })
+      events.push({ type: 'budget_gain', target: 'player', value: loseRestore })
     }
 
     // Debt penalty: accumulate technical_debt stacks when budget is negative
