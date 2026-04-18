@@ -401,6 +401,7 @@ const QUESTS = {
             correct: 'optimal',
             xp: 0,
             itemReward: { id: 'blueprint_v1', qty: 1 },
+            flag: 'blueprint_v1_acquired',
             responseDialog: ["Perfect. That's stage one sorted.", 'Take this blueprint.'],
           },
           {
@@ -426,6 +427,7 @@ const QUESTS = {
             correct: 'optimal',
             xp: 0,
             itemReward: { id: 'blueprint_v2', qty: 1 },
+            flag: 'blueprint_v2_acquired',
             responseDialog: ['Exactly. Trust nothing, verify everything.', 'Blueprint updated.'],
           },
           {
@@ -451,6 +453,7 @@ const QUESTS = {
             correct: 'optimal',
             xp: 0,
             itemReward: { id: 'blueprint_v3', qty: 1 },
+            flag: 'blueprint_v3_acquired',
             responseDialog: ["Resource limits. Good. You've learned.", 'Final blueprint piece.'],
           },
           {

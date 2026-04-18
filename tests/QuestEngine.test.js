@@ -126,6 +126,15 @@ describe('isQuestAvailable', () => {
     const result = isQuestAvailable('dev_dave_flaky', story)
     expect(result.available).toBe(false)
   })
+
+  it('handles storyState missing flags and activeQuests (old saves)', () => {
+    const story = { act: 1 }
+    const result = isQuestAvailable('margaret_website', story)
+    expect(result.available).toBe(true)
+    // Verify fields were backfilled
+    expect(story.flags).toEqual({})
+    expect(story.activeQuests).toEqual({})
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -431,6 +440,26 @@ describe('resolveChoice', () => {
     expect(event.penalty.value).toBe(-4) // 5 - 1 = 4, clamped
   })
 
+  it('does not produce positive HP penalty when currentHp is 0', () => {
+    const story = freshStory({
+      activeQuests: { margaret_website: { stage: 0, attempts: 1 } },
+    })
+    const player = freshPlayer({ hp: 0 })
+    const event = resolveChoice('margaret_website', 0, story, player)
+    expect(event.penalty.type).toBe('hp')
+    expect(event.penalty.value).toBe(0) // clamped to 0, never positive
+  })
+
+  it('does not produce positive HP penalty when currentHp is 1', () => {
+    const story = freshStory({
+      activeQuests: { margaret_website: { stage: 0, attempts: 1 } },
+    })
+    const player = freshPlayer({ hp: 1 })
+    const event = resolveChoice('margaret_website', 0, story, player)
+    expect(event.penalty.type).toBe('hp')
+    expect(event.penalty.value).toBe(0) // maxLoss = max(0, 1-1) = 0
+  })
+
   it('applies full HP penalty when HP is high enough', () => {
     const story = freshStory({
       activeQuests: { margaret_website: { stage: 0, attempts: 1 } },
@@ -493,6 +522,19 @@ describe('resolveChoice', () => {
     // choice 0 — shortcut, no itemReward
     const event = resolveChoice('startup_steve_storage', 0, story, player)
     expect(event.itemReward).toBeNull()
+  })
+
+  it('Alice blueprint choices set acquired flags', () => {
+    const story = freshStory({
+      act: 2,
+      flags: { act_2_started: true },
+      activeQuests: { architect_alice_design: { stage: 0, attempts: 1 } },
+    })
+    const player = freshPlayer()
+    // choice 0 is "Auto-scaling + load balancer" — optimal with blueprint_v1
+    const event = resolveChoice('architect_alice_design', 0, story, player)
+    expect(event.flag).toBe('blueprint_v1_acquired')
+    expect(event.itemReward).toEqual({ id: 'blueprint_v1', qty: 1 })
   })
 })
 

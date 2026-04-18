@@ -7,7 +7,17 @@
 //   branch      — single-stage with branching outcomes
 //   multi_stage — multiple sequential stages (Ivan, Alice)
 
-import { getById, getAll } from '#data/quests.js'
+import { getById } from '#data/quests.js'
+
+// ---------------------------------------------------------------------------
+// normalizeStory
+// Ensures storyState.flags and storyState.activeQuests exist, so old save
+// files that predate these fields don't cause runtime errors.
+// ---------------------------------------------------------------------------
+function normalizeStory(storyState) {
+  if (!storyState.flags) storyState.flags = {}
+  if (!storyState.activeQuests) storyState.activeQuests = {}
+}
 
 // ---------------------------------------------------------------------------
 // isQuestAvailable
@@ -15,6 +25,7 @@ import { getById, getAll } from '#data/quests.js'
 // the player can start or interact with this quest.
 // ---------------------------------------------------------------------------
 export function isQuestAvailable(questId, storyState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return { available: false, reason: `Quest "${questId}" not found.` }
 
@@ -56,6 +67,7 @@ export function isQuestAvailable(questId, storyState) {
 // Returns 'available' | 'active' | 'complete' | 'followed_up' | 'unavailable'
 // ---------------------------------------------------------------------------
 export function getQuestStatus(questId, storyState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return 'unavailable'
 
@@ -85,6 +97,7 @@ export function getQuestStatus(questId, storyState) {
 // Returns { started: boolean, questData: object | null }
 // ---------------------------------------------------------------------------
 export function startQuest(questId, storyState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return { started: false, questData: null }
 
@@ -107,6 +120,7 @@ export function startQuest(questId, storyState) {
 // Returns the current stage data from the quest's stages array, or null.
 // ---------------------------------------------------------------------------
 export function getCurrentStage(questId, storyState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return null
 
@@ -123,6 +137,7 @@ export function getCurrentStage(questId, storyState) {
 // Returns a QuestEvent object or null if the quest/choice is invalid.
 // ---------------------------------------------------------------------------
 export function resolveChoice(questId, choiceIndex, storyState, playerState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return null
 
@@ -151,9 +166,9 @@ export function resolveChoice(questId, choiceIndex, storyState, playerState) {
   // Only HP penalties are clamped — budget/reputation have no floor by design.
   if (penalty && penalty.type === 'hp' && penalty.value < 0) {
     const currentHp = playerState.hp ?? 100
-    const maxLoss = currentHp - 1
+    const maxLoss = Math.max(0, currentHp - 1)
     if (-penalty.value > maxLoss) {
-      penalty = { ...penalty, value: -maxLoss }
+      penalty = { ...penalty, value: maxLoss === 0 ? 0 : -maxLoss }
     }
   }
 
@@ -188,6 +203,7 @@ export function resolveChoice(questId, choiceIndex, storyState, playerState) {
 // Returns { advanced: boolean, newStage: number, questComplete: boolean }
 // ---------------------------------------------------------------------------
 export function advanceStage(questId, storyState) {
+  normalizeStory(storyState)
   const quest = getById(questId)
   if (!quest) return { advanced: false, newStage: 0, questComplete: false }
 
