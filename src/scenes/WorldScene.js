@@ -11,6 +11,8 @@ import {
   updateBump, updateStep, commitStep, onStepComplete,
   shouldTriggerEncounter, checkTransition, applyTransition,
 } from '#engine/MovementEngine.js'
+import { getById as getTrainerById } from '#data/trainers.js'
+import { resolveNpcDialog, resolveNpcPages } from '#engine/StoryEngine.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
@@ -383,44 +385,34 @@ export class WorldScene extends BaseScene {
       const storyId = GameState.story.flags.found_hosting_terminal
         ? 'npc_west_eu_2_wilhelm_post_terminal'
         : 'npc_west_eu_2_wilhelm'
-      const entry = getStoryById(storyId)
-      const lines = entry?.pages ?? ['???']
+      const entry   = getStoryById(storyId)
+      const trainer = getTrainerById(npcName)
+      const lines   = this._resolveNpcDialog(entry, trainer)
       this.dialog.show(lines, () => { this._interacting = false })
       return
     }
 
-    const entry = getStoryById(`npc_${npcName}`)
-    const lines = this._resolveNpcPages(entry)
+    const entry   = getStoryById(`npc_${npcName}`)
+    const trainer = getTrainerById(npcName)
+    const lines   = this._resolveNpcDialog(entry, trainer)
     this.dialog.show(lines, () => { this._interacting = false })
   }
 
-  // Evaluates NPC dialogue variants top-to-bottom against the current player
-  // reputation, shamePoints, budget, and story flags, returning the first
-  // matching variant's pages. Falls back to entry.pages when no variant matches.
-  _resolveNpcPages(entry) {
-    const { reputation, shamePoints, budget } = GameState.player
-    if (Array.isArray(entry?.variants)) {
-      for (const variant of entry.variants) {
-        const c = variant.condition ?? {}
-        if (c.reputationMin !== undefined && reputation < c.reputationMin) continue
-        if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
-        if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
-        if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
-        if (c.budgetMax     !== undefined && budget > c.budgetMax)         continue
-        if (c.storyFlag     !== undefined && !GameState.story.flags[c.storyFlag]) continue
-        if (Array.isArray(variant.pool)) {
-          // NPC one-liner pools are intentionally non-deterministic — different
-          // line each visit. No seeded RNG needed; this is presentation-layer only.
-          if (variant.pool.length > 0) {
-            const idx = Math.floor(Math.random() * variant.pool.length)
-            return variant.pool[idx]
-          }
-          return variant.pages ?? entry?.pages ?? ['???']
-        }
-        return variant.pages
-      }
+  // Delegates to the pure StoryEngine resolver, then applies any state mutation
+  // the engine flagged (technique acknowledgment flag). All decision logic lives
+  // in StoryEngine — this method is rendering-layer glue only.
+  _resolveNpcDialog(entry, trainer) {
+    const { pages, setFlag } = resolveNpcDialog(entry, trainer, GameState)
+    if (setFlag) {
+      GameState.story.flags[setFlag] = true
+      markDirty()
     }
-    return entry?.pages ?? ['???']
+    return pages
+  }
+
+  // Delegates variant/page selection to the pure StoryEngine helper.
+  _resolveNpcPages(entry) {
+    return resolveNpcPages(entry, GameState.player)
   }
 
   _checkEncounterStep() {

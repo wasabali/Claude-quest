@@ -2,7 +2,7 @@
 // Handles domain matchups, damage calculation, XP, quality assessment,
 // and shame/reputation side effects.
 
-import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS, REPUTATION_MIN, REPUTATION_MAX, GRIME_PER_SHAME, GRIME_PER_SHAME_SHADOW, SHADOW_ENGINEER } from '../config.js'
+import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS, REPUTATION_MIN, REPUTATION_MAX, GRIME_PER_SHAME, GRIME_PER_SHAME_SHADOW, SHADOW_ENGINEER, SHOP_PRICING, REMATCH_XP_MULTIPLIER } from '../config.js'
 
 // XP multipliers per solution quality tier.
 const XP_MULTIPLIERS = {
@@ -210,6 +210,7 @@ export function reduceShame(player, amount) {
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // getShopMod
 // Returns the shop price modifier for the given reputation score.
 // Positive values increase prices; negative values decrease them.
@@ -248,4 +249,32 @@ export function isShadowEngineer(shamePoints) {
 // ---------------------------------------------------------------------------
 export function getGrimeRate(shamePoints) {
   return shamePoints >= SHADOW_ENGINEER.SHAME_THRESHOLD ? GRIME_PER_SHAME_SHADOW : GRIME_PER_SHAME
+}
+
+// ---------------------------------------------------------------------------
+// resolveShopPrice
+// Returns the adjusted shop price based on the player's reputation.
+// Rep ≥ 80: −15% discount. Rep 40–79: base price. Rep < 40: +15% surcharge.
+// ---------------------------------------------------------------------------
+export function resolveShopPrice(basePrice, reputation) {
+  if (reputation >= SHOP_PRICING.DISCOUNT_THRESHOLD)  return Math.round(basePrice * SHOP_PRICING.DISCOUNT_MULTIPLIER)
+  if (reputation < SHOP_PRICING.SURCHARGE_THRESHOLD)   return Math.round(basePrice * SHOP_PRICING.SURCHARGE_MULTIPLIER)
+  return basePrice
+}
+
+// ---------------------------------------------------------------------------
+// canUseShop
+// Returns true if the player's reputation allows shop access.
+// Rep < 20: shops refuse service (vending machines still work).
+// ---------------------------------------------------------------------------
+export function canUseShop(reputation) {
+  return reputation >= SHOP_PRICING.REFUSED_THRESHOLD
+}
+
+// ---------------------------------------------------------------------------
+// getRematchXp
+// Returns the adjusted XP for a post-game rematch battle (+50%).
+// ---------------------------------------------------------------------------
+export function getRematchXp(baseXp) {
+  return Math.round(baseXp * REMATCH_XP_MULTIPLIER)
 }

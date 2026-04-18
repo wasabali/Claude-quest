@@ -14,6 +14,7 @@ import { getById as getGateById, getAll as getAllGates, getBy as getGatesBy } fr
 import { getAll as getAllInteractions } from '../src/data/interactions.js'
 import { getById as getAudioById, getAll as getAllAudio, getBy as getAudioBy, getSfxPreset, getBgmConfig, getAllSfx, getAllBgm } from '../src/data/audio.js'
 import { getById as getGymById, getAll as getAllGyms, getBy as getGymsBy } from '../src/data/gyms.js'
+import { getAll as getAllStory } from '../src/data/story.js'
 
 const VALID_TIERS = ['optimal', 'standard', 'shortcut', 'cursed', 'nuclear']
 const VALID_GATE_TYPES = ['hard', 'soft', 'knowledge', 'reputation', 'shame']
@@ -545,6 +546,34 @@ describe('gyms registry', () => {
     })
   })
 
+describe('NPC reactivity — data integrity', () => {
+  const npcEntries = getAllStory().filter(e => e.id?.startsWith('npc_'))
+    .filter(e => e.id !== 'npc_azure_terminal' && !e.id.endsWith('_post_terminal'))
+
+  it('all NPC story entries with dialogByAct have acts 1-4 and finale', () => {
+    npcEntries.forEach(entry => {
+      if (!entry.dialogByAct) return
+      for (const key of [1, 2, 3, 4, 'finale']) {
+        expect(Array.isArray(entry.dialogByAct[key]),
+          `${entry.id} missing dialogByAct[${key}]`).toBe(true)
+      }
+    })
+  })
+
+  it('shameDialog uses valid threshold keys (3, 7, 10)', () => {
+    npcEntries.forEach(entry => {
+      if (!entry.shameDialog) return
+      const keys = Object.keys(entry.shameDialog).map(Number)
+      keys.forEach(k => {
+        expect([3, 7, 10]).toContain(k)
+        const val = entry.shameDialog[k]
+        expect(val === null || Array.isArray(val),
+          `${entry.id} shameDialog[${k}] must be null or array`).toBe(true)
+
+      })
+    })
+  })
+
   it('all gym emblem rewards exist in emblems registry', () => {
     const emblemLookup = Object.fromEntries(getAllEmblems().map(e => [e.id, e]))
     getAllGyms().forEach(gym => {
@@ -578,5 +607,48 @@ describe('gyms registry', () => {
       .forEach(t => {
         expect(getSkillById(t.teachSkillId)).toBeDefined()
       })
+  })
+})
+
+  it('followUpDialog is null or an array', () => {
+    npcEntries.forEach(entry => {
+      if (entry.followUpDialog === undefined) return
+      expect(entry.followUpDialog === null || Array.isArray(entry.followUpDialog),
+        `${entry.id} followUpDialog must be null or array`).toBe(true)
+    })
+  })
+
+  it('all 8 field trainers have rematchDeck arrays', () => {
+    const fieldTrainers = getAllTrainers().filter(t => !t.isCursed && !t.isWildEncounter)
+    expect(fieldTrainers).toHaveLength(8)
+    fieldTrainers.forEach(trainer => {
+      expect(Array.isArray(trainer.rematchDeck),
+        `${trainer.id} missing rematchDeck`).toBe(true)
+      expect(trainer.rematchDeck.length).toBeGreaterThanOrEqual(4)
+      trainer.rematchDeck.forEach(skillId => {
+        expect(getSkillById(skillId),
+          `${trainer.id} rematchDeck references unknown skill '${skillId}'`).toBeDefined()
+      })
+    })
+  })
+
+  it('all cursed trainers have techniqueUsedDialog and techniqueUsedFlag', () => {
+    const cursedTrainers = getAllTrainers().filter(t => t.isCursed)
+    cursedTrainers.forEach(trainer => {
+      expect(Array.isArray(trainer.techniqueUsedDialog),
+        `${trainer.id} missing techniqueUsedDialog`).toBe(true)
+      expect(typeof trainer.techniqueUsedFlag).toBe('string')
+      expect(trainer.techniqueUsedFlag.startsWith('acknowledged_'),
+        `${trainer.id} techniqueUsedFlag must start with 'acknowledged_'`).toBe(true)
+    })
+  })
+
+  it('all cursed trainers have shameDialog', () => {
+    const cursedTrainers = getAllTrainers().filter(t => t.isCursed)
+    cursedTrainers.forEach(trainer => {
+      expect(trainer.shameDialog,
+        `${trainer.id} missing shameDialog`).toBeDefined()
+    })
+
   })
 })

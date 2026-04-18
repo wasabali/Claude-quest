@@ -12,11 +12,21 @@
 const STORY = {
   npc_margaret: {
     id:    'npc_margaret',
+    questId: 'margaret_website',
     pages: [
       "Oh! A new engineer! Welcome to Localhost Town.",
       "The Azure Terminal is just east of here.\nUse it to manage your skill deck.",
       "Be careful in the tall grass — incidents love\nto ambush young engineers.",
     ],
+    dialogByAct: {
+      1: ["My website keeps going down!", "Can you help?"],
+      2: ["Did you see that traffic spike?", "Unbelievable."],
+      3: ["Things are calmer now.", "Still making bread. Still online."],
+      4: ["I heard about the THROTTLEMASTER thing.", "Scary stuff."],
+      finale: ["Go get 'em!", "The cloud needs you."],
+    },
+    followUpDialog: ["The website's been running for 3 days!", "You're a lifesaver!"],
+    shameDialog: { 3: null, 7: null, 10: null },
     variants: [
       {
         condition: { shameMin: 10 },
@@ -72,6 +82,19 @@ const STORY = {
       "Ah, a new student! Study hard and use\nonly the approved techniques.",
       "There are no shortcuts worth taking\nin this profession.",
     ],
+    dialogByAct: {
+      1: ["Welcome to the programme.\nStudy hard and follow best practices.", "There are no shortcuts worth taking."],
+      2: ["The incidents are getting more complex.\nStay disciplined.", "I trust your training."],
+      3: ["Something is wrong with the infrastructure.\nI can feel it.", "Be very careful who you trust."],
+      4: ["So it was Karsten all along.\nI should have seen it.", "Finish this. The right way."],
+      finale: ["You've graduated. Top of your class.", "I'm proud of what you've become."],
+    },
+    followUpDialog: null,
+    shameDialog: {
+      3: ["I heard about what you did to the repo\u2026\nI'm disappointed."],
+      7: ["He's contacted you, hasn't he.\nBe careful."],
+      10: ["I can't watch you go down this path."],
+    },
     // Variants are evaluated top-to-bottom; first match wins.
     // Most-specific conditions (multiple fields) come before less-specific ones.
     variants: [
@@ -143,6 +166,15 @@ const STORY = {
     pages: [
       "H-hi! I'm still learning...\nDo you have any tips?",
     ],
+    dialogByAct: {
+      1: ["H-hi! I'm still learning...\nDo you have any tips?"],
+      2: ["I deployed my first app yesterday!\nIt only crashed twice."],
+      3: ["Have you been to the Kubernetes Colosseum?\nI heard it's intense."],
+      4: ["Everyone's talking about THROTTLEMASTER.\nIs it true?"],
+      finale: ["I got promoted! I'm a junior now!\nThanks for the inspiration."],
+    },
+    followUpDialog: null,
+    shameDialog: { 3: null, 7: null, 10: null },
     variants: [
       {
         condition: { shameMin: 10 },
@@ -186,11 +218,95 @@ const STORY = {
       },
     ],
   },
+  npc_kristoffer: {
+    id:    'npc_kristoffer',
+    pages: [
+      "Welcome to NorCloud AS.\nI'm Kristoffer, your manager.",
+      "Check in with Professor Pedersen first.\nHe'll get you started.",
+    ],
+    dialogByAct: {
+      1: ["Welcome aboard.\nI'm Kristoffer, your manager at NorCloud.", "Talk to Professor Pedersen to get started."],
+      2: ["These incidents are escalating.\nSomeone is sabotaging our pipelines.", "Find out who's behind this."],
+      3: ["I need you to go to OldCorp.\nHere's a keycard for the basement.", "Be careful in there."],
+      4: ["I owe you an explanation.\nKarsten and I worked together at OmniCloud.", "I should have told you sooner."],
+      finale: ["NorCloud is thriving.\nAnd it's because of you.", "You've earned your title, Principal Engineer."],
+    },
+    followUpDialog: null,
+    shameDialog: {
+      3: ["Some\u2026 concerning reports about your methods."],
+      7: ["THROTTLEMASTER reached out to you?\nI can tell."],
+      10: ["You're going down Karsten's path.\nPlease stop."],
+    },
+    variants: [
+      {
+        condition: { shameMin: 10 },
+        pages: [
+          "I don't know what to say to you anymore.",
+          "You're going down Karsten's path.\nPlease stop.",
+        ],
+      },
+      {
+        condition: { shameMin: 5 },
+        pages: [
+          "People are talking about your methods.",
+          "I'm worried about you.",
+        ],
+      },
+      {
+        condition: { reputationMin: 80 },
+        pages: [
+          "Outstanding work lately.\nKeep it up.",
+        ],
+      },
+    ],
+  },
+  npc_ola_ops: {
+    id:    'npc_ola_ops',
+    pages: [
+      "Hey. I'm Ola. I keep the servers running.",
+      "Been doing ops since before Docker existed.",
+    ],
+    dialogByAct: {
+      1: ["Hey. I'm Ola. I keep the servers running.", "Need help with Linux? Challenge me."],
+      2: ["The monitoring dashboards are going crazy.\nSomething's not right.", "Stay sharp out there."],
+      3: ["I've been seeing weird traffic patterns.\nSomeone's messing with the infrastructure.", "Watch your back."],
+      4: ["So it was an inside job.\nI had a feeling.", "Let's fix this. Together."],
+      finale: ["Uptime: 365 days and counting.\nNot bad for a team of two.", "You've earned your rest."],
+    },
+    followUpDialog: null,
+    shameDialog: {
+      3: ["Some people are talking about your techniques."],
+      7: ["I won't comment. But I heard things."],
+      10: ["You're not who I thought you were."],
+    },
+    variants: [
+      {
+        condition: { shameMin: 10 },
+        pages: [
+          "You're not who I thought you were.",
+          "I've seen what happens when ops people\ngo down that road.",
+        ],
+      },
+      {
+        condition: { shameMin: 5 },
+        pages: [
+          "I won't comment. But I heard things.",
+        ],
+      },
+      {
+        condition: { reputationMin: 80 },
+        pages: [
+          "Solid work. You understand ops.",
+          "That's rare these days.",
+        ],
+      },
+    ],
+  },
   terminal_hosting: {
     id:    'terminal_hosting',
     pages: [
       '> az staticwebapp show --name cloud-quest',
-      '{\n  "name": "cloud-quest",\n  "location": "West Europe",\n  "sku": "Free",\n  "repositoryUrl": "https://github.com/wasabali/claudeomon",\n  "branch": "main",\n  "defaultHostname": "cloud-quest.azurestaticapps.net"\n}',
+      '{\n  "name": "cloud-quest",\n  "location": "West Europe",\n  "sku": "Free",\n  "repositoryUrl": "https://github.com/wasabali/Claude-quest",\n  "branch": "main",\n  "defaultHostname": "cloud-quest.azurestaticapps.net"\n}',
       '> cat staticwebapp.config.json',
       '{\n  "globalHeaders": {\n    "Cross-Origin-Opener-Policy": "same-origin",\n    "Cross-Origin-Embedder-Policy": "require-corp"\n  }\n}',
       'These two headers are the reason you can play this game.\nYou are inside the infrastructure you are learning to manage.',
@@ -208,6 +324,15 @@ const STORY = {
       "West-EU-2 Wilhelm: I used to run a whole region.\nNow I'm just deprecated.",
       "They shut it down without even a blog post.",
     ],
+    dialogByAct: {
+      1: ["I used to run a whole region.\nNow I'm just deprecated.", "They shut it down without even a blog post."],
+      2: ["Still deprecated. Still here.", "Someone has to guard the old endpoints."],
+      3: ["OldCorp used to host in my region.\nBefore the migration.", "Good times. Mostly."],
+      4: ["I heard Karsten tried to bring me back online.\nAs a distraction.", "Rude."],
+      finale: ["They're talking about reopening West-EU-2.\nProbably not, but a region can dream."],
+    },
+    followUpDialog: null,
+    shameDialog: { 3: null, 7: null, 10: null },
   },
   npc_west_eu_2_wilhelm_post_terminal: {
     id:    'npc_west_eu_2_wilhelm_post_terminal',

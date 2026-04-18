@@ -14,6 +14,9 @@ import {
   shouldTeachOnAnyWin,
   isShadowEngineer,
   getGrimeRate,
+  resolveShopPrice,
+  canUseShop,
+  getRematchXp,
 } from '../src/engine/SkillEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -587,6 +590,39 @@ describe('applyShameGrime (Shadow Engineer doubled rate)', () => {
 })
 
 // ---------------------------------------------------------------------------
+// resolveShopPrice
+// ---------------------------------------------------------------------------
+
+describe('resolveShopPrice', () => {
+  it('applies −15% discount when reputation ≥ 80', () => {
+    expect(resolveShopPrice(100, 80)).toBe(85)
+    expect(resolveShopPrice(100, 90)).toBe(85)
+    expect(resolveShopPrice(200, 100)).toBe(170)
+  })
+
+  it('returns base price when reputation is 60–79', () => {
+    expect(resolveShopPrice(100, 60)).toBe(100)
+    expect(resolveShopPrice(100, 79)).toBe(100)
+  })
+
+  it('returns base price when reputation is 40–59', () => {
+    expect(resolveShopPrice(100, 40)).toBe(100)
+    expect(resolveShopPrice(100, 50)).toBe(100)
+  })
+
+  it('applies +15% surcharge when reputation < 40', () => {
+    expect(resolveShopPrice(100, 39)).toBe(115)
+    expect(resolveShopPrice(100, 0)).toBe(115)
+    expect(resolveShopPrice(200, 10)).toBe(230)
+  })
+
+  it('rounds to nearest integer', () => {
+    expect(resolveShopPrice(33, 80)).toBe(28)   // 33 * 0.85 = 28.05 → 28
+    expect(resolveShopPrice(33, 10)).toBe(38)   // 33 * 1.15 = 37.95 → 38
+  })
+})
+
+// ---------------------------------------------------------------------------
 // getShopMod
 // ---------------------------------------------------------------------------
 
@@ -618,6 +654,24 @@ describe('getShopMod', () => {
   it('returns 0.50 for Walking Incident (0-19)', () => {
     expect(getShopMod(0)).toBe(0.50)
     expect(getShopMod(19)).toBe(0.50)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// canUseShop
+// ---------------------------------------------------------------------------
+
+describe('canUseShop', () => {
+  it('returns true when reputation ≥ 20', () => {
+    expect(canUseShop(20)).toBe(true)
+    expect(canUseShop(50)).toBe(true)
+    expect(canUseShop(100)).toBe(true)
+  })
+
+  it('returns false when reputation < 20', () => {
+    expect(canUseShop(19)).toBe(false)
+    expect(canUseShop(0)).toBe(false)
+    expect(canUseShop(-10)).toBe(false)
   })
 })
 
@@ -685,5 +739,20 @@ describe('getGrimeRate', () => {
 
   it('returns 0.10 above shame 10', () => {
     expect(getGrimeRate(15)).toBe(0.10)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// getRematchXp
+// ---------------------------------------------------------------------------
+
+describe('getRematchXp', () => {
+  it('returns base XP × 1.5', () => {
+    expect(getRematchXp(100)).toBe(150)
+    expect(getRematchXp(200)).toBe(300)
+  })
+
+  it('rounds to nearest integer', () => {
+    expect(getRematchXp(33)).toBe(50)   // 33 * 1.5 = 49.5 → 50
   })
 })

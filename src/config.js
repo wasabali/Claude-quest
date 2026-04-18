@@ -102,6 +102,19 @@ export const SHAME_THRESHOLDS = [
   { shame:  1, title: 'It Was Like That When I Got Here', flag: 'pedersen_sighs_cursed_location_visible'    },
 ]
 
+// Shop reputation pricing — multiplied against base price.
+// Rep ≥ 80: discount; 40–79: base; < 40: surcharge; < 20: refused.
+export const SHOP_PRICING = {
+  DISCOUNT_THRESHOLD:  80,
+  DISCOUNT_MULTIPLIER: 0.85,
+  SURCHARGE_THRESHOLD: 40,
+  SURCHARGE_MULTIPLIER: 1.15,
+  REFUSED_THRESHOLD:   20,
+}
+
+// Post-game rematch XP bonus multiplier (applied to base XP).
+export const REMATCH_XP_MULTIPLIER = 1.5
+
 // How much grime each shame point adds to all earned emblems.
 export const GRIME_PER_SHAME = 0.05
 
