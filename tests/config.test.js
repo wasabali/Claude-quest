@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   CONFIG,
   COLORS,
+  DIALOG,
   DOMAIN_MATCHUPS,
   ENCOUNTER_BASE_CHANCE,
   ENCOUNTER_COOLDOWN_STEPS,
@@ -93,6 +94,28 @@ describe('scene presentation constants', () => {
   it('defines title scene colors', () => {
     expect(COLORS.BACKGROUND).toBe('#0b1020')
     expect(COLORS.MENU_ARROW).toBe('#ffe066')
+  })
+})
+
+describe('DIALOG', () => {
+  it('has 40 chars/sec typewriter speed', () => {
+    expect(DIALOG.CHARS_PER_SEC).toBe(40)
+  })
+
+  it('has 18 chars per line', () => {
+    expect(DIALOG.LINE_WIDTH_CHARS).toBe(18)
+  })
+
+  it('has 2 lines per page', () => {
+    expect(DIALOG.MAX_LINES).toBe(2)
+  })
+
+  it('has 500ms blink interval', () => {
+    expect(DIALOG.BLINK_INTERVAL_MS).toBe(500)
+  })
+
+  it('allows up to 4 choice options', () => {
+    expect(DIALOG.CHOICE_MAX_OPTIONS).toBe(4)
   })
 })
 

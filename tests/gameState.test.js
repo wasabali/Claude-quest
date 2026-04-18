@@ -17,4 +17,9 @@ describe('GameState shape', () => {
     expect(typeof GameState.player.tileX).toBe('number')
     expect(typeof GameState.player.tileY).toBe('number')
   })
+
+  it('includes dialogActive flag in _session', () => {
+    expect(GameState._session).toHaveProperty('dialogActive')
+    expect(GameState._session.dialogActive).toBe(false)
+  })
 })

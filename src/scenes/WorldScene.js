@@ -77,6 +77,7 @@ export class WorldScene extends BaseScene {
 
   create(data = {}) {
     this.dialog       = new DialogBox(this)
+    this.choiceMenu   = new Menu(this)
     this._interacting = false
     this._facing      = 'down'
     this._stepsSinceEncounter = 0
@@ -170,7 +171,9 @@ export class WorldScene extends BaseScene {
 
   update(time, delta) {
     if (this._transitioning) return
-    if (this._interacting || this.dialog.isActive) {
+    const dialogOrMenu = this._interacting || this.dialog.isActive
+    GameState._session.dialogActive = dialogOrMenu
+    if (dialogOrMenu) {
       this._handleDialogInput()
       return
     }
@@ -299,6 +302,15 @@ export class WorldScene extends BaseScene {
     }
     const confirm = Phaser.Input.Keyboard.JustDown(this._keyZ)
       || Phaser.Input.Keyboard.JustDown(this._keyEnter)
+
+    // Choice menu is open — D-pad navigates, A confirms, no B-cancel.
+    if (this.choiceMenu.isActive) {
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.up))   this.choiceMenu.moveUp()
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.down)) this.choiceMenu.moveDown()
+      if (confirm) this.choiceMenu.confirm()
+      return
+    }
+
     if (confirm)                                         this.dialog.advance()
     else if (Phaser.Input.Keyboard.JustDown(this._keyX)) this.dialog.skip()
   }
@@ -487,7 +499,9 @@ export class WorldScene extends BaseScene {
   }
 
   shutdown() {
+    GameState._session.dialogActive = false
     super.shutdown()
+    if (this.choiceMenu) this.choiceMenu.destroy()
     if (this.dialog) this.dialog.destroy()
   }
 }

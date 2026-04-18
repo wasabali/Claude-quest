@@ -131,6 +131,14 @@ export const BATTLE_BACKGROUNDS = {
   deprecated_azure_region: { arena: 'wasteland'   },
 }
 
+export const DIALOG = {
+  CHARS_PER_SEC:      40,
+  LINE_WIDTH_CHARS:   18,    // chars per line at 160px with Press Start 2P
+  MAX_LINES:          2,     // 2 lines per page
+  BLINK_INTERVAL_MS:  500,   // ▼ cursor blink
+  CHOICE_MAX_OPTIONS: 4,
+}
+
 // Cumulative XP required to reach each level (1-indexed; level 1 starts at 0 XP)
 export const XP_TABLE = [
      0,  100,  250,  450,  700, 1000,  // levels 1–6

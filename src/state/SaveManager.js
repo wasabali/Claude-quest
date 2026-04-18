@@ -70,7 +70,7 @@ export const SaveManager = {
       if (key !== '_session') delete GameState[key]
     }
     Object.assign(GameState, restoredState)
-    GameState._session = { isDirty: false, lastSavedAt: payloadWithoutChecksum.savedAt ?? null }
+    GameState._session = { isDirty: false, lastSavedAt: payloadWithoutChecksum.savedAt ?? null, dialogActive: false }
 
     return GameState
   },

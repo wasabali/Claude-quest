@@ -1,12 +1,13 @@
 // Typewriter-style dialog box for Cloud Quest.
 // Renders at the bottom ~20% of the screen with a 9-slice window panel.
-// Z/Enter advances; X skips to end of current page. Blinking ▼ on wait.
+// A (Z/Enter) during typewriter → instant fill. A again → next page.
+// No hold-A auto-advance — each page requires a manual press.
 //
 // Usage:
 //   this.dialog = new DialogBox(this)
 //   this.dialog.show(['Line one text.', 'Second page text.'], () => { /* done */ })
 
-import { CONFIG } from '../config.js'
+import { CONFIG, DIALOG } from '../config.js'
 
 // Layout constants — positions derived from CONFIG.HEIGHT/WIDTH.
 const BOX_HEIGHT      = 216  // ~20% of 1080
@@ -14,8 +15,6 @@ const BOX_Y           = CONFIG.HEIGHT - BOX_HEIGHT
 const BOX_PADDING_X   = 24
 const BOX_PADDING_Y   = 20
 const FONT_SIZE       = '22px'
-const CHARS_PER_SEC   = 40
-const BLINK_MS        = 400
 const PANEL_KEY       = 'dialog_window_9slice'
 const CHOICE_OFFSET_Y   = 36
 const CHOICE_LINE_HEIGHT = 32
@@ -238,7 +237,7 @@ export class DialogBox {
 
     // Blink timer — suppressed during choice mode so ▼ stays hidden.
     this._blinkTimer = this.scene.time.addEvent({
-      delay:    BLINK_MS,
+      delay:    DIALOG.BLINK_INTERVAL_MS,
       loop:     true,
       callback: () => {
         if (!this._active || this._typing || this._choiceMode) return
@@ -254,8 +253,8 @@ export class DialogBox {
     this._charIdx = 0
     this._typing  = true
 
-    // ms per character — derived from CHARS_PER_SEC.
-    const delay = Math.floor(1000 / CHARS_PER_SEC)
+    // ms per character — derived from DIALOG.CHARS_PER_SEC.
+    const delay = Math.floor(1000 / DIALOG.CHARS_PER_SEC)
 
     this._typeTimer = this.scene.time.addEvent({
       delay,

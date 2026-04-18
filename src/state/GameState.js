@@ -73,8 +73,9 @@ export const GameState = {
   },
   stats: { ...DEFAULT_STATS },
   _session: {
-    isDirty:     false,  // true when there are unsaved changes
-    lastSavedAt: null,   // ISO timestamp of last save
+    isDirty:      false,  // true when there are unsaved changes
+    lastSavedAt:  null,   // ISO timestamp of last save
+    dialogActive: false,  // true while dialog or choice menu is open
   },
 }
 
@@ -203,8 +204,9 @@ export function initNewGame(name, mascot) {
   }
   GameState.stats = { ...DEFAULT_STATS }
   GameState._session = {
-    isDirty:     true,
-    lastSavedAt: null,
+    isDirty:      true,
+    lastSavedAt:  null,
+    dialogActive: false,
   }
 }
 

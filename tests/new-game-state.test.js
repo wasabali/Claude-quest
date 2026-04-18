@@ -80,6 +80,7 @@ describe('initNewGame', () => {
     expect(GameState.skills.cursed).toEqual([])
     expect(GameState._session.isDirty).toBe(true)
     expect(GameState._session.lastSavedAt).toBe(null)
+    expect(GameState._session.dialogActive).toBe(false)
   })
 
   it('resets non-player sections from any previous save state', () => {
