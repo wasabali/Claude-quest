@@ -10,14 +10,14 @@ import { ServiceCatalogScene } from '#scenes/ServiceCatalogScene.js'
 import { SkillManagementScene } from '#scenes/SkillManagementScene.js'
 import { EmblemScene }          from '#scenes/EmblemScene.js'
 import { StackOverflowScene }   from '#scenes/StackOverflowScene.js'
+import { BattleScene }          from '#scenes/BattleScene.js'
 
 new Phaser.Game({
   type:   Phaser.AUTO,
   width:  CONFIG.WIDTH,
   height: CONFIG.HEIGHT,
   parent: 'app',
-  antialias: false,
-  pixelArt:  true,
+
   physics: {
     default: 'arcade',
     arcade:  { gravity: { y: 0 }, debug: false },
@@ -26,7 +26,7 @@ new Phaser.Game({
     mode:       Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene ],
+  scene: [ BootScene, TitleScene, NewGameScene, WorldScene, SaveScene, ServiceCatalogScene, SkillManagementScene, EmblemScene, StackOverflowScene, BattleScene ],
 })
 
 window.addEventListener('beforeunload', e => {

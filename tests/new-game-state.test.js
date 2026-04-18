@@ -91,14 +91,15 @@ describe('initNewGame', () => {
       junk: [],
     })
     expect(GameState.emblems).toEqual({
-      tux:       { earned: false, shine: 0, grime: 0 },
-      pipeline:  { earned: false, shine: 0, grime: 0 },
-      container: { earned: false, shine: 0, grime: 0 },
-      cloud:     { earned: false, shine: 0, grime: 0 },
-      vault:     { earned: false, shine: 0, grime: 0 },
-      helm:      { earned: false, shine: 0, grime: 0 },
-      finops:    { earned: false, shine: 0, grime: 0 },
-      sre:       { earned: false, shine: 0, grime: 0 },
+      tux:        { earned: false, shine: 0, grime: 0 },
+      pipeline:   { earned: false, shine: 0, grime: 0 },
+      container:  { earned: false, shine: 0, grime: 0 },
+      cloud:      { earned: false, shine: 0, grime: 0 },
+      vault:      { earned: false, shine: 0, grime: 0 },
+      helm:       { earned: false, shine: 0, grime: 0 },
+      finops:     { earned: false, shine: 0, grime: 0 },
+      sre:        { earned: false, shine: 0, grime: 0 },
+      serverless: { earned: false, shine: 0, grime: 0 },
     })
     expect(GameState.story).toEqual({
       act: 1,
@@ -118,6 +119,7 @@ describe('initNewGame', () => {
       clockManipulated: false,
       devNullUseCount: 0,
       skillUseCounts: {},
+      gymReplays: {},
     })
   })
 })

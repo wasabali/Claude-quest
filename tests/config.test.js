@@ -8,6 +8,7 @@ import {
   WEAK_MULTIPLIER,
   WORLD_SCENE,
   XP_TABLE,
+  BATTLE_BACKGROUNDS,
 } from '../src/config.js'
 
 describe('CONFIG', () => {
@@ -104,5 +105,30 @@ describe('XP_TABLE', () => {
 
   it('defines at least 20 levels', () => {
     expect(XP_TABLE.length).toBeGreaterThanOrEqual(20)
+  })
+})
+
+describe('BATTLE_BACKGROUNDS', () => {
+  const REGIONS = [
+    'localhost_town', 'pipeline_pass', 'jira_dungeon',
+    'production_plains', 'kubernetes_colosseum', 'three_am_tavern',
+    'server_graveyard', 'node_modules_maze', 'dev_null_void',
+    'deprecated_azure_region',
+  ]
+
+  it('maps all regions to an arena', () => {
+    REGIONS.forEach(region => {
+      expect(BATTLE_BACKGROUNDS).toHaveProperty(region)
+      expect(BATTLE_BACKGROUNDS[region].arena).toBeTruthy()
+    })
+  })
+
+  it('maps specific regions per design spec', () => {
+    expect(BATTLE_BACKGROUNDS.localhost_town.arena).toBe('plains')
+    expect(BATTLE_BACKGROUNDS.pipeline_pass.arena).toBe('construction')
+    expect(BATTLE_BACKGROUNDS.jira_dungeon.arena).toBe('cave')
+    expect(BATTLE_BACKGROUNDS.production_plains.arena).toBe('factory')
+    expect(BATTLE_BACKGROUNDS.kubernetes_colosseum.arena).toBe('stadium')
+    expect(BATTLE_BACKGROUNDS.three_am_tavern.arena).toBe('abyss')
   })
 })

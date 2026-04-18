@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   selectFromPool,
   encounterChance,
+  roll,
 } from '../src/engine/EncounterEngine.js'
 
 // Stable seeds used across tests — values chosen to hit different pool buckets.
@@ -41,8 +42,13 @@ describe('selectFromPool', () => {
     expect(selectFromPool('nonexistent_region', 42, 5)).toBeNull()
   })
 
-  it('returns null for localhost_town (all pools empty)', () => {
-    expect(selectFromPool('localhost_town', 42, 5)).toBeNull()
+  it('returns valid encounter for localhost_town (pools now populated)', () => {
+    const result = selectFromPool('localhost_town', 42, 5)
+    expect(result).not.toBeNull()
+    const commonIds = ['404_not_found', 'missing_semicolon', 'port_conflict']
+    const rareIds   = ['failed_pipeline', 'npm_install_hang']
+    const allowed   = [...commonIds, ...rareIds]
+    expect(allowed).toContain(result.enemyId)
   })
 
   it('handles region with no cursed pool — redistributes weight to common/rare', () => {
@@ -215,7 +221,7 @@ describe('selectFromPool — on-call hours', () => {
     }
   })
 
-  it('returns null for localhost_town regardless of isOnCallHours (all pools empty)', () => {
+  it('returns null for localhost_town with isOnCallHours: true (none of its encounters are on-call)', () => {
     expect(selectFromPool('localhost_town', 42, 5, { isOnCallHours: true })).toBeNull()
   })
 
@@ -223,5 +229,84 @@ describe('selectFromPool — on-call hours', () => {
     const r1 = selectFromPool('production_plains', 77, 10, { isOnCallHours: false })
     const r2 = selectFromPool('production_plains', 77, 10)
     expect(r1).toEqual(r2)
+  })
+})
+
+describe('roll', () => {
+  it('is deterministic — same args always return identical results', () => {
+    const r1 = roll('pipeline_pass', 4, 42)
+    const r2 = roll('pipeline_pass', 4, 42)
+    expect(r1).toEqual(r2)
+  })
+
+  it('localhost_town always returns null (baseRate = 0)', () => {
+    for (let step = 0; step < 20; step++) {
+      for (let seed = 0; seed < 10; seed++) {
+        expect(roll('localhost_town', step, seed)).toBeNull()
+      }
+    }
+  })
+
+  it('unknown region returns null (fallback has baseRate 0)', () => {
+    expect(roll('nonexistent_region', 4, 42)).toBeNull()
+    expect(roll('nonexistent_region', 8, 99)).toBeNull()
+    expect(roll('nonexistent_region', 0, 1)).toBeNull()
+  })
+
+  it('only rolls on stepsPerRoll multiples — pipeline_pass (stepsPerRoll=4)', () => {
+    // Steps not divisible by 4 must always return null regardless of seed
+    const nonMultiples = [1, 2, 3, 5, 6, 7]
+    for (const step of nonMultiples) {
+      for (let seed = 0; seed < 50; seed++) {
+        expect(roll('pipeline_pass', step, seed)).toBeNull()
+      }
+    }
+  })
+
+  it('step 0 always returns null — no encounter before the player moves', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      expect(roll('pipeline_pass', 0, seed)).toBeNull()
+      expect(roll('three_am_tavern', 0, seed)).toBeNull()
+    }
+  })
+
+  it('statistical rate check — pipeline_pass triggers ~15% of the time', () => {
+    let triggered = 0
+    const trials = 1000
+    for (let seed = 0; seed < trials; seed++) {
+      if (roll('pipeline_pass', 4, seed) !== null) triggered++
+    }
+    const rate = triggered / trials
+    expect(rate).toBeGreaterThan(0.05)
+    expect(rate).toBeLessThan(0.30)
+  })
+
+  it('returns valid encounter shape when triggered', () => {
+    // Find a seed that triggers an encounter at step 4 for pipeline_pass
+    let encounter = null
+    for (let seed = 0; seed < 10000; seed++) {
+      encounter = roll('pipeline_pass', 4, seed)
+      if (encounter !== null) break
+    }
+    expect(encounter).not.toBeNull()
+    expect(typeof encounter.encounterType).toBe('string')
+    expect(typeof encounter.enemyId).toBe('string')
+    expect(typeof encounter.domain).toBe('string')
+  })
+
+  it('three_am_tavern has a higher trigger rate than pipeline_pass', () => {
+    const trials = 1000
+    let pipelineCount = 0
+    let tavernCount = 0
+
+    // Use step multiples that work for both regions
+    // pipeline_pass: stepsPerRoll=4, three_am_tavern: stepsPerRoll=2
+    // Use step 4 which is a multiple of both 4 and 2
+    for (let seed = 0; seed < trials; seed++) {
+      if (roll('pipeline_pass', 4, seed) !== null) pipelineCount++
+      if (roll('three_am_tavern', 4, seed) !== null) tavernCount++
+    }
+
+    expect(tavernCount).toBeGreaterThan(pipelineCount)
   })
 })

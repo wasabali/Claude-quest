@@ -55,6 +55,37 @@ export class BaseScene extends Phaser.Scene {
     if (this.dialog) this.dialog.show(text, callback)
   }
 
+  // 9-slice window factory — shared panel builder for all UI chrome.
+  // Uses a 9-slice texture when available (PokeRogue-style window assets),
+  // falls back to a stroked rectangle otherwise.
+  // Following PokeRogue's ui-theme.ts pattern: thin border, dark fill.
+  // Returns a game object with origin (0, 0) — top-left positioning.
+  createPanel(x, y, width, height, { slice = 4 } = {}) {
+    const FILL   = 0x1a1a2a
+    const BORDER = 0x334155
+    const key = '__base_window_9slice__'
+    if (!this.textures.exists(key)) {
+      const g = this.make.graphics({ x: 0, y: 0, add: false })
+      g.fillStyle(FILL, 1)
+      g.fillRect(0, 0, 24, 24)
+      g.lineStyle(2, BORDER, 1)
+      g.strokeRect(1, 1, 22, 22)
+      g.generateTexture(key, 24, 24)
+      g.destroy()
+    }
+
+    if (typeof this.add.nineslice === 'function') {
+      const panel = this.add.nineslice(x, y, key, undefined, width, height, slice, slice, slice, slice)
+      panel.setOrigin(0, 0)
+      return panel
+    }
+
+    const panel = this.add.rectangle(x, y, width, height, FILL)
+    panel.setOrigin(0, 0)
+    panel.setStrokeStyle(2, BORDER)
+    return panel
+  }
+
   shutdown() {
     if (this._currentBgm) {
       this._currentBgm.stop()

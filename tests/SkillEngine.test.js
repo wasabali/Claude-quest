@@ -360,30 +360,34 @@ describe('getShameTitle', () => {
     expect(getShameTitle(0)).toBeNull()
   })
 
-  it('returns null for shame 1–4 (no title at those thresholds)', () => {
-    expect(getShameTitle(1)).toBeNull()
-    expect(getShameTitle(4)).toBeNull()
+  it('returns It Was Like That When I Got Here for shame 1–2', () => {
+    expect(getShameTitle(1)).toBe('It Was Like That When I Got Here')
+    expect(getShameTitle(2)).toBe('It Was Like That When I Got Here')
   })
 
-  it('returns Person of Interest at shame 5', () => {
-    expect(getShameTitle(5)).toBe('Person of Interest')
-    expect(getShameTitle(6)).toBe('Person of Interest')
-    expect(getShameTitle(9)).toBe('Person of Interest')
+  it('returns Cowboy Coder for shame 3–4', () => {
+    expect(getShameTitle(3)).toBe('Cowboy Coder')
+    expect(getShameTitle(4)).toBe('Cowboy Coder')
+  })
+
+  it('returns The Shortcutter at shame 5', () => {
+    expect(getShameTitle(5)).toBe('The Shortcutter')
+    expect(getShameTitle(6)).toBe('The Shortcutter')
   })
 
   it('returns Shadow Engineer at shame 10', () => {
     expect(getShameTitle(10)).toBe('Shadow Engineer')
-    // shame 15 has title:null — 'Shadow Engineer' (from shame 10) is still the active title
-    expect(getShameTitle(15)).toBe('Shadow Engineer')
-    expect(getShameTitle(100)).toBe('Shadow Engineer')
+    // shame 15 now has title 'The Other Principal'
+    expect(getShameTitle(15)).toBe('The Other Principal')
+    expect(getShameTitle(100)).toBe('The Other Principal')
   })
 
-  it('returns Person of Interest at shame 7 (no new title at 7, Person of Interest persists)', () => {
+  it('returns Person of Interest at shame 7', () => {
     expect(getShameTitle(7)).toBe('Person of Interest')
   })
 
-  it('returns null at shame 3 (no title earned yet — shame 3 has no title, neither does 1)', () => {
-    expect(getShameTitle(3)).toBeNull()
+  it('returns Cowboy Coder at shame 3', () => {
+    expect(getShameTitle(3)).toBe('Cowboy Coder')
   })
 })
 

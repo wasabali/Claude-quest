@@ -7,11 +7,18 @@ import {
   BATTLE_MODES,
   createBattleState,
   resolveTurn,
+  statusTickPhase,
+  slaTickPhase,
+  incidentAttackPhase,
+  enemyPhase,
+  turnEndPhase,
 } from '#engine/BattleEngine.js'
 import { calculateXP, computeShameFlags } from '#engine/SkillEngine.js'
+import { Menu } from '#ui/Menu.js'
+import { DialogBox } from '#ui/DialogBox.js'
 
 // ---------------------------------------------------------------------------
-// Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (160×144 native)
+// Layout constants — positions derived from CONFIG.WIDTH/HEIGHT (1920×1080)
 // ---------------------------------------------------------------------------
 const ENEMY_HP_BAR_X   = Math.floor(CONFIG.WIDTH / 2)
 const ENEMY_HP_BAR_Y   = 10
@@ -23,7 +30,6 @@ const SLA_TIMER_X      = CONFIG.WIDTH - 40
 const SLA_TIMER_Y      = 6
 const SKILL_MENU_X     = 4
 const SKILL_MENU_Y     = CONFIG.HEIGHT - 62
-const SKILL_MENU_H     = 14
 const HP_BAR_W         = Math.floor(CONFIG.WIDTH * 0.475)
 const HP_BAR_H         = 4
 const BUDGET_BAR_W     = Math.floor(CONFIG.WIDTH * 0.375)
@@ -40,7 +46,6 @@ export class BattleScene extends BaseScene {
   constructor() {
     super({ key: 'BattleScene' })
     this._battleState  = null
-    this._skillIndex   = 0
     this._eventQueue   = []
     this._animating    = false
     this._activeSkills = []
@@ -74,9 +79,9 @@ export class BattleScene extends BaseScene {
       emblems:         GameState.emblems ?? {},
     })
 
-    this._skillIndex = 0
     this._animating  = false
     this._eventQueue = []
+    this._cursedConfirmMenu = null
 
     this._buildHUD(mode, opponent)
     this._buildSkillMenu()
@@ -149,40 +154,112 @@ export class BattleScene extends BaseScene {
   }
 
   // -------------------------------------------------------------------------
-  // Skill menu — navigable list of active skills
+  // Skill menu — uses Menu.js for D-pad navigation
   // -------------------------------------------------------------------------
   _buildSkillMenu() {
-    this._skillMenuItems = []
-    const style = { fontFamily: CONFIG.FONT, fontSize: '6px', color: '#ffffff' }
+    const menuItems = this._buildMenuItems()
 
-    for (let i = 0; i < this._activeSkills.length; i++) {
-      const skill = this._activeSkills[i]
-      const text  = this.add.text(
-        SKILL_MENU_X + 8,
-        SKILL_MENU_Y + i * SKILL_MENU_H,
-        skill.displayName ?? skill.id,
-        style,
-      )
-      this._skillMenuItems.push(text)
+    this._skillMenu = new Menu(this, menuItems, {
+      x: SKILL_MENU_X,
+      y: SKILL_MENU_Y,
+      width: CONFIG.WIDTH - SKILL_MENU_X * 2,
+      onSelect: (item) => this._onMenuSelect(item),
+      onCancel: () => {},
+    })
+    this._skillMenu.show()
+  }
+
+  _buildMenuItems() {
+    const budget = this._battleState.player.budget ?? 0
+    const items = this._activeSkills.map(skill => ({
+      label:    skill.displayName ?? skill.id,
+      value:    skill.id,
+      disabled: skill.budgetCost > 0 && budget < skill.budgetCost,
+      skill,
+    }))
+
+    // FLEE option — disabled in ENGINEER mode
+    items.push({
+      label:    'FLEE',
+      value:    '__flee__',
+      disabled: this._battleState.mode === BATTLE_MODES.ENGINEER,
+    })
+
+    return items
+  }
+
+  _refreshSkillMenu() {
+    if (!this._skillMenu) return
+    this._skillMenu.setItems(this._buildMenuItems())
+  }
+
+  _onMenuSelect(item) {
+    if (item.value === '__flee__') {
+      this._onFlee()
+      return
     }
+    const skill = item.skill
+    if (!skill) return
 
-    // Arrow cursor
-    this._menuArrow = this.add.text(SKILL_MENU_X, SKILL_MENU_Y, '>', {
-      fontFamily: CONFIG.FONT, fontSize: '6px', color: '#ffe066',
-    })
-
-    this._refreshMenuCursor()
+    if (skill.isCursed || skill.tier === 'cursed' || skill.tier === 'nuclear') {
+      this._showCursedWarning(skill)
+    } else {
+      this._useSkill(skill)
+    }
   }
 
-  _refreshMenuCursor() {
-    if (!this._menuArrow) return
-    this._menuArrow.setY(SKILL_MENU_Y + this._skillIndex * SKILL_MENU_H)
+  _showCursedWarning(skill) {
+    this._animating = true
+    this.dialog.show(
+      skill.warningText ?? 'This will work. But at what cost?',
+      () => {
+        this._cursedConfirmMenu = new Menu(this, [
+          { label: 'YES', value: 'yes' },
+          { label: 'NO',  value: 'no'  },
+        ], {
+          x: Math.floor(CONFIG.WIDTH * 0.35),
+          y: Math.floor(CONFIG.HEIGHT * 0.45),
+          width: Math.floor(CONFIG.WIDTH * 0.3),
+          onSelect: (choice) => {
+            this._cursedConfirmMenu.destroy()
+            this._cursedConfirmMenu = null
+            if (choice.value === 'yes') {
+              this._useSkill(skill)
+            } else {
+              this._wasteTurn()
+            }
+          },
+        })
+        this._cursedConfirmMenu.show()
+        this._animating = false
+      },
+    )
   }
 
-  _refreshMenuHighlight() {
-    this._skillMenuItems.forEach((item, i) => {
-      item.setColor(i === this._skillIndex ? '#ffe066' : '#ffffff')
-    })
+  _wasteTurn() {
+    const state = this._battleState
+    const events = [
+      { type: 'dialog', target: 'player', text: 'You hesitated...' },
+      ...statusTickPhase(state),
+      ...slaTickPhase(state),
+      ...incidentAttackPhase(state),
+      ...enemyPhase(state),
+      ...turnEndPhase(state),
+    ]
+    state.log.push(...events)
+    this._animateEvents(events)
+  }
+
+  _onFlee() {
+    if (this._battleState.mode === BATTLE_MODES.ENGINEER) return
+
+    this._battleState.player.shamePoints += 1
+    const events = [
+      { type: 'shame', target: 'player', value: 1 },
+      { type: 'battle_end', target: 'player', value: 'lose' },
+    ]
+    this._battleState.log.push(...events)
+    this._animateEvents(events)
   }
 
   // -------------------------------------------------------------------------
@@ -213,28 +290,28 @@ export class BattleScene extends BaseScene {
     })
 
     this._keys = keys
+    this.dialog = new DialogBox(this)
   }
 
   update() {
+    if (this.dialog?.isActive) {
+      if (Phaser.Input.Keyboard.JustDown(this._keys.confirm)) {
+        this.dialog.advance()
+      }
+      if (Phaser.Input.Keyboard.JustDown(this._keys.cancel)) {
+        this.dialog.skip()
+      }
+      return
+    }
     if (this._animating) return
 
-    const keys = this._keys
-    if (!keys) return
+    const activeMenu = this._cursedConfirmMenu ?? this._skillMenu
+    if (!activeMenu) return
 
-    if (Phaser.Input.Keyboard.JustDown(keys.up)) {
-      this._skillIndex = Math.max(0, this._skillIndex - 1)
-      this._refreshMenuCursor()
-      this._refreshMenuHighlight()
-    }
-    if (Phaser.Input.Keyboard.JustDown(keys.down)) {
-      const lastIndex  = Math.max(0, this._activeSkills.length - 1)
-      this._skillIndex = Math.min(lastIndex, this._skillIndex + 1)
-      this._refreshMenuCursor()
-      this._refreshMenuHighlight()
-    }
-    if (Phaser.Input.Keyboard.JustDown(keys.confirm)) {
-      this._useSkill(this._activeSkills[this._skillIndex])
-    }
+    if (Phaser.Input.Keyboard.JustDown(this._keys.up))      activeMenu.handleInput('up')
+    if (Phaser.Input.Keyboard.JustDown(this._keys.down))    activeMenu.handleInput('down')
+    if (Phaser.Input.Keyboard.JustDown(this._keys.confirm)) activeMenu.handleInput('confirm')
+    if (Phaser.Input.Keyboard.JustDown(this._keys.cancel))  activeMenu.handleInput('cancel')
   }
 
   // -------------------------------------------------------------------------
@@ -262,6 +339,7 @@ export class BattleScene extends BaseScene {
       if (index >= events.length) {
         this._animating = false
         this._refreshHUD()
+        this._refreshSkillMenu()
         return
       }
 
@@ -389,6 +467,16 @@ export class BattleScene extends BaseScene {
       case 'dialog':
         this._showLog(event.text ?? '')
         this.time.delayedCall(800, callback)
+        break
+
+      case 'shame':
+        this._showLog(`+${event.value} Shame.`)
+        this.time.delayedCall(400, callback)
+        break
+
+      case 'skill_blocked':
+        this._showLog('Cannot use that skill!')
+        this.time.delayedCall(400, callback)
         break
 
       default:

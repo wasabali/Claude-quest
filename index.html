@@ -23,16 +23,13 @@
       width: 100vw;
       height: 100vh;
     }
-
-    /* Prevent browser bilinear interpolation when the canvas is CSS-scaled */
-    canvas {
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
   </style>
 </head>
 <body>
   <div id="app"></div>
+  <footer style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:4px;font-size:12px;color:#cbd5e1;font-family:sans-serif;">
+    Battle backgrounds, UI windows, and HUD assets adapted from <a href="https://github.com/pagefaultgames/pokerogue" style="color:#7aa2f7;">PokeRogue</a> by pagefaultgames, used under CC-BY-NC-SA-4.0.
+  </footer>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

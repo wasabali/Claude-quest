@@ -51,9 +51,35 @@ export function applyStatus(battleState, target, statusId, randomFn = Math.rando
   ]
 }
 
+// Remove a specific status from the target.
+// Returns BattleEvent[].
+// - For technical_debt: this is a no-op (cannot be removed in battle).
+// - For all other statuses: removes the first matching entry.
+// - If the status is not present, returns [].
+export function removeStatus(battleState, target, statusId) {
+  // Technical debt cannot be removed
+  if (statusId === 'technical_debt') return []
+
+  const statuses = battleState[target].statuses
+  const idx = statuses.findIndex(s => s.id === statusId)
+  if (idx === -1) return []
+
+  statuses.splice(idx, 1)
+
+  return [
+    {
+      type:   'status_remove',
+      target,
+      value:  statusId,
+      reason: 'manual',
+      text:   `${statusId} removed from ${target}`,
+    },
+  ]
+}
+
 // Tick all statuses on target by one turn.
 // - Decrements remaining for finite statuses.
-// - Removes entries when remaining reaches 0 and emits status_expired.
+// - Removes entries when remaining reaches 0 and emits status_remove with reason 'expired'.
 // - Never modifies permanent (remaining === -1) entries.
 // Returns BattleEvent[].
 export function tickStatuses(battleState, target) {
@@ -79,7 +105,7 @@ export function tickStatuses(battleState, target) {
   for (const statusId of expired) {
     const idx = battleState[target].statuses.findIndex(s => s.id === statusId && s.remaining <= 0)
     if (idx !== -1) battleState[target].statuses.splice(idx, 1)
-    events.push({ type: 'status_expired', target, value: statusId, text: `${statusId} expired` })
+    events.push({ type: 'status_remove', target, value: statusId, reason: 'expired', text: `${statusId} expired` })
   }
 
   return events

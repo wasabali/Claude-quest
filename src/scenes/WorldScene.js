@@ -2,8 +2,10 @@ import Phaser from 'phaser'
 import { BaseScene } from '#scenes/BaseScene.js'
 import { DialogBox } from '#ui/DialogBox.js'
 import { CONFIG } from '../config.js'
-import { GameState, hasItem, markDirty } from '#state/GameState.js'
+import { GameState, hasItem, addItem, markDirty, grantXpOnce } from '#state/GameState.js'
 import { getById as getStoryById } from '#data/story.js'
+import { getById as getQuestById } from '#data/quests.js'
+import { resolveChoice, isQuestCompleted, getCompletedDialog } from '#engine/QuestEngine.js'
 
 const MAP_KEY     = 'localhost_town'
 const TILESET_KEY = 'stub_tiles'
@@ -66,7 +68,7 @@ export class WorldScene extends BaseScene {
       g.fillStyle(0x50c8ff)
       g.fillRect(8, 8, 32, 8)
       g.fillRect(8, 20, 20, 4)
-      g.generateTexture('azure_terminal', 48, 48)
+      g.generateTexture('azure_terminal', TILE_SIZE, TILE_SIZE)
       g.destroy()
     }
   }
@@ -189,6 +191,14 @@ export class WorldScene extends BaseScene {
   }
 
   _handleDialogInput() {
+    if (this.dialog.isChoiceMode) {
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.up))   this.dialog.moveChoice(-1)
+      if (Phaser.Input.Keyboard.JustDown(this._cursors.down)) this.dialog.moveChoice(1)
+      const confirm = Phaser.Input.Keyboard.JustDown(this._keyZ)
+        || Phaser.Input.Keyboard.JustDown(this._keyEnter)
+      if (confirm) this.dialog.confirmChoice()
+      return
+    }
     const confirm = Phaser.Input.Keyboard.JustDown(this._keyZ)
       || Phaser.Input.Keyboard.JustDown(this._keyEnter)
     if (confirm)                                         this.dialog.advance()
@@ -219,6 +229,11 @@ export class WorldScene extends BaseScene {
 
   _interactWithNpc(npcName) {
     this._interacting = true
+
+    if (npcName === 'margaret') {
+      this._interactMargaret()
+      return
+    }
 
     if (npcName === 'azure_terminal') {
       const pages = getStoryById('npc_azure_terminal')?.pages ?? ['> AZURE TERMINAL v2.0']
@@ -273,10 +288,10 @@ export class WorldScene extends BaseScene {
   }
 
   // Evaluates NPC dialogue variants top-to-bottom against the current player
-  // reputation and shamePoints, returning the first matching variant's pages.
-  // Falls back to entry.pages when no variant matches.
+  // reputation, shamePoints, budget, and story flags, returning the first
+  // matching variant's pages. Falls back to entry.pages when no variant matches.
   _resolveNpcPages(entry) {
-    const { reputation, shamePoints } = GameState.player
+    const { reputation, shamePoints, budget } = GameState.player
     if (Array.isArray(entry?.variants)) {
       for (const variant of entry.variants) {
         const c = variant.condition ?? {}
@@ -284,6 +299,8 @@ export class WorldScene extends BaseScene {
         if (c.reputationMax !== undefined && reputation > c.reputationMax) continue
         if (c.shameMin      !== undefined && shamePoints < c.shameMin)     continue
         if (c.shameMax      !== undefined && shamePoints > c.shameMax)     continue
+        if (c.budgetMax     !== undefined && budget > c.budgetMax)         continue
+        if (c.storyFlag     !== undefined && !GameState.story.flags[c.storyFlag]) continue
         if (Array.isArray(variant.pool)) {
           // NPC one-liner pools are intentionally non-deterministic — different
           // line each visit. No seeded RNG needed; this is presentation-layer only.
@@ -301,6 +318,36 @@ export class WorldScene extends BaseScene {
 
   _checkEncounterStep() {
     // Wired to EncounterEngine once issue #9 is merged — stub prevents crash.
+  }
+
+  _interactMargaret() {
+    if (isQuestCompleted('margaret_website', GameState.story.completedQuests)) {
+      const lines = getCompletedDialog('margaret_website')
+      this.dialog.show(lines, () => { this._interacting = false })
+      return
+    }
+
+    const quest   = getQuestById('margaret_website')
+    const stage   = quest.stages[0]
+    const choices = stage.choices.map(c => c.text)
+
+    this.dialog.show(stage.dialog, () => {
+      this.dialog.showChoices('What do you suggest?', choices, (idx) => {
+        const result = resolveChoice('margaret_website', idx)
+        if (result.correct) {
+          grantXpOnce('margaret_website_xp', result.xp)
+          for (const reward of result.items) {
+            addItem(reward.tab, reward.id, reward.qty)
+          }
+          GameState.story.completedQuests.push('margaret_website')
+          markDirty()
+        } else {
+          GameState.player.hp = Math.max(1, GameState.player.hp - result.hpLoss)
+          markDirty()
+        }
+        this.dialog.show(result.dialog, () => { this._interacting = false })
+      })
+    })
   }
 
   shutdown() {

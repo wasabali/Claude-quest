@@ -16,6 +16,7 @@ export const DEFAULT_STATS = {
   clockManipulated:      false,
   devNullUseCount:       0,
   skillUseCounts:        {},
+  gymReplays:            {},
 }
 
 // The single mutable state object for the entire game.
@@ -52,14 +53,15 @@ export const GameState = {
     junk:        [],
   },
   emblems: {
-    tux:       { earned: false, shine: 0, grime: 0 },
-    pipeline:  { earned: false, shine: 0, grime: 0 },
-    container: { earned: false, shine: 0, grime: 0 },
-    cloud:     { earned: false, shine: 0, grime: 0 },
-    vault:     { earned: false, shine: 0, grime: 0 },
-    helm:      { earned: false, shine: 0, grime: 0 },
-    finops:    { earned: false, shine: 0, grime: 0 },
-    sre:       { earned: false, shine: 0, grime: 0 },
+    tux:        { earned: false, shine: 0, grime: 0 },
+    pipeline:   { earned: false, shine: 0, grime: 0 },
+    container:  { earned: false, shine: 0, grime: 0 },
+    cloud:      { earned: false, shine: 0, grime: 0 },
+    vault:      { earned: false, shine: 0, grime: 0 },
+    helm:       { earned: false, shine: 0, grime: 0 },
+    finops:     { earned: false, shine: 0, grime: 0 },
+    sre:        { earned: false, shine: 0, grime: 0 },
+    serverless: { earned: false, shine: 0, grime: 0 },
   },
   story: {
     act:             1,
@@ -179,14 +181,15 @@ export function initNewGame(name, mascot) {
     junk:        [],
   }
   GameState.emblems = {
-    tux:       { earned: false, shine: 0, grime: 0 },
-    pipeline:  { earned: false, shine: 0, grime: 0 },
-    container: { earned: false, shine: 0, grime: 0 },
-    cloud:     { earned: false, shine: 0, grime: 0 },
-    vault:     { earned: false, shine: 0, grime: 0 },
-    helm:      { earned: false, shine: 0, grime: 0 },
-    finops:    { earned: false, shine: 0, grime: 0 },
-    sre:       { earned: false, shine: 0, grime: 0 },
+    tux:        { earned: false, shine: 0, grime: 0 },
+    pipeline:   { earned: false, shine: 0, grime: 0 },
+    container:  { earned: false, shine: 0, grime: 0 },
+    cloud:      { earned: false, shine: 0, grime: 0 },
+    vault:      { earned: false, shine: 0, grime: 0 },
+    helm:       { earned: false, shine: 0, grime: 0 },
+    finops:     { earned: false, shine: 0, grime: 0 },
+    sre:        { earned: false, shine: 0, grime: 0 },
+    serverless: { earned: false, shine: 0, grime: 0 },
   }
   GameState.story = {
     act:             1,

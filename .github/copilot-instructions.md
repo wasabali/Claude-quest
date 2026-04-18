@@ -99,11 +99,12 @@ export const GameState = {
 
 ## Visual Style
 
-- Canvas: 160×144px native, 640×576px display (4× integer scale, CSS `image-rendering: pixelated`)
+- Canvas: 1920×1080, `Phaser.Scale.FIT` — fills browser, preserves ratio
 - Font: Press Start 2P only. No other fonts.
 - No smooth tweening. All animations are 2–4 frame sprite flips.
-- Max 56 colours total on screen. Max 4 colours per sprite.
-- Tile size: 16×16px. Player sprite: 16×24px.
+- Tile size: 48×48px. Viewport: 40×~22 tiles.
+- UI windows: 9-slice panels (PokeRogue-style)
+- No `pixelArt: true`, no `antialias: false` — full resolution rendering
 
 ## Naming Conventions
 
