@@ -23,13 +23,273 @@
       width: 100vw;
       height: 100vh;
     }
+
+    .gbc-shell {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      :root {
+        --gbc-screen-width: 160px;
+        --gbc-screen-height: 144px;
+      }
+
+      body {
+        padding: 12px;
+        align-items: center;
+      }
+
+      #app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .gbc-shell {
+        display: block;
+        width: min(100%, 420px);
+        padding: clamp(14px, 2.4vh, 22px);
+        border-radius: 26px;
+        background:
+          radial-gradient(circle at 78% 18%, rgba(146, 255, 239, 0.35), transparent 38%),
+          linear-gradient(145deg, #5a4d8c 0%, #4f4c83 44%, #2e7f89 100%);
+        border: 3px solid #1f2142;
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.48),
+          inset 0 0 0 2px rgba(220, 240, 255, 0.08);
+        font-family: "Press Start 2P", system-ui, sans-serif;
+        color: #dce8ff;
+      }
+
+      .gbc-screen-bezel {
+        background: #0d0d0d;
+        border: 2px solid #1f1f1f;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: inset 0 0 0 2px #2b2b2b;
+      }
+
+      .gbc-screen {
+        width: var(--gbc-screen-width);
+        height: var(--gbc-screen-height);
+        margin: 0 auto;
+        background: #05070d;
+        border: 2px solid #2f3f4f;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      #app canvas {
+        width: var(--gbc-screen-width) !important;
+        height: var(--gbc-screen-height) !important;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .gbc-controls {
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .gbc-dpad {
+        position: relative;
+        width: 118px;
+        height: 118px;
+      }
+
+      .gbc-dpad-shape {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 38px;
+        height: 112px;
+        transform: translate(-50%, -50%);
+        background: #1c2438;
+        border-radius: 10px;
+        box-shadow: inset 0 0 0 2px #0f1526;
+      }
+
+      .gbc-dpad-shape::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 112px;
+        height: 38px;
+        transform: translate(-50%, -50%);
+        background: #1c2438;
+        border-radius: 10px;
+        box-shadow: inset 0 0 0 2px #0f1526;
+      }
+
+      .gbc-btn {
+        border: none;
+        background: #2a3048;
+        color: #e6f0ff;
+        font-family: "Press Start 2P", system-ui, sans-serif;
+        font-size: 10px;
+        touch-action: manipulation;
+        user-select: none;
+      }
+
+      .gbc-btn:active,
+      .gbc-btn.is-pressed {
+        transform: translateY(1px) scale(0.98);
+        filter: brightness(0.88);
+      }
+
+      .gbc-dpad-btn {
+        position: absolute;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: transparent;
+      }
+
+      .gbc-dpad-btn.up { top: 0; left: 40px; }
+      .gbc-dpad-btn.down { bottom: 0; left: 40px; }
+      .gbc-dpad-btn.left { left: 0; top: 40px; }
+      .gbc-dpad-btn.right { right: 0; top: 40px; }
+
+      .gbc-ab {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .gbc-ab .gbc-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ff8cab 0%, #c14d73 58%, #8e3252 100%);
+        border: 2px solid #68223e;
+        box-shadow: 0 4px 0 #4b162b;
+      }
+
+      .gbc-meta {
+        margin-top: 14px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .gbc-meta .gbc-btn {
+        min-width: 112px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        font-size: 8px;
+        background: linear-gradient(180deg, #c5ccd8 0%, #8f99ab 100%);
+        color: #1a1f2d;
+      }
+
+      @media (orientation: landscape) {
+        .gbc-shell {
+          transform: scale(0.88);
+          transform-origin: center;
+        }
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div class="gbc-shell" aria-label="GameBoy Color shell">
+      <div class="gbc-screen-bezel">
+        <div id="game-screen" class="gbc-screen"></div>
+      </div>
+      <div class="gbc-controls">
+        <div class="gbc-dpad">
+          <div class="gbc-dpad-shape"></div>
+          <button class="gbc-btn gbc-dpad-btn up" data-key="ArrowUp" aria-label="D-pad up"></button>
+          <button class="gbc-btn gbc-dpad-btn down" data-key="ArrowDown" aria-label="D-pad down"></button>
+          <button class="gbc-btn gbc-dpad-btn left" data-key="ArrowLeft" aria-label="D-pad left"></button>
+          <button class="gbc-btn gbc-dpad-btn right" data-key="ArrowRight" aria-label="D-pad right"></button>
+        </div>
+        <div class="gbc-ab">
+          <button class="gbc-btn" data-key="x" aria-label="B button">B</button>
+          <button class="gbc-btn" data-key="z" aria-label="A button">A</button>
+        </div>
+      </div>
+      <div class="gbc-meta">
+        <button class="gbc-btn" data-key="Shift" aria-label="Select button">⬛ SELECT</button>
+        <button class="gbc-btn" data-key="Enter" aria-label="Start button">▶ START</button>
+      </div>
+    </div>
+  </div>
   <footer style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:4px;font-size:12px;color:#cbd5e1;font-family:sans-serif;">
     Battle backgrounds, UI windows, and HUD assets adapted from <a href="https://github.com/pagefaultgames/pokerogue" style="color:#7aa2f7;">PokeRogue</a> by pagefaultgames, used under CC-BY-NC-SA-4.0.
   </footer>
+  <script>
+    const MOBILE_BREAKPOINT_PX = 768
+    const MOBILE_QUERY = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`)
+    const app = document.getElementById('app')
+    const gameScreen = document.getElementById('game-screen')
+    const keyMap = {
+      ArrowUp: { code: 'ArrowUp' },
+      ArrowDown: { code: 'ArrowDown' },
+      ArrowLeft: { code: 'ArrowLeft' },
+      ArrowRight: { code: 'ArrowRight' },
+      z: { code: 'KeyZ' },
+      x: { code: 'KeyX' },
+      Enter: { code: 'Enter' },
+      Shift: { code: 'ShiftLeft' },
+    }
+
+    const dispatchGameKey = (type, key) => {
+      const mappedKey = keyMap[key]
+      if (!mappedKey) return
+      const keyboardEvent = new KeyboardEvent(type, {
+        key,
+        code: mappedKey.code,
+        bubbles: true,
+        cancelable: true,
+      })
+      window.dispatchEvent(keyboardEvent)
+    }
+
+    const syncCanvasHost = () => {
+      const canvas = app.querySelector('canvas')
+      if (!canvas) return
+      const targetParent = MOBILE_QUERY.matches ? gameScreen : app
+      if (canvas.parentElement !== targetParent) {
+        targetParent.appendChild(canvas)
+      }
+    }
+
+    const shellButtons = app.querySelectorAll('.gbc-btn[data-key]')
+    const releaseButton = (button) => {
+      const key = button.dataset.key
+      if (!key) return
+      button.classList.remove('is-pressed')
+      dispatchGameKey('keyup', key)
+    }
+
+    shellButtons.forEach((button) => {
+      const onRelease = () => releaseButton(button)
+      button.addEventListener('pointerdown', (event) => {
+        event.preventDefault()
+        const key = button.dataset.key
+        if (!key) return
+        button.classList.add('is-pressed')
+        dispatchGameKey('keydown', key)
+      })
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach((eventName) => {
+        button.addEventListener(eventName, onRelease)
+      })
+    })
+
+    MOBILE_QUERY.addEventListener('change', syncCanvasHost)
+    const observer = new MutationObserver(syncCanvasHost)
+    observer.observe(app, { childList: true })
+    window.addEventListener('beforeunload', () => observer.disconnect())
+    syncCanvasHost()
+  </script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
