@@ -325,3 +325,32 @@ describe('status full lifecycle — apply then tick to expiry', () => {
     expect(isStatusActive(state, 'player', 'technical_debt')).toBe(true)
   })
 })
+
+// ---------------------------------------------------------------------------
+// shadow_fatigue status
+// ---------------------------------------------------------------------------
+
+describe('shadow_fatigue status', () => {
+  it('can be applied as a permanent status', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'shadow_fatigue')
+    expect(isStatusActive(state, 'player', 'shadow_fatigue')).toBe(true)
+    const entry = getStatus(state, 'player', 'shadow_fatigue')
+    expect(entry.remaining).toBe(-1) // permanent
+  })
+
+  it('never expires through ticking', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'shadow_fatigue')
+    for (let i = 0; i < 100; i++) tickStatuses(state, 'player')
+    expect(isStatusActive(state, 'player', 'shadow_fatigue')).toBe(true)
+  })
+
+  it('does not stack — refreshes instead', () => {
+    const state = makeBattleState()
+    applyStatus(state, 'player', 'shadow_fatigue')
+    applyStatus(state, 'player', 'shadow_fatigue')
+    const entries = state.player.statuses.filter(s => s.id === 'shadow_fatigue')
+    expect(entries.length).toBe(1)
+  })
+})

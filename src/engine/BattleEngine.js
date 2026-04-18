@@ -2,8 +2,8 @@
 // Owns the battle state and phase queue. Returns BattleEvent[] arrays.
 // Scenes delegate all logic here; they only render the returned events.
 
-import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime } from './SkillEngine.js'
-import { REPUTATION_MIN, REPUTATION_MAX, EXECUTIVE_MODE_THRESHOLD, EXECUTIVE_MODE_MULTIPLIER, DOMAIN_MATCHUPS, GYM_MECHANICS, GYM_SHAME_THRESHOLDS } from '../config.js'
+import { calculateDamage, calculateXP, assessQuality, applyShameAndReputation, applyShameGrime, shouldTeachOnAnyWin } from './SkillEngine.js'
+import { REPUTATION_MIN, REPUTATION_MAX, EXECUTIVE_MODE_THRESHOLD, EXECUTIVE_MODE_MULTIPLIER, DOMAIN_MATCHUPS, GYM_MECHANICS, GYM_SHAME_THRESHOLDS, SHADOW_ENGINEER } from '../config.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -89,6 +89,19 @@ export function createBattleState(mode, player, opponent, options = {}) {
     }
     gymDomainOrder = domains
     opponentCopy.domain = domains[0]
+  }
+
+  // Shame 5+: trainers mirror cursed skills — add 1 random cursed skill to their deck
+  const shamePts = player.shamePoints ?? 0
+  if (mode === BATTLE_MODES.ENGINEER && shamePts >= 5 && !opponent.isWildEncounter) {
+    const cursedPool = options.cursedSkillPool ?? []
+    if (cursedPool.length > 0) {
+      const randomValue = (options.randomFn ?? Math.random)()
+      const pickIndex = Math.min(cursedPool.length - 1, Math.floor(randomValue * cursedPool.length))
+      const pick = cursedPool[pickIndex]
+      opponentCopy.deck = [...(opponentCopy.deck ?? []), pick]
+      opponentCopy.cursedMirrorSkill = pick
+    }
   }
 
   const state = {
@@ -213,11 +226,51 @@ export function statusTickPhase(state) {
 export function skillPhase(state, skill) {
   const events = []
 
+  // ☕ Sip Coffee — Shadow Engineer special action (shame 10+)
+  // Skips the turn, restores COFFEE_SIP_HEAL HP. No skill resolution.
+  if (skill.id === 'coffee_sip') {
+    const shamePts = state.player.shamePoints ?? 0
+    if (shamePts < SHADOW_ENGINEER.SHAME_THRESHOLD) {
+      events.push({ type: 'skill_blocked', target: 'player', skillId: 'coffee_sip', reason: 'shadow_engineer_required' })
+      return events
+    }
+    const healAmount = SHADOW_ENGINEER.COFFEE_SIP_HEAL
+    const healed = Math.min(healAmount, state.player.maxHp - state.player.hp)
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + healAmount)
+    events.push({ type: 'skill_used', target: 'player', skillId: 'coffee_sip' })
+    events.push({ type: 'heal', target: 'player', value: healed })
+    events.push({ type: 'dialog', target: 'player', text: '☕ *sips coffee*' })
+    return events
+  }
+
   // Enforce shameRequired gate — skills that require a minimum shame level
   // (e.g. kubectl_delete_production) cannot be used below that threshold.
   if (skill.shameRequired !== undefined && state.player.shamePoints < skill.shameRequired) {
     events.push({ type: 'skill_blocked', target: 'player', skillId: skill.id, reason: 'shame_required' })
     return events
+  }
+
+  // Shadow Engineer budget modifications (shame 10+)
+  const isShadow = (state.player.shamePoints ?? 0) >= SHADOW_ENGINEER.SHAME_THRESHOLD
+  if (isShadow && skill.budgetCost !== undefined && skill.budgetCost > 0) {
+    let budgetMod = 0
+    if (skill.tier === 'optimal') {
+      budgetMod = SHADOW_ENGINEER.OPTIMAL_BUDGET_SURCHARGE
+    } else if (skill.tier === 'cursed' || skill.tier === 'nuclear') {
+      budgetMod = -SHADOW_ENGINEER.CURSED_BUDGET_DISCOUNT
+    }
+    if (budgetMod !== 0) {
+      const adjustedCost = Math.max(0, skill.budgetCost + budgetMod)
+      const budgetDelta = adjustedCost - skill.budgetCost
+      if (budgetDelta > 0) {
+        state.player.budget = Math.max(0, (state.player.budget ?? 0) - budgetDelta)
+        events.push({ type: 'budget_drain', target: 'player', value: budgetDelta, source: 'shadow_fatigue' })
+      } else if (budgetDelta < 0) {
+        const refundAmount = Math.abs(budgetDelta)
+        state.player.budget = (state.player.budget ?? 0) + refundAmount
+        events.push({ type: 'budget_refund', target: 'player', value: refundAmount, source: 'shadow_fatigue' })
+      }
+    }
   }
 
   // --- Gym mechanic: legacy_only — block skills from blocked acts ---
@@ -304,8 +357,13 @@ export function skillPhase(state, skill) {
   }
 
   if (effect.type === 'heal') {
-    const healed = Math.min(effect.value, state.player.maxHp - state.player.hp)
-    state.player.hp = Math.min(state.player.maxHp, state.player.hp + effect.value)
+    let healValue = effect.value
+    // Shadow Engineer: healing effects restore 20% less
+    if (isShadow) {
+      healValue = Math.floor(healValue * (1 - SHADOW_ENGINEER.HEAL_REDUCTION))
+    }
+    const healed = Math.min(healValue, state.player.maxHp - state.player.hp)
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + healValue)
     events.push({ type: 'heal', target: 'player', value: healed })
   }
 
@@ -324,8 +382,9 @@ export function skillPhase(state, skill) {
 
   // Apply grime to all earned emblems when shame is gained and emit an event
   // so BattleScene can sync GameState.emblems at battle end.
+  // Pass current shame to applyShameGrime for doubled rate at Shadow Engineer.
   if (shameDelta > 0) {
-    const nextEmblems = applyShameGrime(state.emblems ?? {}, shameDelta)
+    const nextEmblems = applyShameGrime(state.emblems ?? {}, shameDelta, state.player.shamePoints)
     state.emblems = nextEmblems
     events.push({ type: 'emblems_updated', target: 'player', value: nextEmblems, shameDelta })
   }
@@ -402,6 +461,11 @@ export function enemyPhase(state) {
   if (state.opponent.hp <= 0) return []
 
   const events = []
+
+  // Shame 5+: announce cursed mirror on first enemy turn
+  if (state.turn === 1 && state.opponent.cursedMirrorSkill) {
+    events.push({ type: 'dialog', target: 'opponent', text: 'You taught me something. Watch this.' })
+  }
 
   // --- Gym mechanic: flaky_pipeline — random skill failure for enemy ---
   if (state.gymMechanic === 'flaky_pipeline' && state.gymMechanicConfig) {
@@ -622,9 +686,11 @@ export function turnEndPhase(state) {
     }
 
     // ENGINEER mode: tier-based teacher reactions with shame awareness
+    // At high reputation (80+), trainers teach on ANY win tier (not just optimal).
     if (state.mode === BATTLE_MODES.ENGINEER) {
       const shame = state.player.shamePoints ?? 0
       const isGymLeader = state.opponent.role === 'gym_leader'
+      const teachAny = shouldTeachOnAnyWin(state.player.reputation)
 
       // Gym leader shame-aware dialog: use high-shame post-defeat dialog when shame ≥ teachRefusal
       if (isGymLeader && shame >= GYM_SHAME_THRESHOLDS.teachRefusal && state.opponent.postDefeatDialog_highShame) {
@@ -640,7 +706,7 @@ export function turnEndPhase(state) {
       // Teach refusal: gym leaders refuse to teach at shame ≥ teachRefusal
       if (isGymLeader && shame >= GYM_SHAME_THRESHOLDS.teachRefusal) {
         events.push({ type: 'teach_refused', target: 'player', reason: 'shame' })
-      } else if (tier === 'optimal' && state.opponent.teachSkillId) {
+      } else if ((tier === 'optimal' || teachAny) && state.opponent.teachSkillId) {
         events.push({ type: 'teach_skill', target: 'player', value: state.opponent.teachSkillId })
       } else if (tier === 'standard') {
         if (!isGymLeader && state.opponent.winDialog) {
@@ -652,6 +718,11 @@ export function turnEndPhase(state) {
         events.push({ type: 'trainer_disgusted', target: 'player' })
       } else if (tier === 'nuclear') {
         events.push({ type: 'warn_npcs', target: 'player' })
+      }
+
+      // Announce cursed mirror if the opponent has one
+      if (state.opponent.cursedMirrorSkill) {
+        events.push({ type: 'dialog', target: 'opponent', text: "Don't look at me like that. You started it." })
       }
     }
 

@@ -2,7 +2,7 @@
 // Handles domain matchups, damage calculation, XP, quality assessment,
 // and shame/reputation side effects.
 
-import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS, REPUTATION_MIN, REPUTATION_MAX, GRIME_PER_SHAME } from '../config.js'
+import { DOMAIN_MATCHUPS, STRONG_MULTIPLIER, WEAK_MULTIPLIER, REPUTATION_THRESHOLDS, SHAME_THRESHOLDS, REPUTATION_MIN, REPUTATION_MAX, GRIME_PER_SHAME, GRIME_PER_SHAME_SHADOW, SHADOW_ENGINEER } from '../config.js'
 
 // XP multipliers per solution quality tier.
 const XP_MULTIPLIERS = {
@@ -167,13 +167,15 @@ export function getShameTitle(shamePoints) {
 // Returns a new emblems object with grime added to every *earned* emblem.
 // Grime is capped at 5 per emblem. Unearned emblems are untouched.
 // Called after any shame gain (cursed/nuclear skill use).
+// At Shame 10+ (Shadow Engineer), grime rate doubles from 0.05 to 0.10.
 // ---------------------------------------------------------------------------
-export function applyShameGrime(emblems, shameGained) {
+export function applyShameGrime(emblems, shameGained, currentShame = 0) {
   if (!shameGained || shameGained <= 0) return { ...(emblems ?? {}) }
+  const rate = currentShame >= SHADOW_ENGINEER.SHAME_THRESHOLD ? GRIME_PER_SHAME_SHADOW : GRIME_PER_SHAME
   const result = {}
   for (const [id, entry] of Object.entries(emblems ?? {})) {
     if (entry.earned) {
-      result[id] = { ...entry, grime: Math.min(5, (entry.grime ?? 0) + shameGained * GRIME_PER_SHAME) }
+      result[id] = { ...entry, grime: Math.min(5, (entry.grime ?? 0) + shameGained * rate) }
     } else {
       result[id] = { ...entry }
     }
@@ -205,4 +207,45 @@ export function computeShameFlags(shamePoints) {
 // ---------------------------------------------------------------------------
 export function reduceShame(player, amount) {
   return { ...player, shamePoints: Math.max(0, player.shamePoints - amount) }
+}
+
+// ---------------------------------------------------------------------------
+// getShopMod
+// Returns the shop price modifier for the given reputation score.
+// Positive values increase prices; negative values decrease them.
+// ---------------------------------------------------------------------------
+export function getShopMod(reputation) {
+  for (const threshold of REPUTATION_THRESHOLDS) {
+    if (reputation >= threshold.min) return threshold.shopMod
+  }
+  return REPUTATION_THRESHOLDS[REPUTATION_THRESHOLDS.length - 1].shopMod
+}
+
+// ---------------------------------------------------------------------------
+// shouldTeachOnAnyWin
+// Returns true if trainers should teach their signature skill on ANY win
+// (not just optimal) based on the player's current reputation.
+// ---------------------------------------------------------------------------
+export function shouldTeachOnAnyWin(reputation) {
+  for (const threshold of REPUTATION_THRESHOLDS) {
+    if (reputation >= threshold.min) return threshold.teachOnAnyWin
+  }
+  return false
+}
+
+// ---------------------------------------------------------------------------
+// isShadowEngineer
+// Returns true if the player has reached the Shadow Engineer threshold.
+// ---------------------------------------------------------------------------
+export function isShadowEngineer(shamePoints) {
+  return shamePoints >= SHADOW_ENGINEER.SHAME_THRESHOLD
+}
+
+// ---------------------------------------------------------------------------
+// getGrimeRate
+// Returns the grime rate based on current shame level.
+// Doubles from 0.05 to 0.10 at Shadow Engineer threshold.
+// ---------------------------------------------------------------------------
+export function getGrimeRate(shamePoints) {
+  return shamePoints >= SHADOW_ENGINEER.SHAME_THRESHOLD ? GRIME_PER_SHAME_SHADOW : GRIME_PER_SHAME
 }

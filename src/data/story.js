@@ -620,6 +620,81 @@ const STORY = {
   },
 }
 
+// ---------------------------------------------------------------------------
+// Shame one-liner pools for NPC reactions.
+// Intended for per-interaction selection by consuming game logic.
+// ---------------------------------------------------------------------------
+export const SHAME_ONE_LINERS = {
+  shame_3: [
+    { id: 'shame3_01', text: 'I heard what you did to that repo. We all heard.', tone: 'disgust' },
+    { id: 'shame3_02', text: 'The postmortem channel has your name in bold.', tone: 'disgust' },
+    { id: 'shame3_03', text: 'Someone left a screenshot of your git log in the break room.', tone: 'disgust' },
+    { id: 'shame3_04', text: 'HR says you are not technically a war criminal.', tone: 'disgust' },
+    { id: 'shame3_05', text: 'The CEO mentioned you by name in the all-hands. Not in a good way.', tone: 'disgust' },
+    { id: 'shame3_06', text: 'Did you... did you really chmod 777 production?', tone: 'horror' },
+    { id: 'shame3_07', text: 'The firewall team printed your commit and hung it in their office. As a warning.', tone: 'horror' },
+    { id: 'shame3_08', text: 'Three services went down. They are calling it your name now.', tone: 'horror' },
+    { id: 'shame3_09', text: 'The SRE team made a drinking game out of your incidents.', tone: 'horror' },
+    { id: 'shame3_10', text: 'Legend says if you type your name in the terminal three times, an alert fires.', tone: 'horror' },
+    { id: 'shame3_11', text: 'I hate that what you did actually worked.', tone: 'respect' },
+    { id: 'shame3_12', text: 'The interns think you are cool. The seniors are concerned.', tone: 'respect' },
+    { id: 'shame3_13', text: 'That was the worst best fix I have ever seen.', tone: 'respect' },
+    { id: 'shame3_14', text: 'Your PR got more comments than the company blog post.', tone: 'disgust' },
+    { id: 'shame3_15', text: 'The on-call rotation now has a you-specific runbook.', tone: 'horror' },
+  ],
+  shame_5: [
+    { id: 'shame5_01', text: 'The Throttlemaster sends their regards. Here is my card.', tone: 'ominous' },
+    { id: 'shame5_02', text: 'You have been flagged in the vendor risk assessment.', tone: 'ominous' },
+    { id: 'shame5_03', text: 'Welcome to the watchlist. Snacks are in the back.', tone: 'ominous' },
+    { id: 'shame5_04', text: 'Even the load balancer knows your name now.', tone: 'ominous' },
+    { id: 'shame5_05', text: 'The firewall has a rule specifically for you. Rule #1: Deny.', tone: 'ominous' },
+    { id: 'shame5_06', text: 'Your access logs are being studied by three teams.', tone: 'ominous' },
+    { id: 'shame5_07', text: 'Someone in security wrote a blog post about you. Anonymous. Barely.', tone: 'ominous' },
+    { id: 'shame5_08', text: 'The incident channel auto-pings you now. You are not on-call.', tone: 'ominous' },
+    { id: 'shame5_09', text: 'Your badge still works but the doors hesitate.', tone: 'ominous' },
+    { id: 'shame5_10', text: 'The monitoring dashboard has a panel named after you.', tone: 'ominous' },
+    { id: 'shame5_11', text: 'There is a canary deployment just for your commits.', tone: 'ominous' },
+    { id: 'shame5_12', text: 'The SOC team has your photo on the wall. Not in a good way.', tone: 'ominous' },
+    { id: 'shame5_13', text: 'Compliance sent you a holiday card. It was a cease and desist.', tone: 'ominous' },
+    { id: 'shame5_14', text: 'Your merge requests now require 5 approvals. Standard is 2.', tone: 'ominous' },
+    { id: 'shame5_15', text: 'The CISO mentioned you in their board presentation. Slide 7.', tone: 'ominous' },
+  ],
+  shame_10: [
+    { id: 'shame10_01', text: "You don't look like an engineer anymore. You look like a consequence.", tone: 'dark' },
+    { id: 'shame10_02', text: 'The coffee machine fears you. It brews when you walk by. Unprompted.', tone: 'dark' },
+    { id: 'shame10_03', text: 'Your LinkedIn changed to Shadow Engineer and somehow got more recruiter messages.', tone: 'dark' },
+    { id: 'shame10_04', text: 'You have mass. Gravitational. Services orbit around you now.', tone: 'dark' },
+    { id: 'shame10_05', text: 'Legend. Shadow. Liability. HR uses all three.', tone: 'dark' },
+    { id: 'shame10_06', text: 'The CI pipeline pauses when you push. Out of respect. Or fear.', tone: 'dark' },
+    { id: 'shame10_07', text: 'Your terminal prompt changed to a skull emoji. You did not configure this.', tone: 'dark' },
+    { id: 'shame10_08', text: 'Juniors whisper your name like a campfire story.', tone: 'dark' },
+    { id: 'shame10_09', text: 'The SLA has a clause about you specifically.', tone: 'dark' },
+    { id: 'shame10_10', text: 'You walk into the standup and everyone stands a little further away.', tone: 'dark' },
+    { id: 'shame10_11', text: 'Kubernetes clusters self-heal faster when you are nearby. Survival instinct.', tone: 'dark' },
+    { id: 'shame10_12', text: 'Your git blame is a true crime documentary.', tone: 'dark' },
+    { id: 'shame10_13', text: 'The chaos engineering team says you make their job redundant.', tone: 'dark' },
+    { id: 'shame10_14', text: 'Cloud providers sent you a personal thank-you. Your incidents fund three regions.', tone: 'dark' },
+    { id: 'shame10_15', text: 'You have achieved a state beyond on-call. You are the incident.', tone: 'dark' },
+  ],
+}
+
+// ---------------------------------------------------------------------------
+// Reputation-variant NPC dialog snippets for shops and key NPCs.
+// Used by scenes to pick context-appropriate dialog.
+// ---------------------------------------------------------------------------
+export const REPUTATION_DIALOG = {
+  pedersen: {
+    walking_incident: 'Ah. You. The one my insurance company called about.',
+    liability:        'I see you have chosen... a path.',
+    distinguished:    'I mentioned you in my keynote.',
+  },
+  shop: {
+    walking_incident: 'Cash only. And I am counting it twice.',
+    liability:        'Surge pricing is active. Just for you.',
+    distinguished:    'For you? Discount. Always.',
+  },
+}
+
 export const getById = (id)           => STORY[id]
 export const getAll  = ()             => Object.values(STORY)
 export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
