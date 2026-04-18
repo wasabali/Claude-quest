@@ -7,6 +7,11 @@ import {
   BATTLE_MODES,
   createBattleState,
   resolveTurn,
+  statusTickPhase,
+  slaTickPhase,
+  incidentAttackPhase,
+  enemyPhase,
+  turnEndPhase,
 } from '#engine/BattleEngine.js'
 import { calculateXP, computeShameFlags } from '#engine/SkillEngine.js'
 import { Menu } from '#ui/Menu.js'
@@ -232,16 +237,16 @@ export class BattleScene extends BaseScene {
   }
 
   _wasteTurn() {
-    const wasteSkill = {
-      id: '__wasted_turn__',
-      domain: null,
-      tier: 'standard',
-      isCursed: false,
-      effect: { type: 'none', value: 0 },
-      sideEffect: null,
-      budgetCost: 0,
-    }
-    const events = resolveTurn(this._battleState, wasteSkill)
+    const state = this._battleState
+    const events = [
+      { type: 'dialog', target: 'player', text: 'You hesitated...' },
+      ...statusTickPhase(state),
+      ...slaTickPhase(state),
+      ...incidentAttackPhase(state),
+      ...enemyPhase(state),
+      ...turnEndPhase(state),
+    ]
+    state.log.push(...events)
     this._animateEvents(events)
   }
 
@@ -289,7 +294,6 @@ export class BattleScene extends BaseScene {
   }
 
   update() {
-    if (this._animating) return
     if (this.dialog?.isActive) {
       if (Phaser.Input.Keyboard.JustDown(this._keys.confirm)) {
         this.dialog.advance()
@@ -299,6 +303,7 @@ export class BattleScene extends BaseScene {
       }
       return
     }
+    if (this._animating) return
 
     const activeMenu = this._cursedConfirmMenu ?? this._skillMenu
     if (!activeMenu) return

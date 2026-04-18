@@ -27,7 +27,7 @@ export class Menu {
     this._width    = options.width ?? CONFIG.WIDTH
     this._onSelect = options.onSelect ?? null
     this._onCancel = options.onCancel ?? null
-    this._index    = 0
+    this._index    = this._findFirstEnabled(items)
     this._visible  = false
 
     this._ensureTexture()
@@ -64,7 +64,7 @@ export class Menu {
 
   setItems(items) {
     this._items = items
-    this._index = 0
+    this._index = this._findFirstEnabled(items)
     this._rebuild()
     if (this._visible) this._refreshAll()
   }
@@ -179,5 +179,10 @@ export class Menu {
     const item = this._items[this._index]
     if (!item || item.disabled) return
     if (this._onSelect) this._onSelect(item)
+  }
+
+  _findFirstEnabled(items) {
+    const idx = items.findIndex(item => !item.disabled)
+    return idx === -1 ? 0 : idx
   }
 }
