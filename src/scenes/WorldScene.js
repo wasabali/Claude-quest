@@ -332,7 +332,7 @@ export class WorldScene extends BaseScene {
 
   _isTileWalkable(tileX, tileY) {
     return isTileWalkable(tileX, tileY, this._map.width, this._map.height,
-      (tx, ty) => this._collisionLayer.getTileAt(tx, ty))
+      (tx, ty) => this._collisionLayer ? this._collisionLayer.getTileAt(tx, ty) : null)
   }
 
   _startStep(targetTileX, targetTileY) {
