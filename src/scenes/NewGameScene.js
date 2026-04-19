@@ -13,6 +13,11 @@ const PROLOGUE = [
 ]
 const STARTERS = ['DOCKERTLE', 'FUNCTIONCHU', 'VMSAUR']
 
+// Grid dimensions shared by handleNameInput (navigation) and renderNameEntry (layout).
+const GRID_COLUMNS = 9
+const GRID_CELL_W  = 120
+const GRID_CELL_H  = 80
+
 export class NewGameScene extends BaseScene {
   constructor() {
     super({ key: 'NewGameScene' })
@@ -40,25 +45,31 @@ export class NewGameScene extends BaseScene {
   }
 
   handleNameInput(code) {
-    const columns = 9
     const totalCells = LETTERS.length + 1
 
     if (code === 'ArrowRight') this.cursorIndex = (this.cursorIndex + 1) % totalCells
     if (code === 'ArrowLeft') this.cursorIndex = (this.cursorIndex - 1 + totalCells) % totalCells
-    if (code === 'ArrowDown') this.cursorIndex = (this.cursorIndex + columns) % totalCells
-    if (code === 'ArrowUp') this.cursorIndex = (this.cursorIndex - columns + totalCells) % totalCells
+    if (code === 'ArrowDown') this.cursorIndex = (this.cursorIndex + GRID_COLUMNS) % totalCells
+    if (code === 'ArrowUp') this.cursorIndex = (this.cursorIndex - GRID_COLUMNS + totalCells) % totalCells
 
-    if (code === 'KeyX') this.playerName = this.playerName.slice(0, -1)
-    if (code === 'KeyZ' || code === 'Enter') {
+    if (code === 'KeyX' || code === 'Backspace') this.playerName = this.playerName.slice(0, -1)
+
+    if (code === 'Enter') {
+      this.confirmNameAndAdvance()
+    } else if (code === 'KeyZ') {
       if (this.cursorIndex === LETTERS.length) {
-        this.playerName = this.playerName || DEFAULT_NAME
-        this.stage = 'prologue'
+        this.confirmNameAndAdvance()
       } else if (this.playerName.length < NAME_MAX_LENGTH) {
         this.playerName += LETTERS[this.cursorIndex]
       }
     }
 
     this.render()
+  }
+
+  confirmNameAndAdvance() {
+    this.playerName = this.playerName || DEFAULT_NAME
+    this.stage = 'prologue'
   }
 
   handlePrologueInput(code) {
@@ -91,22 +102,42 @@ export class NewGameScene extends BaseScene {
   }
 
   renderNameEntry() {
-    const textStyle = { fontFamily: CONFIG.FONT, fontSize: '8px', color: '#ffffff' }
-    this.add.text(8, 8, 'NAME', textStyle)
-    this.add.text(8, 24, this.playerName || '_', textStyle)
+    const cx             = CONFIG.WIDTH / 2
+    const COLOR_HEADER   = '#9bc5ff'
+    const COLOR_SELECTED = '#ffe066'
+    const COLOR_TEXT     = '#ffffff'
+    const COLOR_HINT     = '#888888'
 
-    const columns = 9
+    const headerStyle = { fontFamily: CONFIG.FONT, fontSize: '48px', color: COLOR_HEADER }
+    const nameStyle   = { fontFamily: CONFIG.FONT, fontSize: '72px', color: COLOR_SELECTED }
+    const letterStyle = { fontFamily: CONFIG.FONT, fontSize: '32px', color: COLOR_TEXT }
+    const hintStyle   = { fontFamily: CONFIG.FONT, fontSize: '24px', color: COLOR_HINT }
+
+    this.add.text(cx, 80,  'WHAT IS YOUR NAME?', headerStyle).setOrigin(0.5, 0)
+    this.add.text(cx, 180, this.playerName || '_', nameStyle).setOrigin(0.5, 0)
+
+    const gridW      = GRID_COLUMNS * GRID_CELL_W
+    const gridStartX = cx - gridW / 2 + GRID_CELL_W / 2
+    const gridStartY = 360
+
     LETTERS.forEach((letter, index) => {
-      const x = 8 + (index % columns) * 16
-      const y = 44 + Math.floor(index / columns) * 14
+      const col = index % GRID_COLUMNS
+      const row = Math.floor(index / GRID_COLUMNS)
+      const x = gridStartX + col * GRID_CELL_W
+      const y = gridStartY + row * GRID_CELL_H
       const selected = index === this.cursorIndex
-      const prefix = selected ? '>' : ' '
-      this.add.text(x, y, `${prefix}${letter}`, textStyle)
+      const color = selected ? COLOR_SELECTED : COLOR_TEXT
+      const prefix = selected ? '> ' : '  '
+      this.add.text(x, y, `${prefix}${letter}`, { ...letterStyle, color }).setOrigin(0.5, 0)
     })
 
+    const endX       = gridStartX + (LETTERS.length % GRID_COLUMNS) * GRID_CELL_W
+    const endY       = gridStartY + Math.floor(LETTERS.length / GRID_COLUMNS) * GRID_CELL_H
     const endSelected = this.cursorIndex === LETTERS.length
-    this.add.text(8, 86, `${endSelected ? '> ' : '  '}END`, textStyle)
-    this.add.text(8, 106, 'Z:SELECT X:DEL', textStyle)
+    const endColor   = endSelected ? COLOR_SELECTED : COLOR_TEXT
+    this.add.text(endX, endY, `${endSelected ? '> ' : '  '}END`, { ...letterStyle, color: endColor }).setOrigin(0.5, 0)
+
+    this.add.text(cx, 900, 'Z:SELECT  X/BACKSPACE:DELETE  ENTER:CONFIRM', hintStyle).setOrigin(0.5, 0)
   }
 
   renderPrologue() {
