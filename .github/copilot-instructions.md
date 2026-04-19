@@ -123,6 +123,28 @@ export const GameState = {
 - Hardcode domain names, tier names, or multiplier values — use `src/config.js`
 - Add logic to data files
 
+## Mandatory Skill Triggers
+
+**Before doing any of the following tasks, you MUST read the corresponding skill file first.** These are not optional — the skill files contain the authoritative workflow, constraints, and checklists that keep the codebase consistent.
+
+| Task | Read this skill first |
+|---|---|
+| Implementing a GitHub issue | `.github/skills/implement-issue.md` |
+| Touching `src/engine/` (BattleEngine, SkillEngine, StatusEngine, EncounterEngine) | `.github/skills/cloud-quest-battle.md` |
+| Adding or editing anything in `src/scenes/` or `src/ui/` | `.github/skills/phaser-scene-patterns.md` |
+| Adding skills, trainers, items, or emblems to `src/data/` | `.github/skills/game-data-registry.md` |
+| Adding a new CLI command as a game skill | `.github/skills/add-skill.md` |
+| Adding a new trainer NPC | `.github/skills/add-trainer.md` |
+| Adding yourself or another developer as a trainer | `.github/skills/add-yourself.md` |
+| Converting a real work incident into an encounter | `.github/skills/add-incident.md` |
+| Drafting a new GitHub issue from a feature idea | `.github/skills/spec-issue.md` |
+| Fixing review comments and merging a PR | `.github/skills/merge-pr.md` |
+| Filing issues for contradictions, bugs, or gaps | `.github/skills/triage-issues.md` |
+| Answering a `[Design Question]` issue | `.github/skills/resolve-question.md` |
+| Regenerating the wiki after content changes | `.github/skills/update-wiki.md` |
+
+After **every** issue implementation you **must** also follow `.github/skills/post-implementation.md`. This is not optional.
+
 ## Available Skills
 
 Skills are defined in `.github/skills/` and provide specialised workflows for common tasks.
@@ -143,6 +165,20 @@ Skills are defined in `.github/skills/` and provide specialised workflows for co
 | `update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
 | `merge-pr <owner/repo#pr>` | Fix actionable PR review feedback, check for merge conflicts, and merge cleanly only after checks pass. |
 | `post-implementation` | **Mandatory** after every issue implementation. Runs stress tests + triage, regenerates wiki, updates graphify. Replaces the old `game-health.yml` and `wiki-sync.yml` pipelines. |
+
+## Specialized Agents
+
+These agents are invoked by Claude Code's task tool for specialized work. When you are asked to perform tasks in these areas, recommend the appropriate agent or follow the matching skill file.
+
+| Agent | When to use | Skill to read first |
+|---|---|---|
+| `battle-engine-tdd` | Implementing or modifying any file in `src/engine/`. Writes tests first, enforces zero Phaser dependency. | `.github/skills/cloud-quest-battle.md` |
+| `game-data-author` | Adding or editing content in `src/data/` — skills, items, trainers, emblems. Validates all field values. | `.github/skills/game-data-registry.md` |
+| `content-contributor` | Adding real developers as trainers, turning CLI commands into skills, or converting incidents into encounters. | `.github/skills/add-yourself.md` |
+| `phaser-reviewer` | Reviewing scenes, UI components, or `src/main.js`. Checks engine/scene separation and pixel art compliance. | `.github/skills/phaser-scene-patterns.md` |
+| `issue-triager` | Autonomously scanning the codebase and docs for contradictions, errors, and gaps, then filing GitHub issues. | `.github/skills/triage-issues.md` |
+| `stress-test` | Running the Monte Carlo balance simulation suite in `tests/stress/` to find balance problems. | `.github/skills/post-implementation.md` |
+| `merge-agent` | Fixing PR review feedback, resolving merge conflicts, and merging when all checks pass. | `.github/skills/merge-pr.md` |
 
 ## graphify
 
