@@ -14,7 +14,7 @@ Three tasks, run in order:
 
 Run the stress/balance test suite and triage any failures into actionable GitHub issues.
 
-1. Run `npm run test:stress` (allow failures — the point is to capture them).
+1. Run `npm run test:stress` (the process may exit non-zero when tests fail — this is expected and does not mean the skill failed; capture stdout/stderr for triage).
 2. Review the test output. For each failing test:
    - Check if an open GitHub issue already exists with labels `balance` + `automated` whose title matches the test name.
    - If **no issue exists**: create one with title `[Balance] <category> — <test name>`, labels `balance`, `automated`, and the category label (e.g. `data-integrity`, `skill-balance`, `battle-balance`, `economy`, `encounters`, `exploit`, `quest-integrity`, `story`, `emblem-balance`, `playthrough`). Include the failure message in the body.
@@ -30,7 +30,7 @@ Run the stress/balance test suite and triage any failures into actionable GitHub
 
 Regenerate the game wiki from current data files.
 
-1. Read all data files fresh: `src/data/skills.js`, `src/data/trainers.js`, `src/data/items.js`, `src/data/encounters.js`, `src/data/emblems.js`, `src/data/quests.js`, `src/data/story.js`, `src/config.js`.
+1. Read all data files directly from disk (use `import()` or file reads — do not rely on cached module state): `src/data/skills.js`, `src/data/trainers.js`, `src/data/items.js`, `src/data/encounters.js`, `src/data/emblems.js`, `src/data/quests.js`, `src/data/story.js`, `src/config.js`.
 2. Regenerate every wiki page in `docs/wiki/` following the rules in the `update-wiki` skill.
 3. If new data domains or modules were introduced, scaffold new wiki pages for them.
 4. Update `docs/wiki/README.md` to link all pages.
@@ -45,7 +45,7 @@ Update the knowledge graph to reflect code changes.
 
 ## Category labels
 
-These labels are used for balance issues. Ensure they exist before creating issues (create them if missing).
+These labels are used for balance issues. Before creating issues, ensure the labels exist — create any missing ones using `gh label create <name>` or the GitHub API.
 
 | Category | Label |
 |---|---|
