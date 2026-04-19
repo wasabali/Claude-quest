@@ -8,8 +8,7 @@
     "preview": "vite preview",
     "test": "vitest run --exclude tests/stress/**",
     "test:stress": "vitest run tests/stress/",
-    "test:watch": "vitest --exclude tests/stress/**",
-    "wiki:generate": "node scripts/generate-wiki.js"
+    "test:watch": "vitest --exclude tests/stress/**"
   },
   "dependencies": {
     "phaser": "3.90.0"

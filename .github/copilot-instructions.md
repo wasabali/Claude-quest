@@ -142,6 +142,7 @@ Skills are defined in `.github/skills/` and provide specialised workflows for co
 | `resolve-question <number>` | Iterate design ideas for a `[Design Question]` issue and find the best fit. |
 | `update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
 | `merge-pr <owner/repo#pr>` | Fix actionable PR review feedback, check for merge conflicts, and merge cleanly only after checks pass. |
+| `post-implementation` | **Mandatory** after every issue implementation. Runs stress tests + triage, regenerates wiki, updates graphify. Replaces the old `game-health.yml` and `wiki-sync.yml` pipelines. |
 
 ## graphify
 

@@ -35,29 +35,9 @@ All game design decisions are documented in `docs/sessions/` and tracked as GitH
 - Evil engineer path — #47
 - Outcast network & hidden areas — #48
 
-<!-- GAME-HEALTH-START -->
+## 🏥 Game Health
 
-## 🏥 Game Health Dashboard
-
-_Automated balance & integrity checks run on every push to `main`._
-
-| Metric | Status | Details |
-|---|---|---|
-| 🗄️ Data Integrity | ❌ | 15/19 tests passing |
-| ⚔️ Skill Balance | ✅ | 13/13 tests passing |
-| 🎮 Battle Simulations | ❌ | 2/6 tests passing |
-| 📈 Progression & Economy | ✅ | 11/11 tests passing |
-| 🎲 Encounter Distribution | ❌ | 9/10 tests passing |
-| 🛡️ Exploit Detection | ✅ | 11/11 tests passing |
-| 🚪 Gate & Quest Integrity | ❌ | 8/9 tests passing |
-| 💬 Story & NPC Consistency | ❌ | 2/4 tests passing |
-| 🏅 Emblem Balance | ✅ | 4/4 tests passing |
-| 🏁 Full Playthrough Sim | ✅ | 3/3 tests passing |
-| **Overall** | ❌ | **78/90** tests passing |
-
-_Last updated: 2026-04-19T14:06:36.727Z_
-
-<!-- GAME-HEALTH-END -->
+Game health checks (stress tests, wiki updates, balance triage) run automatically as part of every AI-assisted issue implementation via the `post-implementation` skill — not as separate CI pipelines. See `.github/skills/post-implementation.md` for details.
 
 ---
 

@@ -141,3 +141,11 @@ Before reporting done:
 - [ ] Registry exports unchanged in data files
 - [ ] Pixel art compliance checklist cleared (if scene was changed)
 - [ ] Commit pushed to branch
+
+## Step 10 — Post-implementation checks (mandatory)
+
+**Always run the `post-implementation` skill after completing an issue.** This is not optional — it replaces the old CI pipelines. Invoke the `post-implementation` skill, which will:
+
+1. Run stress tests and triage failures into GitHub issues
+2. Regenerate the wiki from current game data
+3. Update the graphify knowledge graph
