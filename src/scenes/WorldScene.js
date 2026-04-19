@@ -40,7 +40,9 @@ export class WorldScene extends BaseScene {
     if (!this.cache.tilemap.exists(regionId)) {
       this.load.tilemapTiledJSON(regionId, `assets/maps/${regionId}.tmj`)
     }
+  }
 
+  _generateStubTextures() {
     if (!this.textures.exists(TILESET_KEY)) {
       const g = this.make.graphics({ add: false })
       const TILE_COLORS = [
@@ -105,6 +107,10 @@ export class WorldScene extends BaseScene {
   }
 
   create(data = {}) {
+    // Generate stub textures first — must happen in create(), not preload(),
+    // so that the renderer is in its active state.
+    this._generateStubTextures()
+
     this.dialog       = new DialogBox(this)
     this.choiceMenu   = new Menu(this)
     this._menu        = new Menu(this)
@@ -143,8 +149,7 @@ export class WorldScene extends BaseScene {
     this.setupPauseKey()
     this._buildInteractionLookup()
 
-    GameState.player.location = 'localhost_town'
-    this.playBgm(GameState.player.location)
+    this._onRegionEnter(regionId)
 
     this._setupThrottlemasterGhost()
   }
@@ -203,8 +208,13 @@ export class WorldScene extends BaseScene {
         markDirty()
       }
     }
-    GameState.player.location = regionId
-    markDirty()
+  }
+
+  _onRegionEnter(regionId) {
+    if (GameState.player.location !== regionId) {
+      GameState.player.location = regionId
+      markDirty()
+    }
 
     // Unlock fast travel terminal on first visit
     const region = getRegionById(regionId)
@@ -216,7 +226,7 @@ export class WorldScene extends BaseScene {
       }
     }
 
-    this.playBgm('town')
+    this.playBgm(regionId)
   }
 
   _setupMap(regionId) {

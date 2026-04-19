@@ -44,9 +44,9 @@ export class NewGameScene extends BaseScene {
     this.input.keyboard.on('keydown', (event) => {
       if (event.repeat) return
 
-      if (this.stage === 'name') this.handleNameInput(event.code)
-      if (this.stage === 'prologue') this.handlePrologueInput(event.code)
-      if (this.stage === 'starter') this.handleStarterInput(event.code)
+      if (this.stage === 'name')          this.handleNameInput(event.code)
+      else if (this.stage === 'prologue') this.handlePrologueInput(event.code)
+      else if (this.stage === 'starter')  this.handleStarterInput(event.code)
     })
   }
 
