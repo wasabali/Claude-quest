@@ -227,11 +227,19 @@ export class WorldScene extends BaseScene {
     this._objectsLayer = this._map.createLayer('Objects', tileset, 0, 0)
 
     this._collisionLayer = this._map.createLayer('Collision', tileset, 0, 0)
-    this._collisionLayer.setVisible(false)
-    this._collisionLayer.setCollisionByExclusion([0])
+    if (this._collisionLayer) {
+      this._collisionLayer.setVisible(false)
+      this._collisionLayer.setCollisionByExclusion([0])
+    } else {
+      console.warn(`[WorldScene] 'Collision' layer missing from map '${regionId}' — collision detection disabled.`)
+    }
 
     this._overlayLayer = this._map.createLayer('Overlay', tileset, 0, 0)
-    this._overlayLayer.setDepth(10)
+    if (this._overlayLayer) {
+      this._overlayLayer.setDepth(10)
+    } else {
+      console.warn(`[WorldScene] 'Overlay' layer missing from map '${regionId}' — overlay rendering disabled.`)
+    }
 
     const npcLayer = this._map.getObjectLayer('NPCs')
     this._npcDefs  = npcLayer ? npcLayer.objects : []
@@ -274,7 +282,9 @@ export class WorldScene extends BaseScene {
 
     this._tileX = tileX ?? 5
     this._tileY = tileY ?? 10
-    this.physics.add.collider(this._player, this._collisionLayer)
+    if (this._collisionLayer) {
+      this.physics.add.collider(this._player, this._collisionLayer)
+    }
     this.physics.world.setBounds(0, 0, mapW, mapH)
   }
 
@@ -322,7 +332,7 @@ export class WorldScene extends BaseScene {
 
   _isTileWalkable(tileX, tileY) {
     return isTileWalkable(tileX, tileY, this._map.width, this._map.height,
-      (tx, ty) => this._collisionLayer.getTileAt(tx, ty))
+      (tx, ty) => this._collisionLayer ? this._collisionLayer.getTileAt(tx, ty) : null)
   }
 
   _startStep(targetTileX, targetTileY) {
