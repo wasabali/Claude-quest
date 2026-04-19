@@ -48,8 +48,12 @@ export class NewGameScene extends BaseScene {
     if (code === 'ArrowDown') this.cursorIndex = (this.cursorIndex + columns) % totalCells
     if (code === 'ArrowUp') this.cursorIndex = (this.cursorIndex - columns + totalCells) % totalCells
 
-    if (code === 'KeyX') this.playerName = this.playerName.slice(0, -1)
-    if (code === 'KeyZ' || code === 'Enter') {
+    if (code === 'KeyX' || code === 'Backspace') this.playerName = this.playerName.slice(0, -1)
+
+    if (code === 'Enter') {
+      this.playerName = this.playerName || DEFAULT_NAME
+      this.stage = 'prologue'
+    } else if (code === 'KeyZ') {
       if (this.cursorIndex === LETTERS.length) {
         this.playerName = this.playerName || DEFAULT_NAME
         this.stage = 'prologue'
@@ -91,22 +95,45 @@ export class NewGameScene extends BaseScene {
   }
 
   renderNameEntry() {
-    const textStyle = { fontFamily: CONFIG.FONT, fontSize: '8px', color: '#ffffff' }
-    this.add.text(8, 8, 'NAME', textStyle)
-    this.add.text(8, 24, this.playerName || '_', textStyle)
+    const cx             = CONFIG.WIDTH / 2
+    const COLOR_HEADER   = '#9bc5ff'
+    const COLOR_SELECTED = '#ffe066'
+    const COLOR_TEXT     = '#ffffff'
+    const COLOR_HINT     = '#888888'
 
-    const columns = 9
+    const headerStyle = { fontFamily: CONFIG.FONT, fontSize: '48px', color: COLOR_HEADER }
+    const nameStyle   = { fontFamily: CONFIG.FONT, fontSize: '72px', color: COLOR_SELECTED }
+    const letterStyle = { fontFamily: CONFIG.FONT, fontSize: '32px', color: COLOR_TEXT }
+    const hintStyle   = { fontFamily: CONFIG.FONT, fontSize: '24px', color: COLOR_HINT }
+
+    this.add.text(cx, 80,  'WHAT IS YOUR NAME?', headerStyle).setOrigin(0.5, 0)
+    this.add.text(cx, 180, this.playerName || '_', nameStyle).setOrigin(0.5, 0)
+
+    const columns    = 9
+    const cellW      = 120
+    const cellH      = 80
+    const gridW      = columns * cellW
+    const gridStartX = cx - gridW / 2 + cellW / 2
+    const gridStartY = 360
+
     LETTERS.forEach((letter, index) => {
-      const x = 8 + (index % columns) * 16
-      const y = 44 + Math.floor(index / columns) * 14
+      const col = index % columns
+      const row = Math.floor(index / columns)
+      const x = gridStartX + col * cellW
+      const y = gridStartY + row * cellH
       const selected = index === this.cursorIndex
-      const prefix = selected ? '>' : ' '
-      this.add.text(x, y, `${prefix}${letter}`, textStyle)
+      const color = selected ? COLOR_SELECTED : COLOR_TEXT
+      const prefix = selected ? '> ' : '  '
+      this.add.text(x, y, `${prefix}${letter}`, { ...letterStyle, color }).setOrigin(0.5, 0)
     })
 
+    const endX       = gridStartX + (LETTERS.length % columns) * cellW
+    const endY       = gridStartY + Math.floor(LETTERS.length / columns) * cellH
     const endSelected = this.cursorIndex === LETTERS.length
-    this.add.text(8, 86, `${endSelected ? '> ' : '  '}END`, textStyle)
-    this.add.text(8, 106, 'Z:SELECT X:DEL', textStyle)
+    const endColor   = endSelected ? COLOR_SELECTED : COLOR_TEXT
+    this.add.text(endX, endY, `${endSelected ? '> ' : '  '}END`, { ...letterStyle, color: endColor }).setOrigin(0.5, 0)
+
+    this.add.text(cx, 900, 'Z:SELECT  X/BACKSPACE:DELETE  ENTER:CONFIRM', hintStyle).setOrigin(0.5, 0)
   }
 
   renderPrologue() {

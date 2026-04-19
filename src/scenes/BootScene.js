@@ -7,6 +7,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    // Silence load errors for optional assets (BGM files may not exist yet).
+    this.load.on('loaderror', () => {})
+
     // Load BGM tracks listed in the audio registry.
     // SFX are procedurally generated via jsfxr at runtime — no files to preload.
     for (const bgm of getAllBgm()) {
