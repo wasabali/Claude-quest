@@ -13,6 +13,12 @@ const PROLOGUE = [
 ]
 const STARTERS = ['DOCKERTLE', 'FUNCTIONCHU', 'VMSAUR']
 
+// Palette shared across all three render stages (name, prologue, starter).
+const COLOR_HEADER   = '#9bc5ff'
+const COLOR_SELECTED = '#ffe066'
+const COLOR_TEXT     = '#ffffff'
+const COLOR_HINT     = '#888888'
+
 // Grid dimensions shared by handleNameInput (navigation) and renderNameEntry (layout).
 const GRID_COLUMNS = 9
 const GRID_CELL_W  = 120
@@ -103,10 +109,6 @@ export class NewGameScene extends BaseScene {
 
   renderNameEntry() {
     const cx             = CONFIG.WIDTH / 2
-    const COLOR_HEADER   = '#9bc5ff'
-    const COLOR_SELECTED = '#ffe066'
-    const COLOR_TEXT     = '#ffffff'
-    const COLOR_HINT     = '#888888'
 
     const headerStyle = { fontFamily: CONFIG.FONT, fontSize: '48px', color: COLOR_HEADER }
     const nameStyle   = { fontFamily: CONFIG.FONT, fontSize: '72px', color: COLOR_SELECTED }
@@ -142,24 +144,24 @@ export class NewGameScene extends BaseScene {
 
   renderPrologue() {
     const cx        = CONFIG.WIDTH / 2
-    const textStyle = { fontFamily: CONFIG.FONT, fontSize: '36px', color: '#ffffff', wordWrap: { width: CONFIG.WIDTH * 0.7 }, align: 'center' }
-    const hintStyle = { fontFamily: CONFIG.FONT, fontSize: '28px', color: '#888888' }
+    const textStyle = { fontFamily: CONFIG.FONT, fontSize: '36px', color: COLOR_TEXT, wordWrap: { width: CONFIG.WIDTH * 0.7 }, align: 'center' }
+    const hintStyle = { fontFamily: CONFIG.FONT, fontSize: '28px', color: COLOR_HINT }
     this.add.text(cx, CONFIG.HEIGHT * 0.35, PROLOGUE[this.prologueIndex], textStyle).setOrigin(0.5, 0)
     this.add.text(cx, CONFIG.HEIGHT * 0.82, 'Z / ENTER — NEXT', hintStyle).setOrigin(0.5, 0)
   }
 
   renderStarterChoice() {
     const cx          = CONFIG.WIDTH / 2
-    const headerStyle = { fontFamily: CONFIG.FONT, fontSize: '48px', color: '#9bc5ff' }
-    const itemStyle   = { fontFamily: CONFIG.FONT, fontSize: '40px', color: '#ffffff' }
-    const hintStyle   = { fontFamily: CONFIG.FONT, fontSize: '28px', color: '#888888' }
+    const headerStyle = { fontFamily: CONFIG.FONT, fontSize: '48px', color: COLOR_HEADER }
+    const itemStyle   = { fontFamily: CONFIG.FONT, fontSize: '40px', color: COLOR_TEXT }
+    const hintStyle   = { fontFamily: CONFIG.FONT, fontSize: '28px', color: COLOR_HINT }
 
     this.add.text(cx, 200, 'PICK YOUR MASCOT', headerStyle).setOrigin(0.5, 0)
 
     STARTERS.forEach((starter, index) => {
       const selected = index === this.starterIndex
       const prefix   = selected ? '▶ ' : '  '
-      const color    = selected ? '#ffe066' : '#ffffff'
+      const color    = selected ? COLOR_SELECTED : COLOR_TEXT
       this.add.text(cx, 420 + index * 100, `${prefix}${starter}`, { ...itemStyle, color }).setOrigin(0.5, 0)
     })
 
