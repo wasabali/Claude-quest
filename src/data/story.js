@@ -1102,7 +1102,7 @@ const STORY = {
   region_under_construction: {
     id:    'region_under_construction',
     pages: [
-      "The path ahead is under construction. Come back in the next sprint.",
+      'That route unlocks in a later act. Complete current objectives to progress.',
     ],
   },
   dungeon_points_required: {

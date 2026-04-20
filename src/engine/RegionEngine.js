@@ -94,6 +94,38 @@ export function canTravel(regionId, direction, gameState) {
   return { allowed: true, reasonId: null, reasonParams: null, target, entry }
 }
 
+/**
+ * Builds a stable token for a denied travel attempt.
+ * Identical denied attempts produce the same token, allowing scenes to suppress
+ * repeated denial dialogs while the player remains at the same blocked edge.
+ *
+ * @param {string} regionId
+ * @param {string} direction
+ * @param {{ allowed: boolean, reasonId: string|null, target: string|null }} travelResult
+ * @returns {string|null}
+ */
+export function getTravelDenialToken(regionId, direction, travelResult) {
+  if (!travelResult || travelResult.allowed || !travelResult.reasonId || !travelResult.target) {
+    return null
+  }
+  return `${regionId}:${direction}:${travelResult.reasonId}:${travelResult.target}`
+}
+
+/**
+ * Determines whether a denial dialog should be shown for the current attempt.
+ * Returns the derived token so callers can persist it for subsequent checks.
+ *
+ * @param {string|null} previousToken
+ * @param {string} regionId
+ * @param {string} direction
+ * @param {{ allowed: boolean, reasonId: string|null, target: string|null }} travelResult
+ * @returns {{ shouldShow: boolean, token: string|null }}
+ */
+export function shouldShowTravelDenial(previousToken, regionId, direction, travelResult) {
+  const token = getTravelDenialToken(regionId, direction, travelResult)
+  return { shouldShow: token != null && token !== previousToken, token }
+}
+
 // ===========================================================================
 // Fast travel
 // ===========================================================================

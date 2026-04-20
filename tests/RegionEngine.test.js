@@ -13,6 +13,8 @@ import {
   getEndgameModifier,
   isMvpRegion,
   DENIAL_REASONS,
+  getTravelDenialToken,
+  shouldShowTravelDenial,
 } from '../src/engine/RegionEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -203,6 +205,72 @@ describe('canTravel', () => {
       target: null,
       entry: null,
     })
+  })
+})
+
+// ===========================================================================
+// denial retrigger helpers
+// ===========================================================================
+
+describe('getTravelDenialToken', () => {
+  it('returns null for allowed travel results', () => {
+    const token = getTravelDenialToken('localhost_town', 'east', {
+      allowed: true, reasonId: null, target: 'pipeline_pass',
+    })
+    expect(token).toBeNull()
+  })
+
+  it('returns null when travel result has no target', () => {
+    const token = getTravelDenialToken('localhost_town', 'north', {
+      allowed: false, reasonId: DENIAL_REASONS.ACT_GATE, target: null,
+    })
+    expect(token).toBeNull()
+  })
+
+  it('returns a stable token for the same denied attempt', () => {
+    const result = {
+      allowed: false,
+      reasonId: DENIAL_REASONS.ACT_GATE,
+      target: 'production_plains',
+    }
+    const tokenA = getTravelDenialToken('pipeline_pass', 'east', result)
+    const tokenB = getTravelDenialToken('pipeline_pass', 'east', result)
+    expect(tokenA).toBe('pipeline_pass:east:act_gate:production_plains')
+    expect(tokenB).toBe(tokenA)
+  })
+})
+
+describe('shouldShowTravelDenial', () => {
+  it('shows the first denial, then suppresses identical repeats', () => {
+    const denied = {
+      allowed: false,
+      reasonId: DENIAL_REASONS.ACT_GATE,
+      target: 'production_plains',
+    }
+    const first = shouldShowTravelDenial(null, 'pipeline_pass', 'east', denied)
+    expect(first.shouldShow).toBe(true)
+    expect(first.token).toBe('pipeline_pass:east:act_gate:production_plains')
+
+    const second = shouldShowTravelDenial(first.token, 'pipeline_pass', 'east', denied)
+    expect(second.shouldShow).toBe(false)
+    expect(second.token).toBe(first.token)
+  })
+
+  it('allows dialog again when denial context changes', () => {
+    const deniedActGate = {
+      allowed: false,
+      reasonId: DENIAL_REASONS.ACT_GATE,
+      target: 'production_plains',
+    }
+    const deniedResourceGate = {
+      allowed: false,
+      reasonId: DENIAL_REASONS.RESOURCE_LOCKS,
+      target: 'cloud_console_2',
+    }
+    const first = shouldShowTravelDenial(null, 'pipeline_pass', 'east', deniedActGate)
+    const second = shouldShowTravelDenial(first.token, 'cloud_console_1', 'north', deniedResourceGate)
+    expect(second.shouldShow).toBe(true)
+    expect(second.token).not.toBe(first.token)
   })
 })
 
