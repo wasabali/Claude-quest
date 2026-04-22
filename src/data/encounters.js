@@ -776,7 +776,7 @@ const ENCOUNTERS = {
     domain: null,
     hp: 9999,
     sla: 3,
-    difficulty: 5,
+    difficulty: 0,
     attacks: [],
     optimalFix: null,
     layers: null,
