@@ -483,6 +483,59 @@ describe('audio registry', () => {
   })
 })
 
+describe('bgm-loop-points.json', () => {
+  const loopPointsPath = path.join(process.cwd(), 'assets', 'audio', 'bgm-loop-points.json')
+  const loopPoints     = JSON.parse(fs.readFileSync(loopPointsPath, 'utf8'))
+
+  it('is parseable JSON with an object at the root', () => {
+    expect(loopPoints).toBeDefined()
+    expect(typeof loopPoints).toBe('object')
+    expect(Array.isArray(loopPoints)).toBe(false)
+  })
+
+  it('contains an entry for every BGM track registered in audio.js', () => {
+    getAllBgm().forEach(bgm => {
+      expect(loopPoints).toHaveProperty(bgm.id)
+    })
+  })
+
+  it('every BGM entry has numeric start and end values >= 0', () => {
+    getAllBgm().forEach(bgm => {
+      const entry = loopPoints[bgm.id]
+      expect(typeof entry.start).toBe('number')
+      expect(typeof entry.end).toBe('number')
+      expect(entry.start).toBeGreaterThanOrEqual(0)
+      expect(entry.end).toBeGreaterThanOrEqual(0)
+    })
+  })
+
+  it('end >= start for every BGM entry', () => {
+    getAllBgm().forEach(bgm => {
+      const { start, end } = loopPoints[bgm.id]
+      expect(end).toBeGreaterThanOrEqual(start)
+    })
+  })
+
+  it('non-looping tracks (victory, game_over) keep start 0 and end 0', () => {
+    getAllBgm()
+      .filter(bgm => !bgm.loop)
+      .forEach(bgm => {
+        const entry = loopPoints[bgm.id]
+        expect(entry.start).toBe(0)
+        expect(entry.end).toBe(0)
+      })
+  })
+
+  it('every track ID in the file corresponds to a known BGM in audio.js', () => {
+    const knownIds = new Set(getAllBgm().map(bgm => bgm.id))
+    Object.keys(loopPoints)
+      .filter(key => !key.startsWith('_'))
+      .forEach(key => {
+        expect(knownIds.has(key)).toBe(true)
+      })
+  })
+})
+
 const VALID_GYM_MECHANICS = ['legacy_only', 'sla_timer', 'flaky_pipeline', 'cold_start', 'respawn', 'rbac_deny', 'cost_spiral', 'all_domains']
 const VALID_GYM_ROLES = ['leader', 'sub_leader', 'apprentice']
 

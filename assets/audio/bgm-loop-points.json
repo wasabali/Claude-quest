@@ -1,25 +1,30 @@
 {
-  "_note": "Loop points for seamless BGM looping. Values are in seconds. Set start/end to 0 for tracks that loop from the beginning.",
+  "_note": "BGM loop points for seamless looping via Phaser markers (BaseScene.playBgm). Values are in seconds to 2 decimal places. When end > start, Phaser plays start..end and loops back to start — this avoids the silence gap at the physical end of the file. When both are 0, Phaser falls back to a simple file loop (may have an audible gap). Non-looping tracks (victory, game_over) always use 0/0. Measure loop points with an audio editor once the real Ninja Adventure OGG files replace the current placeholders.",
 
-  "title":              { "start": 0, "end": 0 },
+  "_format": {
+    "start": "Intro end / loop-back point in seconds. Use 0 for tracks with no intro section.",
+    "end":   "Loop end point in seconds (last sample before jumping back to start). Must be > start to activate seamless looping. Use 0 as placeholder until real audio is measured."
+  },
 
-  "localhost_town":     { "start": 0, "end": 0 },
-  "pipeline_pass":      { "start": 0, "end": 0 },
-  "container_port":     { "start": 0, "end": 0 },
-  "cloud_citadel":      { "start": 0, "end": 0 },
-  "kernel_caves":       { "start": 0, "end": 0 },
-  "serverless_steppes": { "start": 0, "end": 0 },
+  "title":              { "start": 0,    "end": 0 },
 
-  "three_am_tavern":    { "start": 0, "end": 0 },
-  "legacy_codebase":    { "start": 0, "end": 0 },
-  "outcast_network":    { "start": 0, "end": 0 },
-  "shadow_registry":    { "start": 0, "end": 0 },
+  "localhost_town":     { "start": 0,    "end": 0 },
+  "pipeline_pass":      { "start": 0,    "end": 0 },
+  "container_port":     { "start": 0,    "end": 0 },
+  "cloud_citadel":      { "start": 0,    "end": 0 },
+  "kernel_caves":       { "start": 0,    "end": 0 },
+  "serverless_steppes": { "start": 0,    "end": 0 },
 
-  "battle_incident":    { "start": 0, "end": 0 },
-  "battle_engineer":    { "start": 0, "end": 0 },
-  "battle_cursed":      { "start": 0, "end": 0 },
+  "three_am_tavern":    { "start": 0,    "end": 0 },
+  "legacy_codebase":    { "start": 0,    "end": 0 },
+  "outcast_network":    { "start": 0,    "end": 0 },
+  "shadow_registry":    { "start": 0,    "end": 0 },
+
+  "battle_incident":    { "start": 0,    "end": 0 },
+  "battle_engineer":    { "start": 0,    "end": 0 },
+  "battle_cursed":      { "start": 0,    "end": 0 },
   "battle_throttlemaster": { "start": 0, "end": 0 },
 
-  "victory":            { "start": 0, "end": 0 },
-  "game_over":          { "start": 0, "end": 0 }
+  "victory":            { "start": 0,    "end": 0 },
+  "game_over":          { "start": 0,    "end": 0 }
 }
