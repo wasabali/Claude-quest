@@ -186,11 +186,11 @@ Most character, monster, item, and VFX sprites originate from Ninja Adventure at
 
 ### 3× Upscale Script
 
-Ninja Adventure sprites ship at 16×16px. The following Node.js script (referenced in issue #275) performs a nearest-neighbor 3× upscale of an entire directory:
+Ninja Adventure sprites ship at 16×16px. If you need to batch-upscale a directory locally, you can save the following example Node.js snippet as a script and run it with nearest-neighbor scaling:
 
 ```js
-// scripts/upscale.js
-// Usage: node scripts/upscale.js <inputDir> <outputDir>
+// Example script: save as scripts/upscale.js locally if needed
+// Example usage after saving this snippet locally: node scripts/upscale.js <inputDir> <outputDir>
 // Requires: npm install sharp
 
 import sharp from 'sharp'
