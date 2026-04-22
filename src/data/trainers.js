@@ -9,6 +9,7 @@ const TRAINERS = {
 
   ola_ops: {
     id: 'ola_ops',
+    spriteKey: 'ninja_old_samurai',
     name: 'Ola the Ops Guy',
     domain: 'linux',
     hp: 60,
@@ -39,6 +40,7 @@ const TRAINERS = {
 
   tux_wizard: {
     id: 'tux_wizard',
+    spriteKey: 'ninja_mage',
     name: 'Tux the Terminal Wizard',
     domain: 'linux',
     hp: 80,
@@ -71,6 +73,7 @@ const TRAINERS = {
 
   fatima_witch: {
     id: 'fatima_witch',
+    spriteKey: 'ninja_sorceress',
     name: 'Fatima the Function Witch',
     domain: 'serverless',
     role: 'field_trainer',
@@ -104,6 +107,7 @@ const TRAINERS = {
 
   bjorn_breaker: {
     id: 'bjorn_breaker',
+    spriteKey: 'ninja_heavy_bandit',
     name: 'Bjørn the Build Breaker',
     domain: 'iac',
     role: 'gym_leader',
@@ -148,6 +152,7 @@ const TRAINERS = {
 
   ingrid_iam: {
     id: 'ingrid_iam',
+    spriteKey: 'ninja_woman_fighter',
     name: 'Ingrid the IAM Inspector',
     domain: 'security',
     role: 'gym_leader',
@@ -192,6 +197,7 @@ const TRAINERS = {
 
   kube_master: {
     id: 'kube_master',
+    spriteKey: 'ninja_samurai',
     name: 'The Kube-rnetes Master',
     domain: 'kubernetes',
     role: 'gym_leader',
@@ -236,6 +242,7 @@ const TRAINERS = {
 
   helm_hansen: {
     id: 'helm_hansen',
+    spriteKey: 'ninja_captain',
     name: 'Helm Hansen',
     domain: 'containers',
     hp: 100,
@@ -266,6 +273,7 @@ const TRAINERS = {
 
   oracle_alice: {
     id: 'oracle_alice',
+    spriteKey: 'ninja_archwizard',
     name: 'The Solutions Oracle',
     domain: 'observability',
     role: 'gym_leader',
@@ -307,6 +315,7 @@ const TRAINERS = {
 
   captain_nines: {
     id: 'captain_nines',
+    spriteKey: 'ninja_knight',
     name: 'Captain Nines',
     domain: 'cloud',
     role: 'gym_leader',
@@ -345,6 +354,7 @@ const TRAINERS = {
 
   scrum_siri: {
     id: 'scrum_siri',
+    spriteKey: 'ninja_monk',
     name: 'Scrum Siri',
     domain: 'observability',
     role: 'gym_leader',
@@ -380,6 +390,7 @@ const TRAINERS = {
 
   docker_dag: {
     id: 'docker_dag',
+    spriteKey: 'ninja_soldier',
     name: 'Docker Dag',
     domain: 'containers',
     role: 'gym_leader',
@@ -419,6 +430,7 @@ const TRAINERS = {
 
   sla_signe: {
     id: 'sla_signe',
+    spriteKey: 'ninja_archer',
     name: 'SLA Signe',
     domain: 'cloud',
     role: 'sub_leader',
@@ -444,6 +456,7 @@ const TRAINERS = {
 
   story_point_soren: {
     id: 'story_point_soren',
+    spriteKey: 'ninja_magician',
     name: 'Story Point Søren',
     domain: 'observability',
     role: 'sub_leader',
@@ -471,6 +484,7 @@ const TRAINERS = {
 
   layer_lars: {
     id: 'layer_lars',
+    spriteKey: 'ninja_soldier',
     name: 'Layer Lars',
     domain: 'containers',
     role: 'sub_leader',
@@ -496,6 +510,7 @@ const TRAINERS = {
 
   replica_set_ragnhild: {
     id: 'replica_set_ragnhild',
+    spriteKey: 'ninja_woman_fighter',
     name: 'Replica Set Ragnhild',
     domain: 'kubernetes',
     role: 'sub_leader',
@@ -521,6 +536,7 @@ const TRAINERS = {
 
   architect_aleksander: {
     id: 'architect_aleksander',
+    spriteKey: 'ninja_warlock',
     name: 'Architect Aleksander',
     domain: 'observability',
     role: 'sub_leader',
@@ -553,6 +569,7 @@ const TRAINERS = {
 
   logging_lena: {
     id: 'logging_lena',
+    spriteKey: 'ninja_sorceress',
     name: 'Logging Lena',
     domain: 'linux',
     hp: 50,
@@ -577,6 +594,7 @@ const TRAINERS = {
 
   alert_anders: {
     id: 'alert_anders',
+    spriteKey: 'ninja_ninja',
     name: 'Alert Anders',
     domain: 'cloud',
     hp: 60,
@@ -601,6 +619,7 @@ const TRAINERS = {
 
   pipeline_per: {
     id: 'pipeline_per',
+    spriteKey: 'ninja_robot',
     name: 'Pipeline Per',
     domain: 'iac',
     hp: 55,
@@ -625,6 +644,7 @@ const TRAINERS = {
 
   trigger_trude: {
     id: 'trigger_trude',
+    spriteKey: 'ninja_assassin',
     name: 'Trigger Trude',
     domain: 'serverless',
     hp: 55,
@@ -649,6 +669,7 @@ const TRAINERS = {
 
   manifest_magnus: {
     id: 'manifest_magnus',
+    spriteKey: 'ninja_samurai',
     name: 'Manifest Magnus',
     domain: 'kubernetes',
     hp: 70,
@@ -673,6 +694,7 @@ const TRAINERS = {
 
   policy_pal: {
     id: 'policy_pal',
+    spriteKey: 'ninja_knight',
     name: 'Policy Pål',
     domain: 'security',
     hp: 60,
@@ -697,6 +719,7 @@ const TRAINERS = {
 
   metrics_maja: {
     id: 'metrics_maja',
+    spriteKey: 'ninja_mage',
     name: 'Metrics Maja',
     domain: 'observability',
     hp: 60,
@@ -721,6 +744,7 @@ const TRAINERS = {
 
   deploy_diana: {
     id: 'deploy_diana',
+    spriteKey: 'ninja_archer',
     name: 'Deploy Diana',
     domain: 'cloud',
     hp: 80,
@@ -745,6 +769,7 @@ const TRAINERS = {
 
   incident_ivan: {
     id: 'incident_ivan',
+    spriteKey: 'ninja_warrior',
     name: 'Incident Ivan',
     domain: 'observability',
     hp: 80,
@@ -773,6 +798,7 @@ const TRAINERS = {
 
   fundamentals_apprentice_a: {
     id: 'fundamentals_apprentice_a',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer A',
     domain: 'linux',
     hp: 40,
@@ -794,6 +820,7 @@ const TRAINERS = {
 
   fundamentals_apprentice_b: {
     id: 'fundamentals_apprentice_b',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer B',
     domain: 'linux',
     hp: 40,
@@ -815,6 +842,7 @@ const TRAINERS = {
 
   admin_apprentice_a: {
     id: 'admin_apprentice_a',
+    spriteKey: 'ninja_soldier',
     name: 'Apprentice Engineer A',
     domain: 'cloud',
     hp: 45,
@@ -836,6 +864,7 @@ const TRAINERS = {
 
   admin_apprentice_b: {
     id: 'admin_apprentice_b',
+    spriteKey: 'ninja_soldier',
     name: 'Apprentice Engineer B',
     domain: 'cloud',
     hp: 45,
@@ -857,6 +886,7 @@ const TRAINERS = {
 
   devops_apprentice_a: {
     id: 'devops_apprentice_a',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer A',
     domain: 'iac',
     hp: 45,
@@ -878,6 +908,7 @@ const TRAINERS = {
 
   devops_apprentice_b: {
     id: 'devops_apprentice_b',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer B',
     domain: 'iac',
     hp: 45,
@@ -899,6 +930,7 @@ const TRAINERS = {
 
   developer_apprentice_a: {
     id: 'developer_apprentice_a',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer A',
     domain: 'serverless',
     hp: 45,
@@ -920,6 +952,7 @@ const TRAINERS = {
 
   developer_apprentice_b: {
     id: 'developer_apprentice_b',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer B',
     domain: 'serverless',
     hp: 45,
@@ -941,6 +974,7 @@ const TRAINERS = {
 
   kubernetes_apprentice_a: {
     id: 'kubernetes_apprentice_a',
+    spriteKey: 'ninja_soldier',
     name: 'Apprentice Engineer A',
     domain: 'kubernetes',
     hp: 50,
@@ -962,6 +996,7 @@ const TRAINERS = {
 
   kubernetes_apprentice_b: {
     id: 'kubernetes_apprentice_b',
+    spriteKey: 'ninja_soldier',
     name: 'Apprentice Engineer B',
     domain: 'kubernetes',
     hp: 50,
@@ -983,6 +1018,7 @@ const TRAINERS = {
 
   security_apprentice_a: {
     id: 'security_apprentice_a',
+    spriteKey: 'ninja_knight',
     name: 'Apprentice Engineer A',
     domain: 'security',
     hp: 50,
@@ -1004,6 +1040,7 @@ const TRAINERS = {
 
   security_apprentice_b: {
     id: 'security_apprentice_b',
+    spriteKey: 'ninja_knight',
     name: 'Apprentice Engineer B',
     domain: 'security',
     hp: 50,
@@ -1025,6 +1062,7 @@ const TRAINERS = {
 
   architecture_apprentice_a: {
     id: 'architecture_apprentice_a',
+    spriteKey: 'ninja_mage',
     name: 'Apprentice Engineer A',
     domain: 'observability',
     hp: 50,
@@ -1046,6 +1084,7 @@ const TRAINERS = {
 
   architecture_apprentice_b: {
     id: 'architecture_apprentice_b',
+    spriteKey: 'ninja_mage',
     name: 'Apprentice Engineer B',
     domain: 'observability',
     hp: 50,
@@ -1067,6 +1106,7 @@ const TRAINERS = {
 
   cto_apprentice_a: {
     id: 'cto_apprentice_a',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer A',
     domain: 'cloud',
     hp: 55,
@@ -1088,6 +1128,7 @@ const TRAINERS = {
 
   cto_apprentice_b: {
     id: 'cto_apprentice_b',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer B',
     domain: 'kubernetes',
     hp: 55,
@@ -1109,6 +1150,7 @@ const TRAINERS = {
 
   cto_apprentice_c: {
     id: 'cto_apprentice_c',
+    spriteKey: 'ninja_adventurer',
     name: 'Apprentice Engineer C',
     domain: 'security',
     hp: 55,
@@ -1130,6 +1172,7 @@ const TRAINERS = {
 
   lambda_lars: {
     id: 'lambda_lars',
+    spriteKey: 'ninja_mage',
     name: 'Lambda Lars',
     domain: 'serverless',
     hp: 70,
@@ -1154,6 +1197,7 @@ const TRAINERS = {
 
   docker_diana: {
     id: 'docker_diana',
+    spriteKey: 'ninja_woman_fighter',
     name: 'Docker Diana',
     domain: 'containers',
     hp: 75,
@@ -1178,6 +1222,7 @@ const TRAINERS = {
 
   terraform_tore: {
     id: 'terraform_tore',
+    spriteKey: 'ninja_warrior',
     name: 'Terraform Tore',
     domain: 'iac',
     hp: 80,
@@ -1202,6 +1247,7 @@ const TRAINERS = {
 
   firewall_frida: {
     id: 'firewall_frida',
+    spriteKey: 'ninja_sorceress',
     name: 'Firewall Frida',
     domain: 'security',
     hp: 65,
@@ -1226,6 +1272,7 @@ const TRAINERS = {
 
   grafana_gerd: {
     id: 'grafana_gerd',
+    spriteKey: 'ninja_mage',
     name: 'Grafana Gerd',
     domain: 'observability',
     hp: 70,
@@ -1250,6 +1297,7 @@ const TRAINERS = {
 
   ci_carl: {
     id: 'ci_carl',
+    spriteKey: 'ninja_soldier',
     name: 'CI Carl',
     domain: 'iac',
     hp: 50,
@@ -1274,6 +1322,7 @@ const TRAINERS = {
 
   cloud_costas: {
     id: 'cloud_costas',
+    spriteKey: 'ninja_adventurer',
     name: 'Cloud Costas',
     domain: 'cloud',
     hp: 85,
@@ -1298,6 +1347,7 @@ const TRAINERS = {
 
   nfs_nora: {
     id: 'nfs_nora',
+    spriteKey: 'ninja_woman_fighter',
     name: 'NFS Nora',
     domain: 'linux',
     hp: 75,
@@ -1322,6 +1372,7 @@ const TRAINERS = {
 
   devops_dave: {
     id: 'devops_dave',
+    spriteKey: 'ninja_soldier',
     name: 'DevOps Dave',
     domain: 'iac',
     hp: 65,
@@ -1346,6 +1397,7 @@ const TRAINERS = {
 
   scale_set_sven: {
     id: 'scale_set_sven',
+    spriteKey: 'ninja_heavy_bandit',
     name: 'Scale Set Sven',
     domain: 'cloud',
     hp: 95,
@@ -1381,6 +1433,7 @@ const TRAINERS = {
 
   force_pusher: {
     id: 'force_pusher',
+    spriteKey: 'ninja_ninja',
     name: 'The Force Pusher',
     domain: 'iac',
     hp: 80,
@@ -1416,6 +1469,7 @@ const TRAINERS = {
 
   hotfix_hakon: {
     id: 'hotfix_hakon',
+    spriteKey: 'ninja_burglar',
     name: 'Hotfix Håkon',
     domain: 'cloud',
     hp: 70,
@@ -1453,6 +1507,7 @@ const TRAINERS = {
 
   merge_magda: {
     id: 'merge_magda',
+    spriteKey: 'ninja_woman_fighter',
     name: 'Merge Magda',
     domain: 'iac',
     hp: 70,
@@ -1487,6 +1542,7 @@ const TRAINERS = {
 
   root_whisperer: {
     id: 'root_whisperer',
+    spriteKey: 'ninja_demon',
     name: 'The Root Whisperer',
     domain: 'security',
     hp: 90,
@@ -1521,6 +1577,7 @@ const TRAINERS = {
 
   kubectl_karen: {
     id: 'kubectl_karen',
+    spriteKey: 'ninja_sorceress',
     name: 'kubectl Karen',
     domain: 'kubernetes',
     hp: 80,
@@ -1556,6 +1613,7 @@ const TRAINERS = {
 
   skip_sigrid: {
     id: 'skip_sigrid',
+    spriteKey: 'ninja_assassin',
     name: 'Skip-Tests Sigrid',
     domain: 'iac',
     hp: 60,
@@ -1593,6 +1651,7 @@ const TRAINERS = {
 
   hardcode_henrik: {
     id: 'hardcode_henrik',
+    spriteKey: 'ninja_goblin',
     name: 'Hardcode Henrik',
     domain: 'security',
     hp: 70,
@@ -1628,6 +1687,7 @@ const TRAINERS = {
 
   rebase_reverend: {
     id: 'rebase_reverend',
+    spriteKey: 'ninja_monk',
     name: 'The Rebase Reverend',
     domain: 'iac',
     hp: 80,
@@ -1663,6 +1723,7 @@ const TRAINERS = {
 
   rmrf_rune: {
     id: 'rmrf_rune',
+    spriteKey: 'ninja_ogre',
     name: 'rm-rf Rune',
     domain: 'linux',
     hp: 90,
@@ -1701,6 +1762,7 @@ const TRAINERS = {
 
   downtime_dealer: {
     id: 'downtime_dealer',
+    spriteKey: 'ninja_demon',
     name: 'The Downtime Dealer',
     domain: 'cloud',
     hp: 80,
@@ -1739,6 +1801,7 @@ const TRAINERS = {
 
   deprecated_dagfinn: {
     id: 'deprecated_dagfinn',
+    spriteKey: 'ninja_skeleton',
     name: 'Deprecated Dagfinn',
     vibe: "They said I was too old to migrate. So I stayed.",
     domain: 'linux',
@@ -1762,6 +1825,7 @@ const TRAINERS = {
   },
   privileged_petra: {
     id: 'privileged_petra',
+    spriteKey: 'ninja_knight',
     name: 'Privileged Petra',
     vibe: "The container said I couldn't. I told it I was root.",
     domain: 'containers',
@@ -1785,6 +1849,7 @@ const TRAINERS = {
   },
   null_pointer: {
     id: 'null_pointer',
+    spriteKey: 'ninja_slime',
     name: 'The Null Pointer',
     vibe: "Nothing I do leaves a trace. Peaceful, isn't it.",
     domain: 'observability',
@@ -1808,6 +1873,7 @@ const TRAINERS = {
   },
   west_eu_2_wilhelm: {
     id: 'west_eu_2_wilhelm',
+    spriteKey: 'ninja_sheriff',
     name: 'West-EU-2 Wilhelm',
     vibe: "My region was sunset in 2019. I filed a support ticket. Still waiting.",
     domain: 'cloud',
@@ -1832,6 +1898,7 @@ const TRAINERS = {
 
   yolo_yaml: {
     id: 'yolo_yaml',
+    spriteKey: 'ninja_clown',
     name: 'YOLO Yaml Ylva',
     domain: 'kubernetes',
     hp: 85,
@@ -1872,6 +1939,7 @@ const TRAINERS = {
 
   sudo_su_saga: {
     id: 'sudo_su_saga',
+    spriteKey: 'ninja_woman_fighter',
     name: 'sudo su Saga',
     domain: 'linux',
     hp: 90,
@@ -1912,6 +1980,7 @@ const TRAINERS = {
 
   env_var_erik: {
     id: 'env_var_erik',
+    spriteKey: 'ninja_magician',
     name: '.env Erik',
     domain: 'security',
     hp: 75,
@@ -1952,6 +2021,7 @@ const TRAINERS = {
 
   cron_catastrophe: {
     id: 'cron_catastrophe',
+    spriteKey: 'ninja_robot',
     name: 'Cron Kristina',
     domain: 'linux',
     hp: 80,
@@ -1992,6 +2062,7 @@ const TRAINERS = {
 
   legacy_leif: {
     id: 'legacy_leif',
+    spriteKey: 'ninja_skeleton',
     name: 'Legacy Leif',
     domain: 'cloud',
     hp: 95,
@@ -2036,6 +2107,7 @@ const TRAINERS = {
 
   lost_intern: {
     id: 'lost_intern',
+    spriteKey: 'ninja_adventurer',
     name: 'Lost Intern',
     domain: 'linux',
     hp: 30,
@@ -2056,6 +2128,7 @@ const TRAINERS = {
 
   rival_engineer: {
     id: 'rival_engineer',
+    spriteKey: 'ninja_hero',
     name: 'Rival Cloud Engineer',
     domain: null,
     hp: 70,
@@ -2076,6 +2149,7 @@ const TRAINERS = {
 
   sales_rep: {
     id: 'sales_rep',
+    spriteKey: 'ninja_pirate',
     name: 'Sales Rep',
     domain: 'cloud',
     hp: 60,
@@ -2096,6 +2170,7 @@ const TRAINERS = {
 
   senior_engineer: {
     id: 'senior_engineer',
+    spriteKey: 'ninja_warrior',
     name: 'Senior Engineer',
     domain: null,
     hp: 100,
@@ -2120,6 +2195,7 @@ const TRAINERS = {
 
   the_cto: {
     id: 'the_cto',
+    spriteKey: 'ninja_king',
     name: 'The CTO',
     domain: 'cloud',
     role: 'gym_leader',
@@ -2203,3 +2279,21 @@ const TRAINERS = {
 export const getById = (id)           => TRAINERS[id]
 export const getAll  = ()             => Object.values(TRAINERS)
 export const getBy   = (field, value) => getAll().filter(x => x[field] === value)
+
+/** Phaser texture key for the player character sprite sheet. */
+export const PLAYER_SPRITE_KEY = 'ninja_hero'
+
+// Compute once at module load — trainer definitions are static.
+const _allSpriteKeys = (() => {
+  const keys = new Set([PLAYER_SPRITE_KEY])
+  for (const trainer of Object.values(TRAINERS)) {
+    if (trainer.spriteKey) keys.add(trainer.spriteKey)
+  }
+  return Object.freeze([...keys])
+})()
+
+/**
+ * All unique sprite keys referenced by trainers plus the player character.
+ * BootScene uses this list to attempt loading each sheet as an optional asset.
+ */
+export const getAllSpriteKeys = () => _allSpriteKeys

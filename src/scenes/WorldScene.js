@@ -12,12 +12,19 @@ import {
   shouldTriggerEncounter, checkTransition, applyTransition,
   clampTileToInterior, findNearestWalkableTile, persistPlayerTile, syncPlayerTileFromPixels,
 } from '#engine/MovementEngine.js'
-import { getById as getTrainerById } from '#data/trainers.js'
+import { getById as getTrainerById, PLAYER_SPRITE_KEY } from '#data/trainers.js'
 import { resolveNpcDialog, resolveNpcPages } from '#engine/StoryEngine.js'
 import { getBy as getInteractionsBy, getById as getInteractionById } from '#data/interactions.js'
 import { getById as getRegionById } from '#data/regions.js'
 import { Menu } from '#ui/Menu.js'
 import { canTravel, getDiscoveredTerminals, canFastTravel, DENIAL_REASONS, shouldShowTravelDenial } from '#engine/RegionEngine.js'
+
+// Texture keys that are statically generated as stub rectangles — not walk-cycle sheets.
+const STUB_TEXTURE_KEYS = new Set(['npc_default', 'azure_terminal', 'player',
+  'throttlemaster_hooded', 'stub_tiles'])
+
+// Depth layer for world-space characters and NPCs.
+const CHAR_DEPTH = 5
 
 const TILESET_KEY = 'stub_tiles'
 const TILE_SIZE   = CONFIG.TILE_SIZE
@@ -268,8 +275,25 @@ export class WorldScene extends BaseScene {
     for (const def of this._npcDefs) {
       const cx     = def.x + def.width / 2
       const cy     = def.y + def.height / 2
-      const key    = def.name === 'azure_terminal' ? 'azure_terminal' : 'npc_default'
-      const sprite = this.add.image(cx, cy, key).setDepth(5)
+
+      // Resolve texture key: prefer the trainer's spriteKey when the sheet was
+      // loaded successfully; fall back to the stub NPC texture otherwise.
+      let key = 'npc_default'
+      if (def.name === 'azure_terminal') {
+        key = 'azure_terminal'
+      } else {
+        const trainer = getTrainerById(def.name)
+        if (trainer?.spriteKey && this.textures.exists(trainer.spriteKey)) {
+          key = trainer.spriteKey
+        }
+      }
+
+      // Use a sprite for walk-cycle sheets, plain image for static stubs.
+      const isSheet = !STUB_TEXTURE_KEYS.has(key)
+      const sprite  = isSheet
+        ? this.add.sprite(cx, cy, key, 1).setDepth(CHAR_DEPTH)  // frame 1 = idle-down
+        : this.add.image(cx, cy, key).setDepth(CHAR_DEPTH)
+
       this.add.text(cx, cy - def.height / 2 - 8, def.name, {
         fontFamily: CONFIG.FONT,
         fontSize:   '10px',
@@ -309,8 +333,13 @@ export class WorldScene extends BaseScene {
     const startX = spawnTileX * TILE_SIZE + TILE_SIZE / 2
     const startY = spawnTileY * TILE_SIZE + TILE_SIZE / 2
 
-    this._player = this.physics.add.sprite(startX, startY, 'player')
-    this._player.setDepth(5)
+    // Use the Ninja Adventure hero sheet when it has been loaded; fall back to
+    // the procedurally generated stub 'player' texture otherwise.
+    const playerTextureKey = this.textures.exists(PLAYER_SPRITE_KEY)
+      ? PLAYER_SPRITE_KEY
+      : 'player'
+    this._player = this.physics.add.sprite(startX, startY, playerTextureKey, 1)
+    this._player.setDepth(CHAR_DEPTH)
 
     const persistedSpawn = persistPlayerTile(spawnTileX, spawnTileY)
     this._tileX = persistedSpawn.tileX
