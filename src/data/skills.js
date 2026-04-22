@@ -101,6 +101,23 @@ const SKILLS = {
     learnedAt: 'shell_cavern',
     availableInAct: 2,
   },
+
+  mount: {
+    id: 'mount',
+    displayName: 'mount',
+    domain: 'linux',
+    tier: 'optimal',
+    isCursed: false,
+    budgetCost: 0,
+    description: "Connect a filesystem. Everything is a file. Even your enemy. 40 damage.",
+    effect: { type: 'damage', value: 40 },
+    sideEffect: null,
+    warningText: null,
+    learnedFrom: 'NFS Nora',
+    learnedAt: 'shell_cavern',
+    availableInAct: 2,
+  },
+
   crontab_e: {
     id: 'crontab_e',
     displayName: 'crontab -e',
@@ -566,6 +583,23 @@ const SKILLS = {
     learnedAt: 'production_plains',
     availableInAct: 2,
   },
+
+  az_vm_create: {
+    id: 'az_vm_create',
+    displayName: 'az vm create',
+    domain: 'cloud',
+    tier: 'optimal',
+    isCursed: false,
+    budgetCost: 20,
+    description: "Provision a virtual machine. Check the SKU first or cry about the bill later. 40 damage.",
+    effect: { type: 'damage', value: 40 },
+    sideEffect: null,
+    warningText: null,
+    learnedFrom: 'Cloud Costas',
+    learnedAt: 'azure_town',
+    availableInAct: 2,
+  },
+
   cost_optimization: {
     id: 'cost_optimization',
     displayName: 'cost optimization',
@@ -691,6 +725,23 @@ const SKILLS = {
     learnedAt: 'pipeline_pass',
     availableInAct: 1,
   },
+
+  git_commit: {
+    id: 'git_commit',
+    displayName: 'git commit',
+    domain: 'iac',
+    tier: 'optimal',
+    isCursed: false,
+    budgetCost: 0,
+    description: "Small, meaningful, atomic. Commit often, commit clean. 35 damage.",
+    effect: { type: 'damage', value: 35 },
+    sideEffect: null,
+    warningText: null,
+    learnedFrom: 'CI Carl',
+    learnedAt: 'pipeline_pass',
+    availableInAct: 1,
+  },
+
   az_pipelines_run: {
     id: 'az_pipelines_run',
     displayName: 'az pipelines run',
@@ -706,6 +757,23 @@ const SKILLS = {
     learnedAt: 'pipeline_pass',
     availableInAct: 1,
   },
+
+  az_devops_configure: {
+    id: 'az_devops_configure',
+    displayName: 'az devops configure',
+    domain: 'iac',
+    tier: 'optimal',
+    isCursed: false,
+    budgetCost: 0,
+    description: "Configure your Azure DevOps defaults. Organise your repos, pipelines, and sanity. 35 damage.",
+    effect: { type: 'damage', value: 35 },
+    sideEffect: null,
+    warningText: null,
+    learnedFrom: 'DevOps Dave',
+    learnedAt: 'pipeline_pass',
+    availableInAct: 1,
+  },
+
   bicep_deploy: {
     id: 'bicep_deploy',
     displayName: 'az deployment create',
@@ -1380,6 +1448,22 @@ const SKILLS = {
     sideEffect: null,
     warningText: null,
     learnedFrom: 'Ingrid the IAM Inspector',
+    learnedAt: 'security_vault',
+    availableInAct: 2,
+  },
+
+  az_network_nsg_rule_create: {
+    id: 'az_network_nsg_rule_create',
+    displayName: 'az network nsg rule create',
+    domain: 'security',
+    tier: 'optimal',
+    isCursed: false,
+    budgetCost: 0,
+    description: "Create a network security group rule. Patch the gap before the attacker does. 40 damage.",
+    effect: { type: 'damage', value: 40 },
+    sideEffect: null,
+    warningText: null,
+    learnedFrom: 'Firewall Frida',
     learnedAt: 'security_vault',
     availableInAct: 2,
   },
