@@ -149,6 +149,7 @@ upscale, then recolour pipes/structures to the rust palette and add Azure brandi
 - **Style:** GameBoy Color-era pixel art. Limited palette per tile (≤ 8 colours per tile).
 - **Anti-aliasing:** None. All edges are hard pixel boundaries.
 - **Transparency:** All non-opaque tiles (overlay, fence, glitch) must use alpha channel.
-- **Delivery format:** Single tileset PNG (all tiles in a row or grid). Include `.tsx` Tiled
-  Tileset file alongside the PNG for easy import.
-- **Naming:** `void_tiles.png` / `void_tiles.tsx` and `wasteland_tiles.png` / `wasteland_tiles.tsx`.
+- **Delivery format:** Single tileset PNG (all tiles in a row or grid). If imported through
+  Tiled, keep tileset metadata embedded in the consuming `.tmj` map to match the current repo
+  workflow; a standalone `.tsx` is optional, not required.
+- **Naming:** `void_tiles.png` and `wasteland_tiles.png`.
