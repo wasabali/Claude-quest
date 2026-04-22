@@ -60,4 +60,4 @@ Cloud Quest is built on the shoulders of generous creators. Thank you.
 
 ---
 
-*Cloud Quest is a non-commercial fan project. All third-party assets are used in accordance with their respective licences.*
+*Cloud Quest is a non-commercial fan project. All third-party assets are used in accordance with their respective licenses.*
