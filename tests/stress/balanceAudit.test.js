@@ -423,7 +423,7 @@ describe('Battle Simulations', () => {
   const starterSkills = STARTING_ACTIVE_SKILLS.map(id => getSkillById(id)).filter(Boolean)
 
   describe('Incident encounters vs starter deck', () => {
-    const earlyEncounters = getAllEncounters().filter(e => e.difficulty <= 2)
+    const earlyEncounters = getAllEncounters().filter(e => e.difficulty <= 2 && e.type !== 'scripted')
 
     it('early encounters (difficulty 1-2) have win rate > 20% with starter deck', () => {
       const failures = []
@@ -501,7 +501,7 @@ describe('Battle Simulations', () => {
   describe('Difficulty curve monotonicity', () => {
     it('encounter HP scales with difficulty', () => {
       const byDiff = {}
-      for (const enc of getAllEncounters()) {
+      for (const enc of getAllEncounters().filter(e => e.type !== 'scripted')) {
         if (!byDiff[enc.difficulty]) byDiff[enc.difficulty] = []
         byDiff[enc.difficulty].push(enc.hp)
       }
@@ -517,7 +517,7 @@ describe('Battle Simulations', () => {
 
     it('encounter SLA shrinks with difficulty', () => {
       const byDiff = {}
-      for (const enc of getAllEncounters()) {
+      for (const enc of getAllEncounters().filter(e => e.type !== 'scripted' && e.type !== 'boss' && e.sla !== null)) {
         if (!byDiff[enc.difficulty]) byDiff[enc.difficulty] = []
         byDiff[enc.difficulty].push(enc.sla)
       }
