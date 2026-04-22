@@ -941,45 +941,75 @@ const STORY = {
       "...",
       "Someone has been here.",
     ],
-    // Dialog pools keyed by act/shame context.
-    // [name] placeholders are replaced by the scene layer with the player's name.
-    dialogPools: {
-      act2_taunt: [
-        "Your pipeline is now running in degraded mode.",
-        "I see you're on-call tonight. Good luck with that.",
-        "/* THROTTLEMASTER WAS HERE */",
-      ],
-      act3_taunt: [
-        "Still haven't figured it out?",
-        "You're better than this team deserves, [name].",
-      ],
-      act4_reveal_low_shame: [
-        "You want to know why I do this?",
-        "I was the best engineer at OmniCloud.",
-        "They promoted Kristoffer instead.",
-        "So I decided: if the cloud can't be fair...",
-        "...I'll throttle everyone to my level.",
-      ],
-      act4_reveal_high_shame: [
-        "I've been watching you, [name].",
-        "You understand, don't you? Sometimes the wrong tool",
-        "...is the only one that works.",
-      ],
-      recruitment: [
-        "Join me. We'll fork NorCloud.",
-        "You've already crossed every line I have.",
-        "I just crossed them first.",
-      ],
-      post_defeat: [
-        "...I just wanted to be recognised.",
-        "Was that so hard?",
-      ],
-      evil_ending: [
-        "Welcome to the team, [name].",
-        "Your first task: throttle Production Plains.",
-        "I'll handle the invoicing.",
-      ],
-    },
+    // Ordered dialog pool entries — evaluated top-to-bottom by resolveDialogPool().
+    // Each entry fires when ALL conditions in its `condition` object are satisfied.
+    // `pool` picks one line at random; `pages` returns all lines in sequence.
+    // [name] placeholders are replaced with the player's name at resolve time.
+    dialogPools: [
+      {
+        key: 'post_defeat',
+        condition: { flag: 'throttlemaster_defeated' },
+        pages: [
+          "...I just wanted to be recognised.",
+          "Was that so hard?",
+        ],
+      },
+      {
+        key: 'evil_ending',
+        condition: { flag: 'evil_ending_triggered' },
+        pages: [
+          "Welcome to the team, [name].",
+          "Your first task: throttle Production Plains.",
+          "I'll handle the invoicing.",
+        ],
+      },
+      {
+        key: 'recruitment',
+        condition: { shameMin: 15 },
+        pages: [
+          "Join me. We'll fork NorCloud.",
+          "You've already crossed every line I have.",
+          "I just crossed them first.",
+        ],
+      },
+      {
+        key: 'act4_reveal_high_shame',
+        condition: { act: 4, shameMin: 7 },
+        pages: [
+          "I've been watching you, [name].",
+          "You understand, don't you? Sometimes the wrong tool",
+          "...is the only one that works.",
+        ],
+      },
+      {
+        key: 'act4_reveal_low_shame',
+        condition: { act: 4 },
+        pages: [
+          "You want to know why I do this?",
+          "I was the best engineer at OmniCloud.",
+          "They promoted Kristoffer instead.",
+          "So I decided: if the cloud can't be fair...",
+          "...I'll throttle everyone to my level.",
+        ],
+      },
+      {
+        key: 'act3_taunt',
+        condition: { act: 3 },
+        pool: [
+          "Still haven't figured it out?",
+          "You're better than this team deserves, [name].",
+        ],
+      },
+      {
+        key: 'act2_taunt',
+        condition: { act: 2 },
+        pool: [
+          "Your pipeline is now running in degraded mode.",
+          "I see you're on-call tonight. Good luck with that.",
+          "/* THROTTLEMASTER WAS HERE */",
+        ],
+      },
+    ],
   },
 
   // ---------------------------------------------------------------------------

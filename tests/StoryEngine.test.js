@@ -6,6 +6,7 @@ import {
   shouldTriggerViralWave,
   shouldTriggerThreeAmScene,
   getVisibleNpcs,
+  resolveDialogPool,
 } from '../src/engine/StoryEngine.js'
 
 // ---------------------------------------------------------------------------
@@ -306,5 +307,122 @@ describe('getVisibleNpcs', () => {
   it('returns all NPCs for very high act number', () => {
     const npcs = getVisibleNpcs(99)
     expect(npcs).toHaveLength(4)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// resolveDialogPool
+// ---------------------------------------------------------------------------
+describe('resolveDialogPool', () => {
+  const makeCtx = ({ act = 1, shame = 0, flags = {}, name = 'TestUser' } = {}) => ({
+    player: { shamePoints: shame, name },
+    story:  { act, flags },
+  })
+
+  it('returns null for empty pools array', () => {
+    expect(resolveDialogPool([], makeCtx())).toBeNull()
+  })
+
+  it('returns null for non-array pools', () => {
+    expect(resolveDialogPool(null, makeCtx())).toBeNull()
+    expect(resolveDialogPool(undefined, makeCtx())).toBeNull()
+  })
+
+  it('returns pages from first matching entry (no conditions = always matches)', () => {
+    const pools = [{ key: 'default', condition: {}, pages: ['Hello'] }]
+    expect(resolveDialogPool(pools, makeCtx())).toEqual(['Hello'])
+  })
+
+  it('matches flag condition when flag is true', () => {
+    const pools = [{ key: 'k', condition: { flag: 'defeated' }, pages: ['Beaten'] }]
+    expect(resolveDialogPool(pools, makeCtx({ flags: { defeated: true } }))).toEqual(['Beaten'])
+  })
+
+  it('skips entry when flag condition is false', () => {
+    const pools = [{ key: 'k', condition: { flag: 'defeated' }, pages: ['Beaten'] }]
+    expect(resolveDialogPool(pools, makeCtx({ flags: {} }))).toBeNull()
+  })
+
+  it('matches shameMin condition when shame meets threshold', () => {
+    const pools = [{ key: 'k', condition: { shameMin: 7 }, pages: ['High shame'] }]
+    expect(resolveDialogPool(pools, makeCtx({ shame: 7 }))).toEqual(['High shame'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 15 }))).toEqual(['High shame'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 6 }))).toBeNull()
+  })
+
+  it('matches shameMax condition when shame is at or below threshold', () => {
+    const pools = [{ key: 'k', condition: { shameMax: 5 }, pages: ['Low shame'] }]
+    expect(resolveDialogPool(pools, makeCtx({ shame: 0 }))).toEqual(['Low shame'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 5 }))).toEqual(['Low shame'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 6 }))).toBeNull()
+  })
+
+  it('matches act condition when act matches', () => {
+    const pools = [{ key: 'k', condition: { act: 3 }, pages: ['Act 3 line'] }]
+    expect(resolveDialogPool(pools, makeCtx({ act: 3 }))).toEqual(['Act 3 line'])
+    expect(resolveDialogPool(pools, makeCtx({ act: 2 }))).toBeNull()
+  })
+
+  it('matches combined act + shameMin condition', () => {
+    const pools = [{ key: 'k', condition: { act: 4, shameMin: 7 }, pages: ['Act 4 high shame'] }]
+    expect(resolveDialogPool(pools, makeCtx({ act: 4, shame: 7 }))).toEqual(['Act 4 high shame'])
+    expect(resolveDialogPool(pools, makeCtx({ act: 4, shame: 6 }))).toBeNull()
+    expect(resolveDialogPool(pools, makeCtx({ act: 3, shame: 10 }))).toBeNull()
+  })
+
+  it('evaluates pools in order and returns first match', () => {
+    const pools = [
+      { key: 'specific', condition: { shameMin: 15 }, pages: ['Recruitment'] },
+      { key: 'general',  condition: { shameMin: 7  }, pages: ['High shame'] },
+    ]
+    expect(resolveDialogPool(pools, makeCtx({ shame: 15 }))).toEqual(['Recruitment'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 10 }))).toEqual(['High shame'])
+    expect(resolveDialogPool(pools, makeCtx({ shame: 3  }))).toBeNull()
+  })
+
+  it('picks a single random line from pool entries', () => {
+    const pools = [{ key: 'k', condition: {}, pool: ['Line A', 'Line B', 'Line C'] }]
+    const result = resolveDialogPool(pools, makeCtx())
+    expect(Array.isArray(result)).toBe(true)
+    expect(result).toHaveLength(1)
+    expect(['Line A', 'Line B', 'Line C']).toContain(result[0])
+  })
+
+  it('replaces [name] placeholder with player name', () => {
+    const pools = [{ key: 'k', condition: {}, pages: ['Hello, [name].', 'Goodbye, [name].'] }]
+    const result = resolveDialogPool(pools, makeCtx({ name: 'Alice' }))
+    expect(result).toEqual(['Hello, Alice.', 'Goodbye, Alice.'])
+  })
+
+  it('replaces [name] in pool lines', () => {
+    const pools = [{ key: 'k', condition: {}, pool: ['Hi [name]!'] }]
+    const result = resolveDialogPool(pools, makeCtx({ name: 'Bob' }))
+    expect(result[0]).toBe('Hi Bob!')
+  })
+
+  it('falls back to "engineer" when player.name is absent', () => {
+    const pools = [{ key: 'k', condition: {}, pages: ['Hello, [name].'] }]
+    const result = resolveDialogPool(pools, { player: { shamePoints: 0 }, story: { act: 1, flags: {} } })
+    expect(result).toEqual(['Hello, engineer.'])
+  })
+
+  it('skips entries with empty pool/pages and continues', () => {
+    const pools = [
+      { key: 'empty', condition: {}, pool: [] },
+      { key: 'valid', condition: {}, pages: ['Fallback'] },
+    ]
+    expect(resolveDialogPool(pools, makeCtx())).toEqual(['Fallback'])
+  })
+
+  it('uses finale key when game_complete flag is set', () => {
+    const pools = [{ key: 'k', condition: { act: 'finale' }, pages: ['Finale line'] }]
+    const ctx = { player: { shamePoints: 0, name: 'X' }, story: { act: 4, flags: { game_complete: true } } }
+    expect(resolveDialogPool(pools, ctx)).toEqual(['Finale line'])
+  })
+
+  it('does not match numeric act condition when game_complete overrides act to "finale"', () => {
+    const pools = [{ key: 'k', condition: { act: 4 }, pages: ['Act 4 line'] }]
+    const ctx = { player: { shamePoints: 0, name: 'X' }, story: { act: 4, flags: { game_complete: true } } }
+    expect(resolveDialogPool(pools, ctx)).toBeNull()
   })
 })
