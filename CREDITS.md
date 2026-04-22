@@ -21,7 +21,7 @@ Cloud Quest is built on the shoulders of generous creators. Thank you.
 - **Assets source:** https://github.com/pagefaultgames/pokerogue-assets
 - **License:** CC-BY-NC-SA-4.0
 - **Usage:** Battle backgrounds (arena layers), UI window panels (9-slice), cursor, HP/XP bars, stat overlays
-- **Note:** This licence restricts Cloud Quest to non-commercial use and requires share-alike on derived assets
+- **Note:** This license restricts Cloud Quest to non-commercial use and requires share-alike on derived assets
 
 ---
 
