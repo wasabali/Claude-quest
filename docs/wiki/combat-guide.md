@@ -166,4 +166,29 @@ Optimal solutions give ×2 XP — meaning an Optimal player levels roughly twice
 
 ---
 
+## Battle Audio Cues
+
+Every meaningful battle event plays a distinct sound effect. Learn to recognise them — they give you feedback even when you're not looking at the numbers.
+
+| Situation | Sound |
+|---|---|
+| Normal hit lands | Impact crunch (`sfx_damage_hit`) |
+| Critical / domain advantage hit | Bigger crunch + screen flash (`sfx_damage_critical`) |
+| Heal effect triggers | Rising arpeggio (`sfx_heal`) |
+| Status applied | Wobble/warble tone (`sfx_status_apply`) |
+| Status expires | Soft release (`sfx_status_expire`) |
+| Skill misses or fails | Descending sad trombone (`sfx_skill_fail`) |
+| Shame increases | Ominous chord (`sfx_shame`) |
+| SLA timer ticks | Clock tick each turn (`sfx_sla_tick`) |
+| SLA breach | Alarm klaxon — address it before it fires (`sfx_sla_breach`) |
+| Budget spent | Coin loss jingle (`sfx_budget_drain`) |
+| Reputation changes | Pitch up for gain, pitch down for loss (`sfx_reputation_change`) |
+| Battle starts | Alert jingle (`sfx_encounter_start`) |
+
+BGM switches automatically: `battle_incident` for random encounters, `battle_engineer` for trainer fights, `battle_cursed` when cursed techniques are active, and `battle_throttlemaster` for THROTTLEMASTER boss phases.
+
+See [Audio Reference](audio.md) for the full SFX and BGM listing.
+
+---
+
 *"Spend a turn diagnosing. Always. The matchup bonus is worth it." — The Solutions Oracle*

@@ -6,20 +6,20 @@ Cloud Quest's world is divided into regions, each themed around a different doma
 
 ## Region Overview
 
-| # | Region | Domain Focus | Act | Gym? | Description |
-|---|---|---|---|---|---|
-| 1 | **Localhost Town** | — | Prologue/1 | — | Starting village. Professor Pedersen's lab, Old Margaret's bakery, your apartment. Safe zone. |
-| 2 | **Pipeline Pass** | IaC | 1 | 1st Gym | Mountain trail with CI/CD terminals. Failed builds spark as random encounters. |
-| 3 | **Staging Valley** | Cloud | 2 | — | A mirror of production that's slightly broken. Requires Staging Env Token to enter. |
-| 4 | **Production Plains** | Cloud | 2 | 2nd Gym | Wide open grassland with real traffic. High CPU and disk full encounters roam here. |
-| 5 | **Jira Dungeon** | Observability | 3 | 3rd Gym | Underground maze of tickets and sprint boards. Stale tickets attack you. |
-| 6 | **Shell Cavern** | Linux | 3 | — | Dark cave illuminated by terminal glow. Home of Tux the Terminal Wizard. |
-| 7 | **The Helm Repository** | Kubernetes | 3 | 4th Gym | A library of charts and releases. Helm Hansen guards the stacks. |
-| 8 | **Kubernetes Colosseum** | Kubernetes | 3 | 5th Gym | Amphitheatre where pods battle for resources. CrashLoopBackOff is the house champion. |
-| 9 | **Security Vault** | Security | 4 | 6th Gym | Locked-down fortress. IAM checks at every door. |
-| 10 | **Architecture District** | Observability | 4 | 7th Gym | City of whiteboards and UML diagrams. The Solutions Oracle sits at the centre. |
-| 11 | **Azure Town** | Cloud | 4 | — | Cloud portal come to life. Shops, certificate vendors, budget management. |
-| 12 | **The Cloud Console** | Cloud | Finale | 8th Gym | Final area. The CTO's office at the top. |
+| # | Region | Domain Focus | Act | Gym? | BGM Track | Description |
+|---|---|---|---|---|---|---|
+| 1 | **Localhost Town** | — | Prologue/1 | — | `localhost_town` | Starting village. Professor Pedersen's lab, Old Margaret's bakery, your apartment. Safe zone. |
+| 2 | **Pipeline Pass** | IaC | 1 | 1st Gym | `pipeline_pass` | Mountain trail with CI/CD terminals. Failed builds spark as random encounters. |
+| 3 | **Staging Valley** | Cloud | 2 | — | `cloud_citadel` | A mirror of production that's slightly broken. Requires Staging Env Token to enter. |
+| 4 | **Production Plains** | Cloud | 2 | 2nd Gym | `cloud_citadel` | Wide open grassland with real traffic. High CPU and disk full encounters roam here. |
+| 5 | **Jira Dungeon** | Observability | 3 | 3rd Gym | `legacy_codebase` | Underground maze of tickets and sprint boards. Stale tickets attack you. |
+| 6 | **Shell Cavern** | Linux | 3 | — | `kernel_caves` | Dark cave illuminated by terminal glow. Home of Tux the Terminal Wizard. |
+| 7 | **The Helm Repository** | Kubernetes | 3 | 4th Gym | `container_port` | A library of charts and releases. Helm Hansen guards the stacks. |
+| 8 | **Kubernetes Colosseum** | Kubernetes | 3 | 5th Gym | `container_port` | Amphitheatre where pods battle for resources. CrashLoopBackOff is the house champion. |
+| 9 | **Security Vault** | Security | 4 | 6th Gym | `cloud_citadel` | Locked-down fortress. IAM checks at every door. |
+| 10 | **Architecture District** | Observability | 4 | 7th Gym | `cloud_citadel` | City of whiteboards and UML diagrams. The Solutions Oracle sits at the centre. |
+| 11 | **Azure Town** | Cloud | 4 | — | `cloud_citadel` | Cloud portal come to life. Shops, certificate vendors, budget management. |
+| 12 | **The Cloud Console** | Cloud | Finale | 8th Gym | `cloud_citadel` | Final area. The CTO's office at the top. |
 
 ---
 
