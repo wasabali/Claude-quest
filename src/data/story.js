@@ -587,7 +587,9 @@ const STORY = {
 
   credits_npc_list: {
     id: 'credits_npc_list',
-    pages: [],
+    pages: [
+      "The engineers who shaped your journey:",
+    ],
     entries: [
       { name: 'Margaret',                role: 'Town Guide' },
       { name: 'Professor Pedersen',      role: 'Ethics & Education' },
@@ -935,6 +937,10 @@ const STORY = {
     actFirstAppearance: 2,
     shameContact: 7,
     shameRecruitment: 15,
+    pages: [
+      "...",
+      "Someone has been here.",
+    ],
     // Dialog pools keyed by act/shame context.
     // [name] placeholders are replaced by the scene layer with the player's name.
     dialogPools: {
