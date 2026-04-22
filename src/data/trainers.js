@@ -1232,7 +1232,7 @@ const TRAINERS = {
     maxHp: 70,
     difficulty: 3,
     deck: ['az_monitor_alert', 'grep_logs', 'tail_f'],
-    teachSkillId: 'az_monitor_metrics_list',
+    teachSkillId: 'az_monitor_metrics',
     signatureSkill: 'az_monitor_alert',
     telegraphs: [
       'Checking dashboard...',
