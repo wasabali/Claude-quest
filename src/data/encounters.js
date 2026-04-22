@@ -88,7 +88,7 @@ export const ENCOUNTER_POOLS = {
     cursed: [],
   },
   oldcorp_basement: {
-    common: [],
+    common: ['disk_full', 'zombie_process'],
     rare:   ['legacy_monolith'],
     cursed: ['vb6_billing_horror'],
   },

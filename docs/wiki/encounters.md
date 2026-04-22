@@ -201,6 +201,8 @@ Random encounters happen as you explore the world. Each region has its own **enc
 
 | Rarity | Encounter | Domain | HP | SLA | Difficulty |
 |---|---|---|---|---|---|
+| Common | Disk Full | 🐧 Linux | 34 | 4 | ⭐⭐ |
+| Common | Zombie Process | 🐧 Linux | 28 | 4 | ⭐⭐⭐ |
 | Rare | The Legacy Monolith | 🎲 Random | 200 | null | ⭐⭐⭐⭐⭐ |
 | Cursed | The VB6 Billing Horror | 🐧 Linux | 80 | 5 | ⭐⭐⭐⭐ |
 
