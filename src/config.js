@@ -2,6 +2,7 @@ export const CONFIG = {
   WIDTH:             1920,
   HEIGHT:            1080,
   TILE_SIZE:         48,
+  PORTRAIT_SIZE:     48,   // battle portrait px — Ninja Adventure 16px faceset × 3 upscale
   FONT:              '"Press Start 2P"',
   MAX_ACTIVE_SKILLS: 6,
 }
