@@ -19,8 +19,9 @@ import { getById as getRegionById } from '#data/regions.js'
 import { Menu } from '#ui/Menu.js'
 import { canTravel, getDiscoveredTerminals, canFastTravel, DENIAL_REASONS, shouldShowTravelDenial } from '#engine/RegionEngine.js'
 
-const TILESET_KEY = 'stub_tiles'
-const TILE_SIZE   = CONFIG.TILE_SIZE
+const TILESET_KEY      = 'stub_tiles'
+const TILE_SIZE        = CONFIG.TILE_SIZE
+const NINJA_TILESETS   = ['village', 'dungeon', 'nature', 'interior']
 
 // 4-frame stepped fade for region transitions (overlay alpha per step)
 const FADE_STEPS     = [0, 0.33, 0.67, 1.0]
@@ -40,6 +41,15 @@ export class WorldScene extends BaseScene {
 
     if (!this.cache.tilemap.exists(regionId)) {
       this.load.tilemapTiledJSON(regionId, `assets/maps/${regionId}.tmj`)
+    }
+
+    // Preload Ninja Adventure tileset images so _setupMap can register them
+    // when a map declares them.  Files are small (~3 KB each) so loading all
+    // four unconditionally is fine.
+    for (const name of NINJA_TILESETS) {
+      if (!this.textures.exists(name)) {
+        this.load.image(name, `assets/maps/tilesets/${name}.png`)
+      }
     }
   }
 
@@ -238,12 +248,24 @@ export class WorldScene extends BaseScene {
     this._regionId = mapKey
 
     this._map = this.make.tilemap({ key: mapKey })
-    const tileset = this._map.addTilesetImage('stub_tiles', TILESET_KEY, TILE_SIZE, TILE_SIZE, 0, 0)
+    const stubTileset = this._map.addTilesetImage('stub_tiles', TILESET_KEY, TILE_SIZE, TILE_SIZE, 0, 0)
 
-    this._groundLayer  = this._map.createLayer('Ground',  tileset, 0, 0)
-    this._objectsLayer = this._map.createLayer('Objects', tileset, 0, 0)
+    // Register any Ninja Adventure tilesets declared by this map.
+    // The four PNG files are preloaded unconditionally in preload() because
+    // they are small (~3 KB each) and knowing which tilesets a map uses
+    // requires the tilemap to already be constructed.
+    const tilesets = [stubTileset]
+    for (const name of NINJA_TILESETS) {
+      if (this._map.tilesets.some(ts => ts.name === name) && this.textures.exists(name)) {
+        const ts = this._map.addTilesetImage(name, name, TILE_SIZE, TILE_SIZE, 0, 0)
+        if (ts) tilesets.push(ts)
+      }
+    }
 
-    this._collisionLayer = this._map.createLayer('Collision', tileset, 0, 0)
+    this._groundLayer  = this._map.createLayer('Ground',  tilesets, 0, 0)
+    this._objectsLayer = this._map.createLayer('Objects', tilesets, 0, 0)
+
+    this._collisionLayer = this._map.createLayer('Collision', tilesets, 0, 0)
     if (this._collisionLayer) {
       this._collisionLayer.setVisible(false)
       this._collisionLayer.setCollisionByExclusion([0])
@@ -251,7 +273,7 @@ export class WorldScene extends BaseScene {
       console.warn(`[WorldScene] 'Collision' layer missing from map '${mapKey}' — collision detection disabled.`)
     }
 
-    this._overlayLayer = this._map.createLayer('Overlay', tileset, 0, 0)
+    this._overlayLayer = this._map.createLayer('Overlay', tilesets, 0, 0)
     if (this._overlayLayer) {
       this._overlayLayer.setDepth(10)
     } else {
