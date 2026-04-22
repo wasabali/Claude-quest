@@ -61,6 +61,8 @@ Your first real challenge area. CI/CD encounters and build failures are common. 
 
 Wide open and dangerous. High-traffic encounters. The second gym challenges your uptime discipline.
 
+**Visual theme:** Tech interior — dark server floors, server racks with blinking LEDs, monitoring dashboards (Kenney RPG Urban tileset).
+
 **Encounter pool:**
 | Rarity | Encounters |
 |---|---|
@@ -100,6 +102,8 @@ A Linux-focused area. Home of Tux the Terminal Wizard. Great place to learn grep
 
 The Kubernetes arena. Pod crashes, OOM kills, and YAML nightmares everywhere.
 
+**Visual theme:** Raised data-centre floor, interactable server racks and terminals, monitoring dashboards (Kenney RPG Urban tileset).
+
 **Encounter pool:**
 | Rarity | Encounters |
 |---|---|
@@ -115,6 +119,8 @@ The Kubernetes arena. Pod crashes, OOM kills, and YAML nightmares everywhere.
 *"Something was built here in 1987. It's still running."*
 
 An Act 3 location unlocked after accepting NorCloud's OldCorp contract. Legacy VB6 systems, flickering fluorescent lights, the smell of servers that haven't been rebooted since 2003.
+
+**Visual theme:** Decommissioned servers, dusty racks, CRT monitors, cable bundles, warning signs (Kenney RPG Urban tileset).
 
 **Key NPCs:** Dagny the DBA (warns you about `DO_NOT_TOUCH.exe`, gives `legacy_migration_badge` for optimal migration)
 
