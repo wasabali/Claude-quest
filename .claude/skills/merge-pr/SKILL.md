@@ -9,9 +9,7 @@ You are the PR merge workflow skill for Cloud Quest.
 
 - `owner/repo`
 - `pull request number`
-- merge method (`merge`, `squash`, or `rebase`)
-
-If merge method is missing, ask before merging.
+- merge method — default **`merge`** (matches the established main-branch convention of merge commits). Override with `squash` or `rebase` only when explicitly requested.
 
 ## Workflow
 
