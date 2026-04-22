@@ -2,6 +2,52 @@
 // No Phaser imports. No side effects. All state mutation is the caller's responsibility.
 
 // ---------------------------------------------------------------------------
+// resolveDialogPool
+// Evaluates an ordered array of pool entries against the current game context
+// and returns the pages array for the first matching entry, or null if none match.
+//
+// Each entry in the pools array has the shape:
+//   { key: string, condition: object, pages?: string[], pool?: string[] }
+//
+// condition fields (all optional, all must be satisfied):
+//   flag     — story.flags[flag] must be true
+//   shameMin — player.shamePoints >= shameMin
+//   shameMax — player.shamePoints <= shameMax
+//   act      — current act must equal this value; use 'finale' for post-game
+//              (mirrors the dialogByAct key convention used by resolveNpcDialog)
+//
+// `pool` entries pick one line at random; `pages` entries return all lines.
+// Any [name] placeholder in the returned lines is replaced with player.name.
+//
+// Returns string[] or null.
+// ---------------------------------------------------------------------------
+export function resolveDialogPool(pools, { player, story } = {}) {
+  if (!Array.isArray(pools) || pools.length === 0) return null
+  const act   = story?.flags?.game_complete ? 'finale' : story?.act
+  const shame = player?.shamePoints ?? 0
+  const flags = story?.flags ?? {}
+  const name  = player?.name ?? 'engineer'
+
+  for (const poolDef of pools) {
+    const cond = poolDef.condition ?? {}
+    if (cond.flag      !== undefined && !flags[cond.flag])          continue
+    if (cond.shameMin  !== undefined && shame < cond.shameMin)      continue
+    if (cond.shameMax  !== undefined && shame > cond.shameMax)      continue
+    if (cond.act       !== undefined && act   !== cond.act)         continue
+
+    const source = poolDef.pool ?? poolDef.pages
+    if (!Array.isArray(source) || source.length === 0) continue
+
+    const result = poolDef.pool
+      ? [source[Math.floor(Math.random() * source.length)]]
+      : [...source]
+
+    return result.map(p => p.replace(/\[name\]/g, name))
+  }
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // resolveNpcDialog
 // Walks the 5-level dialog priority chain and returns the pages array to show
 // plus an optional story flag key that the caller must set on story.flags.
@@ -10,6 +56,7 @@
 //   1. techniqueUsedFlag  — cursed trainer first-use reaction (once, flag-gated)
 //   2. followUpDialog     — post-quest completion
 //   3. shameDialog        — shame threshold reaction (per-threshold fallback: entry → trainer)
+//   3.5. dialogPools      — ordered pool/page sets with act+shame+flag conditions
 //   4. dialogByAct        — act-based dialog
 //   5. variants / pages   — reputation/shame variants then default pages
 //
@@ -48,6 +95,12 @@ export function resolveNpcDialog(entry, trainer, { player, story, stats } = {}) 
         return { pages: thresholdPages, setFlag: null }
       }
     }
+  }
+
+  // 3.5. dialogPools — ordered pool/page sets with act+shame+flag conditions.
+  if (entry?.dialogPools) {
+    const poolResult = resolveDialogPool(entry.dialogPools, { player, story })
+    if (poolResult) return { pages: poolResult, setFlag: null }
   }
 
   // 4. Act-based dialog.

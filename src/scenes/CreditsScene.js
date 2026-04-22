@@ -119,6 +119,16 @@ export class CreditsScene extends BaseScene {
     // NPC credits list
     const creditsList = getStoryById('credits_npc_list')
     const entries = creditsList?.entries ?? []
+
+    // Section header from credits_npc_list.pages[0]
+    if (creditsList?.pages?.[0]) {
+      const sectionHeader = this.add.text(cx, y, creditsList.pages[0], {
+        ...TEXT_STYLE, color: '#888888', fontSize: '7px',
+      }).setOrigin(0.5)
+      this._creditTexts.push(sectionHeader)
+      y += 18
+    }
+
     for (const entry of entries) {
       const nameText = this.add.text(cx, y, entry.name, {
         ...TEXT_STYLE, color: '#ffe066',
