@@ -43,4 +43,10 @@ Game health checks (stress tests, wiki updates, balance triage) run automaticall
 
 ## Attribution
 
+> Characters, monsters, tiles, items, VFX, BGM, and SFX from [Ninja Adventure](https://pixel-boy.itch.io/ninja-adventure-asset-pack) by pixel-boy (AAA), CC0 1.0 (public domain).
+>
+> Supplemental tech tiles from [Kenney RPG Urban Pack](https://kenney.nl/assets/rpg-urban-pack) by Kenney, CC0 1.0 (public domain).
+>
 > Battle backgrounds, UI windows, and HUD assets adapted from [PokeRogue](https://github.com/pagefaultgames/pokerogue) by pagefaultgames, used under CC-BY-NC-SA-4.0.
+>
+> See [CREDITS.md](./CREDITS.md) for full attribution details.
