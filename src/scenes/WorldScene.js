@@ -10,6 +10,7 @@ import {
   DIR_OFFSETS, lerp, canRun, resolveDirection, isTileWalkable,
   updateBump, updateStep, commitStep, onStepComplete,
   shouldTriggerEncounter, checkTransition, applyTransition,
+  clampTileToInterior, findNearestWalkableTile, persistPlayerTile, syncPlayerTileFromPixels,
 } from '#engine/MovementEngine.js'
 import { getById as getTrainerById } from '#data/trainers.js'
 import { resolveNpcDialog, resolveNpcPages } from '#engine/StoryEngine.js'
@@ -143,8 +144,8 @@ export class WorldScene extends BaseScene {
     this._entryDir    = data.entryDirection || null
 
     const regionId = this._regionId || GameState.player.location || 'localhost_town'
+    const resolvedRegionId = this._setupMap(regionId)
 
-    this._setupMap(regionId)
     this._setupNpcSprites()
     this._setupPlayer()
     this._setupInput()
@@ -152,7 +153,7 @@ export class WorldScene extends BaseScene {
     this.setupPauseKey()
     this._buildInteractionLookup()
 
-    this._onRegionEnter(regionId)
+    this._onRegionEnter(resolvedRegionId)
 
     this._setupThrottlemasterGhost()
   }
@@ -234,11 +235,7 @@ export class WorldScene extends BaseScene {
 
   _setupMap(regionId) {
     const mapKey = this.cache.tilemap.exists(regionId) ? regionId : 'localhost_town'
-    if (mapKey !== regionId) {
-      this._regionId = mapKey
-      GameState.player.location = mapKey
-      markDirty()
-    }
+    this._regionId = mapKey
 
     this._map = this.make.tilemap({ key: mapKey })
     const tileset = this._map.addTilesetImage('stub_tiles', TILESET_KEY, TILE_SIZE, TILE_SIZE, 0, 0)
@@ -251,18 +248,19 @@ export class WorldScene extends BaseScene {
       this._collisionLayer.setVisible(false)
       this._collisionLayer.setCollisionByExclusion([0])
     } else {
-      console.warn(`[WorldScene] 'Collision' layer missing from map '${regionId}' — collision detection disabled.`)
+      console.warn(`[WorldScene] 'Collision' layer missing from map '${mapKey}' — collision detection disabled.`)
     }
 
     this._overlayLayer = this._map.createLayer('Overlay', tileset, 0, 0)
     if (this._overlayLayer) {
       this._overlayLayer.setDepth(10)
     } else {
-      console.warn(`[WorldScene] 'Overlay' layer missing from map '${regionId}' — overlay rendering disabled.`)
+      console.warn(`[WorldScene] 'Overlay' layer missing from map '${mapKey}' — overlay rendering disabled.`)
     }
 
     const npcLayer = this._map.getObjectLayer('NPCs')
     this._npcDefs  = npcLayer ? npcLayer.objects : []
+    return mapKey
   }
 
   _setupNpcSprites() {
@@ -284,25 +282,27 @@ export class WorldScene extends BaseScene {
   _setupPlayer() {
     const mapW = this._map.width
     const mapH = this._map.height
-    const maxTileX = mapW - 2
-    const maxTileY = mapH - 2
-
+    const maxInteriorTile = clampTileToInterior(mapW - 1, mapH - 1, mapW, mapH)
     let spawnTileX = GameState.player.tileX ?? 5
     let spawnTileY = GameState.player.tileY ?? 10
 
-    if (this._entryDir === 'west')       { spawnTileX = 1;        spawnTileY = Math.floor(mapH / 2) }
-    else if (this._entryDir === 'east')  { spawnTileX = maxTileX; spawnTileY = Math.floor(mapH / 2) }
+    if (this._entryDir === 'west')       { spawnTileX = 1;              spawnTileY = Math.floor(mapH / 2) }
+    else if (this._entryDir === 'east')  { spawnTileX = maxInteriorTile.tileX; spawnTileY = Math.floor(mapH / 2) }
     else if (this._entryDir === 'north') { spawnTileX = Math.floor(mapW / 2); spawnTileY = 1 }
-    else if (this._entryDir === 'south') { spawnTileX = Math.floor(mapW / 2); spawnTileY = maxTileY }
+    else if (this._entryDir === 'south') { spawnTileX = Math.floor(mapW / 2); spawnTileY = maxInteriorTile.tileY }
 
-    spawnTileX = Phaser.Math.Clamp(spawnTileX, 1, maxTileX)
-    spawnTileY = Phaser.Math.Clamp(spawnTileY, 1, maxTileY)
+    const clamped = clampTileToInterior(spawnTileX, spawnTileY, mapW, mapH)
+    spawnTileX = clamped.tileX
+    spawnTileY = clamped.tileY
 
     if (!this._isTileWalkable(spawnTileX, spawnTileY)) {
-      const fallback = this._findNearestWalkableTile(spawnTileX, spawnTileY)
+      const fallback = findNearestWalkableTile(
+        spawnTileX, spawnTileY, mapW, mapH,
+        (x, y) => this._isTileWalkable(x, y),
+      )
       if (fallback) {
-        spawnTileX = fallback.x
-        spawnTileY = fallback.y
+        spawnTileX = fallback.tileX
+        spawnTileY = fallback.tileY
       }
     }
 
@@ -312,43 +312,25 @@ export class WorldScene extends BaseScene {
     this._player = this.physics.add.sprite(startX, startY, 'player')
     this._player.setDepth(5)
 
-    this._tileX = spawnTileX
-    this._tileY = spawnTileY
-    GameState.player.tileX = spawnTileX
-    GameState.player.tileY = spawnTileY
+    const persistedSpawn = persistPlayerTile(spawnTileX, spawnTileY)
+    this._tileX = persistedSpawn.tileX
+    this._tileY = persistedSpawn.tileY
     if (this._collisionLayer) {
       this.physics.add.collider(this._player, this._collisionLayer)
     }
     this.physics.world.setBounds(0, 0, this._map.widthInPixels, this._map.heightInPixels)
   }
 
-  _findNearestWalkableTile(originX, originY) {
-    const maxRadius = Math.max(this._map.width, this._map.height)
-    if (this._isTileWalkable(originX, originY)) return { x: originX, y: originY }
-
-    for (let radius = 1; radius <= maxRadius; radius++) {
-      const minX = originX - radius
-      const maxX = originX + radius
-      const minY = originY - radius
-      const maxY = originY + radius
-
-      for (let x = minX; x <= maxX; x++) {
-        if (this._isTileWalkable(x, minY)) return { x, y: minY }
-        if (this._isTileWalkable(x, maxY)) return { x, y: maxY }
-      }
-      for (let y = minY + 1; y <= maxY - 1; y++) {
-        if (this._isTileWalkable(minX, y)) return { x: minX, y }
-        if (this._isTileWalkable(maxX, y)) return { x: maxX, y }
-      }
-    }
-    return null
-  }
-
   _syncTileFromPlayerPosition() {
-    this._tileX = Phaser.Math.Clamp(Math.floor(this._player.x / TILE_SIZE), 0, this._map.width - 1)
-    this._tileY = Phaser.Math.Clamp(Math.floor(this._player.y / TILE_SIZE), 0, this._map.height - 1)
-    GameState.player.tileX = this._tileX
-    GameState.player.tileY = this._tileY
+    const persisted = syncPlayerTileFromPixels(
+      this._player.x,
+      this._player.y,
+      TILE_SIZE,
+      this._map.width,
+      this._map.height,
+    )
+    this._tileX = persisted.tileX
+    this._tileY = persisted.tileY
   }
 
   _setupInput() {
@@ -555,7 +537,7 @@ export class WorldScene extends BaseScene {
 
   _buildInteractionLookup() {
     this._interactionLookup = new Map()
-    const region = GameState.player.location
+    const region = this._regionId
     const regionInteractions = getInteractionsBy('region', region)
     for (const interaction of regionInteractions) {
       this._interactionLookup.set(`${interaction.tileX},${interaction.tileY}`, interaction)

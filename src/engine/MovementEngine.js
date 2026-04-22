@@ -46,6 +46,61 @@ export function isTileWalkable(tileX, tileY, mapWidth, mapHeight, collisionLooku
   return true
 }
 
+// Clamp a tile coordinate into the map's interior (excluding the outer border).
+export function clampTileToInterior(tileX, tileY, mapWidth, mapHeight) {
+  const maxBoundX = Math.max(0, mapWidth - 1)
+  const maxBoundY = Math.max(0, mapHeight - 1)
+  const minTileX = mapWidth > 2 ? 1 : 0
+  const minTileY = mapHeight > 2 ? 1 : 0
+  const maxTileX = mapWidth > 2 ? mapWidth - 2 : maxBoundX
+  const maxTileY = mapHeight > 2 ? mapHeight - 2 : maxBoundY
+  return {
+    tileX: Math.min(maxTileX, Math.max(minTileX, tileX)),
+    tileY: Math.min(maxTileY, Math.max(minTileY, tileY)),
+  }
+}
+
+// Perimeter search for nearest walkable tile around origin.
+export function findNearestWalkableTile(originX, originY, mapWidth, mapHeight, isWalkable, maxRadius) {
+  const searchRadius = maxRadius ?? Math.max(mapWidth, mapHeight)
+  if (isWalkable(originX, originY)) return { tileX: originX, tileY: originY }
+
+  for (let radius = 1; radius <= searchRadius; radius++) {
+    const minX = originX - radius
+    const maxX = originX + radius
+    const minY = originY - radius
+    const maxY = originY + radius
+
+    for (let x = minX; x <= maxX; x++) {
+      if (isWalkable(x, minY)) return { tileX: x, tileY: minY }
+      if (isWalkable(x, maxY)) return { tileX: x, tileY: maxY }
+    }
+    for (let y = minY + 1; y <= maxY - 1; y++) {
+      if (isWalkable(minX, y)) return { tileX: minX, tileY: y }
+      if (isWalkable(maxX, y)) return { tileX: maxX, tileY: y }
+    }
+  }
+  return null
+}
+
+// Persist player tile position and mark state dirty when coordinates changed.
+export function persistPlayerTile(tileX, tileY) {
+  const changed = GameState.player.tileX !== tileX || GameState.player.tileY !== tileY
+  if (changed) {
+    GameState.player.tileX = tileX
+    GameState.player.tileY = tileY
+    markDirty()
+  }
+  return { tileX, tileY, changed }
+}
+
+// Sync persisted tile coordinates from player pixel position.
+export function syncPlayerTileFromPixels(playerX, playerY, tileSize, mapWidth, mapHeight) {
+  const tileX = Math.min(mapWidth - 1, Math.max(0, Math.floor(playerX / tileSize)))
+  const tileY = Math.min(mapHeight - 1, Math.max(0, Math.floor(playerY / tileSize)))
+  return persistPlayerTile(tileX, tileY)
+}
+
 // ── Movement state machine ───────────────────────────────────────────────────
 
 // Compute interpolated position for a bump animation.

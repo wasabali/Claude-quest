@@ -4,6 +4,7 @@ import {
   updateBump, updateStep, commitStep, onStepComplete,
   shouldTriggerEncounter, checkTransition, applyTransition,
   getStepDuration,
+  clampTileToInterior, findNearestWalkableTile, persistPlayerTile, syncPlayerTileFromPixels,
 } from '../src/engine/MovementEngine.js'
 import { GameState, markDirty } from '../src/state/GameState.js'
 import { MOVEMENT, ENCOUNTER_COOLDOWN_STEPS } from '../src/config.js'
@@ -105,6 +106,85 @@ describe('isTileWalkable', () => {
   it('returns true for tile with collision index 0', () => {
     const lookup = () => ({ index: 0 })
     expect(isTileWalkable(5, 5, 20, 20, lookup)).toBe(true)
+  })
+})
+
+// ── spawn/tile persistence helpers ───────────────────────────────────────────
+
+describe('clampTileToInterior', () => {
+  it('clamps coordinates to interior bounds', () => {
+    expect(clampTileToInterior(0, 99, 40, 22)).toEqual({ tileX: 1, tileY: 20 })
+  })
+
+  it('returns coordinates unchanged when already inside interior bounds', () => {
+    expect(clampTileToInterior(5, 10, 40, 22)).toEqual({ tileX: 5, tileY: 10 })
+  })
+
+  it('falls back to map bounds when map is too small for interior border exclusion', () => {
+    expect(clampTileToInterior(5, 5, 2, 2)).toEqual({ tileX: 1, tileY: 1 })
+  })
+})
+
+describe('findNearestWalkableTile', () => {
+  it('returns origin tile when origin is walkable', () => {
+    const result = findNearestWalkableTile(5, 5, 10, 10, (x, y) => x === 5 && y === 5)
+    expect(result).toEqual({ tileX: 5, tileY: 5 })
+  })
+
+  it('finds nearest walkable perimeter tile when origin is blocked', () => {
+    const result = findNearestWalkableTile(5, 5, 10, 10, (x, y) => x === 5 && y === 4)
+    expect(result).toEqual({ tileX: 5, tileY: 4 })
+  })
+
+  it('returns null when no walkable tile exists in search radius', () => {
+    const result = findNearestWalkableTile(5, 5, 10, 10, () => false, 2)
+    expect(result).toBeNull()
+  })
+})
+
+describe('persistPlayerTile', () => {
+  it('marks state dirty when tile coordinates changed', () => {
+    GameState.player.tileX = 5
+    GameState.player.tileY = 10
+    GameState._session.isDirty = false
+    const result = persistPlayerTile(6, 11)
+    expect(result.changed).toBe(true)
+    expect(GameState.player.tileX).toBe(6)
+    expect(GameState.player.tileY).toBe(11)
+    expect(GameState._session.isDirty).toBe(true)
+  })
+
+  it('does not mark dirty when tile coordinates are unchanged', () => {
+    GameState.player.tileX = 5
+    GameState.player.tileY = 10
+    GameState._session.isDirty = false
+    const result = persistPlayerTile(5, 10)
+    expect(result.changed).toBe(false)
+    expect(GameState._session.isDirty).toBe(false)
+  })
+})
+
+describe('syncPlayerTileFromPixels', () => {
+  it('syncs tile coordinates from player pixel position', () => {
+    GameState.player.tileX = 1
+    GameState.player.tileY = 1
+    GameState._session.isDirty = false
+    const result = syncPlayerTileFromPixels(260, 505, 48, 40, 22)
+    expect(result.changed).toBe(true)
+    expect(result.tileX).toBe(5)
+    expect(result.tileY).toBe(10)
+    expect(GameState._session.isDirty).toBe(true)
+  })
+
+  it('clamps to map bounds when outside map', () => {
+    GameState.player.tileX = 5
+    GameState.player.tileY = 10
+    GameState._session.isDirty = false
+    const result = syncPlayerTileFromPixels(-20, 99999, 48, 40, 22)
+    expect(result.changed).toBe(true)
+    expect(result.tileX).toBe(0)
+    expect(result.tileY).toBe(21)
+    expect(GameState._session.isDirty).toBe(true)
   })
 })
 
