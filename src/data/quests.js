@@ -77,6 +77,16 @@ const QUESTS = {
     requiresFlags: ['act_3_started', 'oldcorp_entered'],
     excludeFlags: ['do_not_touch_resolved'],
     reminderDialog: ['There\'s one service I should warn you about…'],
+    stages: [
+      {
+        dialog: [
+          'There\'s a legacy billing service in the corner.',
+          'Nobody has touched it in seven years.',
+          'It runs on VB6 and pays the company\'s invoices.',
+          'What do you want to do with it?',
+        ],
+      },
+    ],
     branches: {
       open: {
         label: 'Open it anyway',
