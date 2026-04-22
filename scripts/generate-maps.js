@@ -7,7 +7,9 @@ const ROOT = path.resolve(__dirname, '..')
 const MAPS_DIR = path.join(ROOT, 'assets', 'maps')
 
 const TILE = 48
-const TILESET = {
+
+// Base stub tileset (GIDs 1–5) — used by all regions
+const TILESET_STUB = {
   columns: 5,
   firstgid: 1,
   image: 'stub_tiles.png',
@@ -19,6 +21,76 @@ const TILESET = {
   tilecount: 5,
   tileheight: TILE,
   tilewidth: TILE,
+}
+
+// Tech / office tileset (GIDs 6–55) — appended for tech-themed regions.
+// Image lives at assets/tiles/kenney_tech_office.png (240×480, 50 tiles).
+// The image path in .tmj is relative to the map file, which lives in assets/maps/,
+// so we navigate one level up to reach assets/tiles/.
+const TILESET_TECH = {
+  columns: 5,
+  firstgid: 6,
+  image: '../tiles/kenney_tech_office.png',
+  imageheight: 480,
+  imagewidth: 240,
+  margin: 0,
+  name: 'kenney_tech_office',
+  spacing: 0,
+  tilecount: 50,
+  tileheight: TILE,
+  tilewidth: TILE,
+}
+
+// Regions that should receive the supplemental tech tileset.
+// GID offset: tech tile ID N (1-based) → map GID = N + 5 (firstgid 6 - 1 = 5 offset)
+const TECH_REGIONS = new Set([
+  'production_plains',
+  'kubernetes_colosseum',
+  'server_graveyard',
+  'azure_town',
+  'cloud_console_1',
+  'cloud_console_2',
+  'cloud_console_gym',
+  'sre_command_center',
+  'oldcorp_basement',
+])
+
+// Tech GID offset (add to 1-based tile ID to get map GID)
+const TECH_GID_OFFSET = TILESET_TECH.firstgid - 1  // 5
+
+// Well-known tech tile local IDs (1-based within kenney_tech_office)
+const T = {
+  TECH_FLOOR:           1,
+  SERVER_ROOM_FLOOR:    2,
+  OFFICE_FLOOR:         3,
+  RAISED_FLOOR:         4,
+  CORRIDOR:             5,
+  SERVER_ROOM_WALL:     6,
+  OFFICE_WALL:          7,
+  SERVER_RACK:          11,
+  SERVER_RACK_LEDS:     12,
+  CABLE_BUNDLE:         13,
+  DESK:                 16,
+  MONITOR:              17,
+  KEYBOARD:             18,
+  WHITEBOARD:           19,
+  COOLING_UNIT:         21,
+  WARNING_SIGN:         23,
+  CRT_MONITOR:          26,
+  COMMAND_PROMPT:       27,
+  ERROR_SCREEN:         28,
+  MONITORING_DASHBOARD: 29,
+  DECOMMISSIONED_SERVER:38,
+  DUSTY_RACK:           39,
+  BLINKING_LED:         40,
+  SERVER_RACK_INTERACT: 41,
+  TERMINAL_INTERACT:    42,
+  SERVER_TOMBSTONE:     44,
+}
+
+// Convert a 1-based tech tile ID to the GID used inside a .tmj file
+function techGid(localId) {
+  return localId + TECH_GID_OFFSET
 }
 
 const SIZE = {
@@ -148,9 +220,10 @@ function generateCollision(w, h, connections, occupiedTiles) {
   return layer
 }
 
-function generateObjects(w, h, regionType, openings, rng) {
+function generateObjects(w, h, regionType, openings, rng, regionId) {
   const layer = makeTileLayer(2, 'Objects', w, h, 0)
   const occupied = new Set()
+  const isTech = TECH_REGIONS.has(regionId)
 
   const safeZone = 2
   function canPlace(bx, by, bw, bh) {
@@ -178,7 +251,28 @@ function generateObjects(w, h, regionType, openings, rng) {
   }
 
   let buildings
-  if (regionType === 'main') {
+  if (isTech && regionType === 'main') {
+    // Tech regions: server racks, desks, cooling units instead of generic blocks
+    buildings = [
+      { w: 2, h: 3, tile: techGid(T.SERVER_RACK) },
+      { w: 2, h: 3, tile: techGid(T.SERVER_RACK_LEDS) },
+      { w: 3, h: 2, tile: techGid(T.DESK) },
+      { w: 2, h: 2, tile: techGid(T.COOLING_UNIT) },
+      { w: 2, h: 2, tile: techGid(T.MONITORING_DASHBOARD) },
+    ]
+  } else if (isTech && regionType === 'dungeon') {
+    // Server Graveyard-style: decommissioned hardware, tombstones
+    buildings = [
+      { w: 1, h: 2, tile: techGid(T.DECOMMISSIONED_SERVER) },
+      { w: 1, h: 2, tile: techGid(T.DUSTY_RACK) },
+      { w: 1, h: 2, tile: techGid(T.SERVER_TOMBSTONE) },
+      { w: 2, h: 2, tile: techGid(T.DECOMMISSIONED_SERVER) },
+    ]
+  } else if (isTech && regionType === 'gym') {
+    buildings = [
+      { w: 2, h: 2, tile: techGid(T.SERVER_RACK_INTERACT) },
+    ]
+  } else if (regionType === 'main') {
     buildings = [
       { w: 4, h: 4, tile: 2 },
       { w: 4, h: 4, tile: 3 },
@@ -247,9 +341,12 @@ function generateMap(regionId, region, connections, allRegions, trainers, intera
   const rng = seededRng(hashSeed(regionId))
 
   const openings = getOpeningTiles(w, h, connections)
-  const { layer: objectsLayer, occupied } = generateObjects(w, h, type, openings, rng)
+  const { layer: objectsLayer, occupied } = generateObjects(w, h, type, openings, rng, regionId)
 
-  const groundLayer = makeTileLayer(1, 'Ground', w, h, 1)
+  const isTech = TECH_REGIONS.has(regionId)
+  // Tech regions use the tech floor as their ground tile instead of stub tile 1
+  const groundGid = isTech ? techGid(T.TECH_FLOOR) : 1
+  const groundLayer = makeTileLayer(1, 'Ground', w, h, groundGid)
   const overlayLayer = makeTileLayer(4, 'Overlay', w, h, 0)
 
   const npcObjects = []
@@ -335,7 +432,7 @@ function generateMap(regionId, region, connections, allRegions, trainers, intera
       renderorder: 'right-down',
       tiledversion: '1.10.0',
       tileheight: TILE,
-      tilesets: [TILESET],
+      tilesets: isTech ? [TILESET_STUB, TILESET_TECH] : [TILESET_STUB],
       tilewidth: TILE,
       type: 'map',
       version: '1.10',

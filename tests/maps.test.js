@@ -140,3 +140,50 @@ describe('transition spawn coordinates are in-bounds for target maps', () => {
     }
   })
 })
+
+const TECH_REGION_IDS = [
+  'production_plains',
+  'kubernetes_colosseum',
+  'server_graveyard',
+  'azure_town',
+  'cloud_console_1',
+  'cloud_console_2',
+  'cloud_console_gym',
+  'sre_command_center',
+  'oldcorp_basement',
+]
+
+describe('tech regions carry kenney_tech_office tileset', () => {
+  it.each(TECH_REGION_IDS.filter(id => {
+    const p = path.join(MAPS_DIR, `${id}.tmj`)
+    return fs.existsSync(p)
+  }))('%s includes kenney_tech_office as second tileset', (regionId) => {
+    const map = loadMap(regionId)
+    const techTs = map.tilesets.find(ts => ts.name === 'kenney_tech_office')
+    expect(techTs).toBeDefined()
+    expect(techTs.image).toBe('../tiles/kenney_tech_office.png')
+    expect(techTs.tilewidth).toBe(48)
+    expect(techTs.tileheight).toBe(48)
+    expect(techTs.columns).toBe(5)
+    expect(techTs.tilecount).toBe(50)
+    expect(techTs.firstgid).toBe(6)
+  })
+
+  it('server_graveyard ground layer uses tech_floor (GID 6)', () => {
+    const map = loadMap('server_graveyard')
+    const ground = map.layers.find(l => l.name === 'Ground')
+    expect(ground).toBeDefined()
+    // All ground tiles should be the tech_floor GID (local ID 1 + firstgid - 1 = 1 + 5 = 6)
+    expect(ground.data.every(gid => gid === 6)).toBe(true)
+  })
+
+  it('server_graveyard objects layer contains graveyard tech tiles', () => {
+    const map = loadMap('server_graveyard')
+    const objects = map.layers.find(l => l.name === 'Objects')
+    expect(objects).toBeDefined()
+    const nonZero = objects.data.filter(gid => gid !== 0)
+    expect(nonZero.length).toBeGreaterThan(0)
+    // All non-zero GIDs should be in range 6–55 (kenney_tech_office tiles)
+    expect(nonZero.every(gid => gid >= 6 && gid <= 55)).toBe(true)
+  })
+})

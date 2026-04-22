@@ -1,0 +1,1317 @@
+{
+  "columns": 5,
+  "image": "kenney_tech_office.png",
+  "imageheight": 480,
+  "imagewidth": 240,
+  "margin": 0,
+  "name": "kenney_tech_office",
+  "spacing": 0,
+  "tilecount": 50,
+  "tiled_version": "1.10.0",
+  "tileheight": 48,
+  "tilewidth": 48,
+  "tiles": [
+    {
+      "id": 0,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "tech_floor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Generic dark tech floor \u2014 server rooms, corridors"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 1,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_room_floor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Steel-blue server room floor with subtle grid lines"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 2,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "office_floor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Light grey office floor tile"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 3,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "raised_floor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Dark blue raised data-centre access floor"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 4,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "corridor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Neutral grey corridor tile"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 5,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_room_wall"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Very dark wall panel for server rooms"
+        }
+      ],
+      "type": "wall"
+    },
+    {
+      "id": 6,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "office_wall"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Beige office wall"
+        }
+      ],
+      "type": "wall"
+    },
+    {
+      "id": 7,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "datacenter_wall"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Charcoal data-centre wall"
+        }
+      ],
+      "type": "wall"
+    },
+    {
+      "id": 8,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "glass_wall"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Light-blue glass/window wall panel"
+        }
+      ],
+      "type": "wall"
+    },
+    {
+      "id": 9,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "tech_building_exterior"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Dark exterior wall of a tech building"
+        }
+      ],
+      "type": "wall"
+    },
+    {
+      "id": 10,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_rack"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Rack-mounted server unit \u2014 2U tall visual"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 11,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_rack_leds"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Server rack with green LED activity indicators"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 12,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "cable_bundle"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Dense cable bundle on the floor or wall"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 13,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "patch_panel"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "1U patch panel with port indicators"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 14,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "network_switch"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Managed network switch (black, blue indicator)"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 15,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "desk"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Wooden office desk \u2014 one tile footprint"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 16,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "monitor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Widescreen monitor displaying a blue interface"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 17,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "keyboard"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Keyboard on desk surface \u2014 passable"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 18,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "whiteboard"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "White magnetic whiteboard \u2014 wall-mounted"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 19,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "office_chair"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Ergonomic black office chair \u2014 passable"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 20,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "cooling_unit"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Precision AC / CRAC unit for data-centre cooling"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 21,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "ups_battery"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Uninterruptible Power Supply (UPS) battery unit"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 22,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "warning_sign"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Yellow hazard/warning sign \u2014 passable"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 23,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "emergency_light"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Red emergency exit / strobe light \u2014 passable"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 24,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "cable_tray"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Overhead cable tray \u2014 passable under"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 25,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "crt_monitor"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Old CRT terminal with green phosphor text"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 26,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "command_prompt"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Terminal with blinking cursor and typed commands"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 27,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "error_screen"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Screen showing a critical red error / BSOD"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 28,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "monitoring_dashboard"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Dark-blue monitoring screen with metric graphs"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 29,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "terminal_server"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Beige terminal server box (late-90s hardware)"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 30,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "cloud_office_exterior"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "building"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Front facade of a cloud-provider office building"
+        }
+      ],
+      "type": "building"
+    },
+    {
+      "id": 31,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "startup_garage"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "building"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Beige garage / startup workshop exterior"
+        }
+      ],
+      "type": "building"
+    },
+    {
+      "id": 32,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "noc_building"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "building"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Dark NOC (Network Operations Centre) building"
+        }
+      ],
+      "type": "building"
+    },
+    {
+      "id": 33,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "datacenter_entrance"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "building"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Secure data-centre entrance / airlock"
+        }
+      ],
+      "type": "building"
+    },
+    {
+      "id": 34,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "tech_park_path"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Light paved path between tech-park buildings"
+        }
+      ],
+      "type": "floor"
+    },
+    {
+      "id": 35,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "sticky_notes"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "decoration"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Cluster of yellow sticky notes on a surface"
+        }
+      ],
+      "type": "decoration"
+    },
+    {
+      "id": 36,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "coffee_cup"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "decoration"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Coffee mug \u2014 essential office equipment"
+        }
+      ],
+      "type": "decoration"
+    },
+    {
+      "id": 37,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "decommissioned_server"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Rusty, dust-covered decommissioned server unit"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 38,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "dusty_rack"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Old server rack covered in dust (Server Graveyard)"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 39,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "blinking_led"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "decoration"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Bright green blinking LED indicator"
+        }
+      ],
+      "type": "decoration"
+    },
+    {
+      "id": 40,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_rack_interact"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "interact"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Interactable server rack (highlighted border)"
+        }
+      ],
+      "type": "interact"
+    },
+    {
+      "id": 41,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "terminal_interact"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "interact"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Interactable terminal / console (highlighted)"
+        }
+      ],
+      "type": "interact"
+    },
+    {
+      "id": 42,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "control_panel"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "interact"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Control panel with status indicators"
+        }
+      ],
+      "type": "interact"
+    },
+    {
+      "id": 43,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "server_tombstone"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "object"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Broken server standing like a tombstone (Graveyard)"
+        }
+      ],
+      "type": "object"
+    },
+    {
+      "id": 44,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "void_tile"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "special"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Pure black void \u2014 used in /dev/null Void region"
+        }
+      ],
+      "type": "special"
+    },
+    {
+      "id": 45,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "custom_slot_46"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "custom"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Reserved \u2014 sprite-artist commission pending"
+        }
+      ],
+      "type": "custom"
+    },
+    {
+      "id": 46,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "custom_slot_47"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "custom"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Reserved \u2014 sprite-artist commission pending"
+        }
+      ],
+      "type": "custom"
+    },
+    {
+      "id": 47,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "custom_slot_48"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "custom"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Reserved \u2014 sprite-artist commission pending"
+        }
+      ],
+      "type": "custom"
+    },
+    {
+      "id": 48,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "custom_slot_49"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "custom"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Reserved \u2014 sprite-artist commission pending"
+        }
+      ],
+      "type": "custom"
+    },
+    {
+      "id": 49,
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "value": "custom_slot_50"
+        },
+        {
+          "name": "tileType",
+          "type": "string",
+          "value": "custom"
+        },
+        {
+          "name": "collision",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "value": "Reserved \u2014 sprite-artist commission pending"
+        }
+      ],
+      "type": "custom"
+    }
+  ],
+  "type": "tileset",
+  "version": "1.10"
+}
