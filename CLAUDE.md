@@ -359,6 +359,7 @@ Skills are invoked in Claude Code with `/skill-name`. They load specialised cont
 | `/update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
 | `/merge-pr <owner/repo#pr>` | Fix actionable PR review feedback, check merge conflicts, and merge only when the PR is clean and all checks pass. |
 | `/post-implementation` | **Mandatory** after every issue implementation. Runs stress tests + triage, regenerates wiki, updates graphify. Replaces the old `game-health.yml` and `wiki-sync.yml` pipelines. |
+| `/visual-assets` | Generate sprite specifications, extract PokeRogue assets, plan animations, design tilesets, maintain CREDITS files. Use when adding any visual content. |
 
 ---
 
@@ -375,6 +376,7 @@ Sub-agents are specialised Claude instances invoked via the `task` tool. Use the
 | **`issue-triager`** | Autonomously scanning the codebase and docs for contradictions, errors, and gaps, then filing well-labelled GitHub issues. |
 | **`stress-test`** | Running the Monte Carlo balance simulation suite in `tests/stress/` to find overpowered skills, broken progression, exploit paths, or empty encounter pools. |
 | **`merge-agent`** | Fixing PR review feedback, resolving merge conflicts, validating checks, and merging only when the PR is clean and merge-ready. |
+| **`sprite-artist`** | Adding sprites, tilesets, animations, UI elements, or extracting PokeRogue assets. Produces sprite specifications, manages CREDITS files, and ensures pixel art compliance. Does **not** generate actual images. |
 
 ---
 

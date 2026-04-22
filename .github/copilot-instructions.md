@@ -142,6 +142,7 @@ export const GameState = {
 | Filing issues for contradictions, bugs, or gaps | `.github/skills/triage-issues.md` |
 | Answering a `[Design Question]` issue | `.github/skills/resolve-question.md` |
 | Regenerating the wiki after content changes | `.github/skills/update-wiki.md` |
+| Adding sprites, tilesets, animations, or extracting PokeRogue assets | `.github/skills/visual-assets.md` |
 
 After **every** issue implementation you **must** also follow `.github/skills/post-implementation.md`. This is not optional.
 
@@ -165,6 +166,7 @@ Skills are defined in `.github/skills/` and provide specialised workflows for co
 | `update-wiki` | Regenerate `docs/wiki/` pages from current data files and design docs. |
 | `merge-pr <owner/repo#pr>` | Fix actionable PR review feedback, check for merge conflicts, and merge cleanly only after checks pass. |
 | `post-implementation` | **Mandatory** after every issue implementation. Runs stress tests + triage, regenerates wiki, updates graphify. Replaces the old `game-health.yml` and `wiki-sync.yml` pipelines. |
+| `visual-assets` | Generate sprite specifications, extract PokeRogue assets, plan animations, design tilesets, maintain CREDITS files. Use when adding any visual content. |
 
 ## Specialized Agents
 
@@ -179,6 +181,7 @@ These agents are invoked by Claude Code's task tool for specialized work. When y
 | `issue-triager` | Autonomously scanning the codebase and docs for contradictions, errors, and gaps, then filing GitHub issues. | `.github/skills/triage-issues.md` |
 | `stress-test` | Running the Monte Carlo balance simulation suite in `tests/stress/` to find balance problems. | `.github/skills/post-implementation.md` |
 | `merge-agent` | Fixing PR review feedback, resolving merge conflicts, and merging when all checks pass. | `.github/skills/merge-pr.md` |
+| `sprite-artist` | Adding sprites, tilesets, animations, UI elements, or extracting PokeRogue assets. Produces specifications and handles integration. | `.github/skills/visual-assets.md` |
 
 ## graphify
 
