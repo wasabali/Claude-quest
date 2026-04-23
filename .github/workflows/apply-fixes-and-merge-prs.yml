@@ -8,6 +8,12 @@ on:
         required: false
         default: 'false'
         type: boolean
+  push:
+    branches:
+      - copilot/fix-review-comments-and-merge
+    paths:
+      - '.github/workflows/apply-fixes-and-merge-prs.yml'
+      - '.github/pr-fixes/**'
 
 permissions:
   contents: write
@@ -110,7 +116,7 @@ jobs:
             "copilot/add-missing-biome-tiles" \
             "298" \
             "" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #302 — nearest-neighbor upscale pipeline (Python)
@@ -123,7 +129,7 @@ jobs:
             "copilot/create-nearest-neighbor-upscale-script" \
             "302" \
             "pr302.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #306 — battle portrait spec 48×48px
@@ -136,7 +142,7 @@ jobs:
             "copilot/update-battle-portrait-spec" \
             "306" \
             "pr306.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #301 — BGM loop points structure and validation tests
@@ -149,7 +155,7 @@ jobs:
             "copilot/define-bgm-loop-points-ninja-adventure" \
             "301" \
             "pr301.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #305 — integrate Ninja Adventure tilesets into Tiled map pipeline
@@ -162,7 +168,7 @@ jobs:
             "copilot/integrate-ninja-adventure-tilesets" \
             "305" \
             "pr305.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #307 — custom tech-themed incident sprites
@@ -175,7 +181,7 @@ jobs:
             "copilot/spec-custom-tech-sprites" \
             "307" \
             "pr307.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #297 — adopt Ninja Adventure as primary asset pack
@@ -188,7 +194,7 @@ jobs:
             "copilot/adopt-ninja-adventure-assets" \
             "297" \
             "pr297.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #299 — integrate Ninja Adventure SFX and BGM into audio system
@@ -201,7 +207,7 @@ jobs:
             "copilot/integrate-ninja-adventure-sfx-bgm" \
             "299" \
             "pr299.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #300 — map Ninja Adventure characters to Cloud Quest trainers
@@ -214,7 +220,7 @@ jobs:
             "copilot/map-ninja-adventure-characters" \
             "300" \
             "pr300.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       # -----------------------------------------------------------------------
       # PR #303 — tech/office tileset pipeline (Kenney RPG Urban integration)
@@ -227,14 +233,14 @@ jobs:
             "copilot/add-tech-office-themed-tiles" \
             "303" \
             "pr303.patch" \
-            "${{ inputs.dry_run }}"
+            "${{ inputs.dry_run || 'false' }}"
 
       - name: Summary
         if: always()
         run: |
           echo "### PR Fix and Merge Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Dry run: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "Dry run: ${{ inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| PR | Branch | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
